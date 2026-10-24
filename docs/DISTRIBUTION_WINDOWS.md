@@ -1,69 +1,54 @@
-# Distribution Windows
+# Distribution portable Windows
 
 ## Fichier à remettre
 
-Le livrable destiné à la responsable du service de garde est **`Planificateur-SDG-Installation.exe`**, qui installe le **Planificateur — Service de garde**. Il contient Python, PySide6, SQLite, OR-Tools, ReportLab et les fichiers du logiciel. Une fois ce fichier reçu, aucune connexion Internet ni installation technique n’est nécessaire sur le poste d’utilisation.
+Le livrable principal est **`Planificateur-SDG-Portable.zip`**. Remettez ce ZIP à la responsable : elle le décompresse dans un dossier ou sur une clé USB où l’écriture est autorisée, puis ouvre **`Planificateur-SDG.exe`**. Il ne faut ni installer un programme ni disposer de Python ou d’Internet sur le poste cible.
 
-L’installation est en français et vise Windows 10 version 1809 ou ultérieure et Windows 11, en 64 bits. Elle s’effectue pour le compte Windows courant, sans droits administrateur, dans `%LOCALAPPDATA%\Programs\GardePlan`. Un raccourci est ajouté au menu Démarrer ; celui du Bureau est proposé lors de l’installation.
+Conservez tout le dossier **Planificateur-SDG**, avec ses bibliothèques, son fichier **portable.mode** et le sous-dossier **donnees**. Les horaires, profils, archives et sauvegardes locales restent dans **donnees**, à côté de l’exécutable. Aucune inscription dans le menu Démarrer ni installation dans Program Files n’est effectuée par la version portable. Windows 10 version 1809 ou ultérieure ou Windows 11, en 64 bits, est requis. Le poste doit autoriser l’exécution du logiciel et l’écriture dans le dossier choisi.
 
-Les données sont conservées séparément dans le dossier local de l’application, déterminé par Qt `AppLocalDataLocation` avec le nom d’organisation et d’application `GardePlan` (normalement `%LOCALAPPDATA%\GardePlan\GardePlan`). Les bases SQLite, copies de sécurité et historiques ne sont pas inclus dans les fichiers à désinstaller. Le dossier technique `Programs\GardePlan`, le dossier de fabrication `dist/GardePlan`, les identifiants Qt `GardePlan/GardePlan` et l’AppId Inno Setup sont volontairement conservés malgré le nouveau nom affiché. Ils permettent aux mises à jour de retrouver l’installation et les données existantes ; le paquet source Python reste `gardeplan`.
+Fermez l’application avant de déplacer son dossier ou de retirer la clé USB. Une mise à jour doit conserver le sous-dossier **donnees** ; effectuez aussi une sauvegarde locale avant de remplacer les fichiers du logiciel. Pour changer de plateforme, utilisez l’export puis l’import de sauvegarde locale.
 
-**Aucun installateur Windows n’a été compilé ou testé dans l’environnement Linux du projet.** Le pipeline ci-dessous doit réussir sous Windows avant de remettre un `.exe` comme livrable vérifié.
+## Construire avec GitHub Actions
 
-## Produire le livrable avec GitHub Actions
+Lancez **Vérifier et construire Windows** depuis l’onglet **Actions** du dépôt. Après réussite, téléchargez l’artefact **Planificateur-SDG-Portable-Windows**. Il contient le ZIP portable à remettre et les comptes rendus JSON à conserver avec la version livrée. Le workflow fonctionne aussi sur les propositions de modification et les changements de `main` ; il ne publie aucune release automatiquement.
 
-1. Placez le projet dans un dépôt GitHub et ouvrez l’onglet **Actions**.
-2. Lancez **Vérifier et construire Windows** avec **Run workflow**. Il s’exécute aussi sur les propositions de modification et les changements de la branche `main`.
-3. Attendez la réussite de toutes les étapes.
-4. Téléchargez l’artefact **Planificateur-SDG-Installation-Windows**, extrayez son contenu et remettez **Planificateur-SDG-Installation.exe** à la responsable. Conservez les fichiers JSON avec la version livrée.
+Le runner utilise Windows et Python 3.12 64 bits pour préparer le logiciel. La construction par défaut ne recherche pas Inno Setup, n’installe pas GardePlan sur le système et ne lance aucun désinstalleur. Ces outils de compilation ne sont pas nécessaires sur le poste d’utilisation.
 
-Le workflow utilise Windows, Python 3.12 64 bits et le compilateur Inno Setup 6 du runner. Il recherche `ISCC.exe` sur le PATH et dans ses emplacements d’installation habituels. S’il est absent, le traitement s’arrête explicitement ; aucun faux installateur n’est produit. Aucun dépôt cible ni release publique n’est créé automatiquement.
+## Construire localement
 
-## Compiler localement
-
-Utilisez un poste Windows de test vierge ou une machine virtuelle, avec Python 3.12 64 bits et [Inno Setup 6](https://jrsoftware.org/isdl.php) installés. Un accès Internet est nécessaire pour télécharger les bibliothèques lors de la préparation. Depuis le dossier du projet :
+Sur le poste Windows de compilation équipé de Python 3.12 64 bits :
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\build-windows.ps1
 ```
 
-Si `ISCC.exe` se trouve ailleurs :
+Le téléchargement initial des bibliothèques nécessite Internet. Ajoutez `-UseCurrentPython` pour utiliser le Python 3.12 64 bits déjà sur le PATH. La version est lue dans `pyproject.toml`.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\build-windows.ps1 -InnoSetupCompiler "C:\Outils\Inno Setup 6\ISCC.exe"
-```
+## Contrôles avant livraison
 
-Le script refuse le contrôle automatique lorsqu’une installation portant l’AppId du **Planificateur — Service de garde** existe déjà, en inspectant les clés de désinstallation utilisateur et système dans les vues 32 et 64 bits du registre. Une installation de test avec le même AppId pourrait remplacer l’enregistrement de cette installation réelle, même dans un autre dossier. Utilisez alors le runner GitHub Actions ou un poste de test vierge ; ne désinstallez pas votre logiciel de travail pour compiler.
+Le script et le workflow exécutent la même séquence :
 
-Le script détermine la version à partir de `pyproject.toml` et la transmet au compilateur Inno Setup. Le fichier `.iss` ne contient aucune autre version codée en dur. Pour utiliser le Python 3.12 64 bits déjà sur le PATH, ajoutez `-UseCurrentPython`.
+1. Installation des bibliothèques dans le projet et exécution complète de `pytest`, avec Qt hors écran.
+2. Construction PyInstaller dans le dossier technique `dist/GardePlan`, puis contrôle de son véritable exécutable.
+3. Copie vers `dist/portable/Planificateur-SDG`, ajout du marqueur **portable.mode** et du dossier **donnees**.
+4. Contrôle du binaire dans ce dossier, exigeant le mode portable et une écriture réelle de données SQLite locales.
+5. Création du ZIP, extraction dans un dossier temporaire, puis nouveau contrôle de l’exécutable extrait.
 
-## Contrôles qui conditionnent la livraison
+Chaque processus dispose de deux minutes. Les contrôles exigent la bonne version, `success: true`, `frozen: true`, `qt_platform: "windows"` et les sept vérifications métier : Qt, couverture et minutes exactes, SQLite/sauvegarde, calendrier Jour/Semaine, PDF/aperçu/impression, génération CP-SAT et opérations réseau interdites. Pour le dossier portable et l’archive extraite, **`portable_mode: true`** et **`checks.portable_data_write: true`** sont également obligatoires.
 
-Le script local et le workflow exécutent la même séquence :
+Les données de diagnostic sont créées temporairement sous le dossier **donnees** du paquet testé puis supprimées. Une base personnelle n’est pas ouverte. Un dossier de fabrication contenant déjà des données fait refuser la reconstruction : déplacez-le ou sauvegardez-le avant de recommencer. Le ZIP livré ne contient aucune donnée de test ni donnée personnelle.
 
-1. Installation des dépendances et exécution complète de `pytest`, avec Qt hors écran.
-2. Construction de l’exécutable `dist/GardePlan/Planificateur-SDG.exe` avec PyInstaller.
-3. Lancement de **l’exécutable gelé** avec `--check-installation` depuis son propre dossier, avec le module Qt Windows natif. Le processus dispose de deux minutes pour terminer.
-4. Création de `dist/installer/Planificateur-SDG-Installation.exe` par Inno Setup.
-5. Installation silencieuse dans un dossier temporaire (`RUNNER_TEMP\GardePlanInstalled` sur GitHub Actions).
-6. Lancement de **l’exécutable installé**, avec le même contrôle et les mêmes exigences.
-7. Désinstallation silencieuse et contrôle de la suppression de l’exécutable et de la conservation d’un fichier témoin unique dans le véritable dossier des données de l’application. Seul ce témoin créé pour le contrôle est ensuite supprimé.
-
-Les deux contrôles de l’application exigent `success: true`, `frozen: true`, la bonne version, `qt_platform: "windows"` et la réussite de sept vérifications : Qt, couverture et minutes exactes, SQLite et sauvegarde, calendrier Jour/Semaine, PDF et modules d’aperçu/impression, génération CP-SAT, opérations avec le réseau interdit. Les données de ces contrôles résident dans des dossiers temporaires ; aucune base personnelle n’est ouverte.
-
-Les anciens comptes rendus et l’ancien installateur de sortie sont supprimés avant la compilation. Un échec des contrôles après compilation retire l’installateur de sortie. Le workflow publie son artefact uniquement après la réussite du pipeline entier.
-
-## Sorties et conservation
-
-Les fichiers attendus après réussite sont :
+Les anciens rapports et le ZIP de sortie sont retirés avant la préparation ; un échec retire le ZIP en cours. GitHub Actions ne livre l’artefact qu’après réussite.
 
 | Fichier | Rôle |
 | --- | --- |
-| `dist/installer/Planificateur-SDG-Installation.exe` | Installateur à remettre à l’utilisatrice |
-| `dist/verification/portable.json` | Résultat de l’exécutable PyInstaller |
-| `dist/verification/installed.json` | Résultat de l’application installée |
-| `dist/verification/uninstall.json` | Retrait de l’exécutable et conservation du témoin de données |
+| `dist/Planificateur-SDG-Portable.zip` | ZIP prêt à remettre |
+| `dist/verification/bundle.json` | Binaire PyInstaller initial |
+| `dist/verification/portable.json` | Binaire dans le dossier portable |
+| `dist/verification/portable-archive.json` | Binaire après extraction du ZIP |
 
-Le workflow n’envoie que l’installateur et ces JSON dans son artefact. Pour obtenir aussi une archive portable localement, ajoutez `-PortableArchive` : `dist/Planificateur-SDG-Portable.zip` contient le dossier complet, dont tous les fichiers doivent rester ensemble. L’installateur reste le livrable conseillé pour l’utilisation courante.
+Les précédents installateurs Windows ont été construits et vérifiés, mais ils ne constituent plus le format principal demandé. Vérifiez les rapports de la nouvelle exécution portable correspondant à votre version avant de la remettre.
 
-Conservez une copie de l’installateur et des comptes rendus de chaque version remise. Les mises à jour réutilisent l’AppId stable et le dossier précédent. La désinstallation conserve les données ; leur transfert ou sauvegarde s’effectue avec la fonction de sauvegarde locale du **Planificateur — Service de garde**.
+## Installateur facultatif pour d’autres contextes
+
+L’ancienne construction Inno Setup reste accessible uniquement avec **`-BuildInstaller`**. Elle exige Inno Setup 6 et un poste de test sans installation existante : la garde de registre protège l’AppId stable avant tout essai d’installation/désinstallation. Elle produit un installateur supplémentaire et ses contrôles ; elle n’est pas exécutée par le workflow portable par défaut et ne répond pas à un poste cible interdisant les installations.

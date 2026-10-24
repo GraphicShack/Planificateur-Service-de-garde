@@ -12,3 +12,5 @@ dist/
 .env*
 exports/
 backups/
+donnees/
+portable.mode

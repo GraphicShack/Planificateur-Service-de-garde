@@ -16,6 +16,7 @@ import tempfile
 from unittest.mock import patch
 
 from gardeplan import __version__
+from gardeplan.data_paths import portable_root, DATA_FOLDER
 
 
 def check_installation(destination: str | Path) -> int:
@@ -26,6 +27,8 @@ def check_installation(destination: str | Path) -> int:
         "frozen": bool(getattr(sys, "frozen", False)),
         "checks": {},
     }
+    root = portable_root()
+    report["portable_mode"] = root is not None
     application = window = document = view = None
 
     def release_gui():
@@ -60,10 +63,13 @@ def check_installation(destination: str | Path) -> int:
         from gardeplan.validation import validate
         from gardeplan.ui.main_window import MainWindow
         from gardeplan.ui.visuals import LOGO_PATH
+        from gardeplan.ui.localization import install_french_translations
 
         report["qt_version"] = qVersion()
         application = QApplication.instance() or QApplication(["GardePlan-verification"])
         report["qt_platform"] = application.platformName()
+        if not install_french_translations(application):
+            raise RuntimeError("La traduction française des commandes Qt n'est pas disponible.")
         if not LOGO_PATH.is_file() or not QSvgRenderer(str(LOGO_PATH)).isValid():
             raise RuntimeError("Le logo vectoriel n'est pas disponible dans la distribution.")
         report["checks"]["qt_application"] = True
@@ -75,7 +81,11 @@ def check_installation(destination: str | Path) -> int:
         # les sockets interdites confirme aussi le comportement du paquet gelé.
         with patch.object(socket, "socket", refuse_network), patch.object(socket, "create_connection", refuse_network):
             with ExitStack() as cleanup:
-                directory = cleanup.enter_context(tempfile.TemporaryDirectory(prefix="gardeplan-verification-"))
+                data_folder = root / DATA_FOLDER if root is not None else None
+                if data_folder is not None:
+                    data_folder.mkdir(parents=True, exist_ok=True)
+                directory = cleanup.enter_context(tempfile.TemporaryDirectory(
+                    prefix="gardeplan-verification-", dir=data_folder))
                 # Fermer les PDF avant la suppression du dossier, y compris en
                 # cas d'échec : Windows refuse de supprimer un fichier ouvert.
                 cleanup.callback(release_gui)
@@ -101,6 +111,8 @@ def check_installation(destination: str | Path) -> int:
                     raise RuntimeError("La sauvegarde SQLite ne se rouvre pas à l'identique.")
                 repository.backup(folder / "copie.sqlite")
                 report["checks"]["sqlite_save_reopen_backup"] = True
+                if root is not None:
+                    report["checks"]["portable_data_write"] = folder.parent == data_folder
 
                 window = MainWindow(repository, restored)
                 window.show()

@@ -43,14 +43,16 @@ Sauvegardez régulièrement et utilisez l'export de sauvegarde locale avant un c
 
 L'export PDF offre un horaire général, un horaire individuel et un regroupement. Les horaires indiquent les heures exactes, activités, lieux et totaux. Pour une sauvegarde informatique complète, utilisez la sauvegarde locale SQLite ; un PDF sert à consulter ou imprimer et ne remplace pas la base.
 
-## Installer sur un poste Windows
+## Ouvrir la version portable, sans installation
 
-1. Ouvrez le fichier **`Planificateur-SDG-Installation.exe`** qui vous a été remis.
-2. Suivez les étapes de l’installation en français. Le raccourci sur le Bureau est proposé.
-3. Ouvrez **Planificateur — Service de garde** depuis le Bureau ou le menu Démarrer.
+1. Décompressez le ZIP reçu dans un dossier ou sur une clé USB où vous pouvez enregistrer des fichiers.
+2. Ouvrez le dossier **Planificateur-SDG** extrait.
+3. Sous Windows, ouvrez **Planificateur-SDG.exe**. Sous Mac, ouvrez **Planificateur-SDG.app** depuis ce dossier.
 
-Aucune installation de Python, connexion Internet ni création de compte n’est nécessaire sur votre poste. L’application nécessite Windows 10 (version 1809 ou ultérieure) ou Windows 11, en 64 bits. Elle s’installe dans votre compte Windows, sans droits administrateur.
+Aucun programme d’installation, Python, compte ou téléchargement complémentaire n’est nécessaire. Ne lancez pas l’application directement dans le ZIP et gardez tous les fichiers ensemble, notamment **portable.mode** et le sous-dossier **donnees**. Sous Mac, ne déplacez pas seulement l’application dans Applications.
 
-Pour une mise à jour, fermez le **Planificateur — Service de garde** puis ouvrez le nouvel installateur. Vos horaires, éducatrices et archives sont conservés. La désinstallation de l’application conserve également vos données ; utilisez une sauvegarde locale pour les transférer sur un autre ordinateur.
+Vos horaires, éducatrices, archives et sauvegardes locales restent dans **donnees**, à côté de l’application. Fermez le logiciel avant de déplacer le dossier ou de retirer la clé USB. Le poste doit autoriser l’exécution de l’application et l’écriture dans le dossier choisi.
 
-La préparation du fichier à remettre est décrite dans la [procédure de distribution Windows](DISTRIBUTION_WINDOWS.md). Elle concerne la personne qui construit le logiciel. L’installateur n’a pas encore été produit dans l’environnement Linux utilisé pour ce projet.
+Pour une mise à jour, sauvegardez vos données, décompressez la nouvelle version dans un autre dossier et conservez votre ancien sous-dossier **donnees** dans le nouveau dossier portable. Ne remplacez jamais vos données par un dossier vide. Pour transférer une planification entre Windows et Mac, utilisez l’export et l’import de sauvegarde locale.
+
+La préparation du fichier à remettre est décrite dans les procédures [Windows](DISTRIBUTION_WINDOWS.md) et [macOS](DISTRIBUTION_MACOS.md). Elle concerne la personne qui construit le logiciel.

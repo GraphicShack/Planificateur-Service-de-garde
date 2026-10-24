@@ -8,7 +8,7 @@ from pathlib import Path
 import sys
 import traceback
 
-from PySide6.QtCore import QLocale, QLockFile, QStandardPaths
+from PySide6.QtCore import QLockFile, QStandardPaths
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QApplication, QMessageBox
 
@@ -16,6 +16,8 @@ from gardeplan import __version__
 from gardeplan.branding import DISPLAY_NAME, STORAGE_APPLICATION, STORAGE_ORGANIZATION
 from gardeplan.models import Week
 from gardeplan.storage import Repository
+from gardeplan.data_paths import database_path, portable_root
+from gardeplan.ui.localization import install_french_translations
 
 STYLE = """
 QWidget { font-family:'Segoe UI','SF Pro Text','Noto Sans',sans-serif; font-size:13px; color:#293D34; }
@@ -112,13 +114,14 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=f"{DISPLAY_NAME} — planification hors ligne")
     parser.add_argument("--database", type=Path, help="Chemin de la base SQLite locale")
     parser.add_argument("--example", action="store_true", help="Créer un exemple dans une base distincte")
+    parser.add_argument("--portable", action="store_true", help="Conserver les données à côté du logiciel")
     parser.add_argument("--check-installation", type=Path, metavar="RESULTAT_JSON",
                         help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
     if args.example and args.database:
         parser.error("--example utilise une base distincte ; ne pas combiner avec --database.")
     if args.check_installation is not None:
-        if args.example or args.database:
+        if args.example or args.database or args.portable:
             parser.error("Le contrôle d'installation utilise uniquement des données temporaires.")
         from gardeplan.installation_check import check_installation
         return check_installation(args.check_installation)
@@ -129,16 +132,20 @@ def main(argv=None):
     app.setApplicationVersion(__version__)
     from gardeplan.ui.visuals import logo_icon
     app.setWindowIcon(logo_icon())
-    QLocale.setDefault(QLocale(QLocale.Language.French, QLocale.Country.Canada))
+    install_french_translations(app)
     app.setFont(QFont("Segoe UI", 10))
     app.setStyleSheet(STYLE)
     location = Path(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppLocalDataLocation))
-    database = args.database or location / ("exemple.sqlite" if args.example else "gardeplan.sqlite")
-    database = database.expanduser().resolve()
+    portable = portable_root(force=args.portable) is not None and args.database is None
+    app.setProperty("portableMode", portable)
+    database = database_path(location, database=args.database, example=args.example,
+                             force_portable=args.portable)
     try:
         database.parent.mkdir(parents=True, exist_ok=True)
     except OSError as exc:
-        QMessageBox.critical(None, "Dossier inaccessible", f"Choisissez un dossier accessible avec --database.\n\n{exc}")
+        action = ("Déplacez le dossier complet du logiciel vers un emplacement où vous pouvez enregistrer des fichiers, puis réessayez."
+                  if portable else "Le dossier des données n'est pas accessible. Vérifiez les droits d'accès à ce dossier.")
+        QMessageBox.critical(None, "Dossier inaccessible", f"{action}\n\n{exc}")
         return 1
     lock = QLockFile(str(database) + ".lock")
     lock.setStaleLockTime(30000)
@@ -174,6 +181,9 @@ def main(argv=None):
             repo.save(week)
         from gardeplan.ui.main_window import MainWindow
         window = MainWindow(repo, week)
+        if portable:
+            window.setWindowTitle(f"{DISPLAY_NAME} — Portable")
+            window.save_label.setText("Mode portable · les données restent dans le dossier du logiciel.")
     except Exception as exc:
         QMessageBox.critical(None, "Ouverture impossible", f"Vos données sont conservées.\n\n{exc}")
         lock.unlock()

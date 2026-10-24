@@ -24,18 +24,18 @@ jobs:
           python-version: '3.12'
           cache: pip
           cache-dependency-path: pyproject.toml
-      - name: Tests, application native et image disque réelle
+      - name: Tests et archive portable sans installation
         id: build
         # Artifact suffix is detected from the actual Python architecture.
         # No universal/Intel/Apple Silicon compatibility is assumed by label.
         env:
           PLANIFICATEUR_BUILD_PYTHON: python
         run: bash scripts/build-macos.sh
-      - name: Livrer le DMG vérifié et ses comptes rendus
+      - name: Livrer le ZIP portable vérifié et ses comptes rendus
         uses: actions/upload-artifact@v4
         with:
-          name: Planificateur-SDG-macOS-${{ steps.build.outputs.architecture }}
+          name: Planificateur-SDG-Portable-macOS-${{ steps.build.outputs.architecture }}
           if-no-files-found: error
           path: |
-            dist/macos/*.dmg
+            dist/macos/*-Portable.zip
             dist/verification-macos/*.json

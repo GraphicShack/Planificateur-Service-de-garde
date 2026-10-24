@@ -2,13 +2,13 @@
 param(
     [switch]$UseCurrentPython,
     [string]$InnoSetupCompiler,
-    [switch]$PortableArchive
+    [switch]$BuildInstaller
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 if ([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT) {
-    throw 'La création de Planificateur-SDG-Installation.exe nécessite Windows 10/11 64 bits.'
+    throw 'La création du logiciel portable Windows nécessite Windows 10/11 64 bits.'
 }
 $projectRoot = Split-Path $PSScriptRoot -Parent
 Set-Location $projectRoot
@@ -61,11 +61,12 @@ function Assert-NoExistingInstallation {
 }
 
 function Test-FrozenApplication {
-    param([string]$Executable, [string]$ReportPath, [string]$ExpectedVersion)
+    param([string]$Executable, [string]$ReportPath, [string]$ExpectedVersion, [bool]$ExpectedPortable = $false)
+    try {
+    if (Test-Path -LiteralPath $ReportPath) { Remove-Item -LiteralPath $ReportPath -Force }
     if (-not (Test-Path -LiteralPath $Executable -PathType Leaf)) {
         throw "Exécutable absent : $Executable"
     }
-    if (Test-Path -LiteralPath $ReportPath) { Remove-Item -LiteralPath $ReportPath -Force }
     Write-Host "Contrôle réel : $Executable"
     # Run from its own directory to catch accidental source imports. A bounded
     # wait also stops a native Qt error dialog from blocking the build forever.
@@ -85,9 +86,22 @@ function Test-FrozenApplication {
         throw "Le contrôle ne confirme pas un exécutable gelé valide de version $ExpectedVersion : $ReportPath"
     }
     if ($report.qt_platform -ne 'windows') { throw "Le module Qt natif Windows n'a pas été chargé : $ReportPath" }
+    if ($report.portable_mode -ne $ExpectedPortable) { throw "Le mode de données du logiciel ne correspond pas au paquet testé : $ReportPath" }
+    if ($ExpectedPortable) {
+        $property = $report.checks.PSObject.Properties['portable_data_write']
+        if ($null -eq $property -or $property.Value -ne $true) { throw "L'écriture des données à côté du logiciel portable n'a pas été confirmée : $ReportPath" }
+    }
     foreach ($name in @('qt_application', 'coverage_and_exact_minutes', 'sqlite_save_reopen_backup', 'dashboard_day_and_week', 'pdf_export_preview_print_modules', 'ortools_cp_sat_generation', 'offline_operations')) {
         $property = $report.checks.PSObject.Properties[$name]
         if ($null -eq $property -or $property.Value -ne $true) { throw "Contrôle absent ou en échec : $name ($ReportPath)" }
+    }
+    } catch {
+        # Test fixtures only: print the diagnostic before failing the CI job.
+        if (Test-Path -LiteralPath $ReportPath -PathType Leaf) {
+            try { Write-Host (Get-Content -LiteralPath $ReportPath -Raw -Encoding UTF8) }
+            catch { Write-Warning "Le rapport de contrôle ne peut pas être lu : $ReportPath" }
+        }
+        throw
     }
 }
 
@@ -99,19 +113,25 @@ function Invoke-SilentUninstall {
     } finally { $process.Dispose() }
 }
 
-# Fail before downloading dependencies if the installer compiler is unavailable.
+# Portable delivery is the default: no installer compiler or system installation.
 $installerDirectory = Join-Path $projectRoot 'dist\installer'
 $verificationDirectory = Join-Path $projectRoot 'dist\verification'
+$archive = Join-Path $projectRoot 'dist\Planificateur-SDG-Portable.zip'
+$stage = Join-Path $projectRoot 'dist\portable\Planificateur-SDG'
+if (Test-Path -LiteralPath $archive) { Remove-Item -LiteralPath $archive -Force }
 New-Item -ItemType Directory -Path $installerDirectory, $verificationDirectory -Force | Out-Null
 $installer = Join-Path $installerDirectory 'Planificateur-SDG-Installation.exe'
 if (Test-Path -LiteralPath $installer) { Remove-Item -LiteralPath $installer -Force }
-foreach ($name in @('portable.json', 'installed.json', 'uninstall.json')) {
+foreach ($name in @('bundle.json', 'portable.json', 'portable-archive.json', 'installed.json', 'uninstall.json')) {
     $oldReport = Join-Path $verificationDirectory $name
     if (Test-Path -LiteralPath $oldReport) { Remove-Item -LiteralPath $oldReport -Force }
 }
 
-$compiler = Find-InnoCompiler
-Assert-NoExistingInstallation
+$compiler = $null
+if ($BuildInstaller) {
+    $compiler = Find-InnoCompiler
+    Assert-NoExistingInstallation
+}
 
 $pythonCheck = "import sys,struct; assert sys.version_info[:2] == (3,12) and struct.calcsize('P') == 8, 'Python 3.12 64 bits est requis'"
 if ($UseCurrentPython) {
@@ -131,12 +151,47 @@ if ($LASTEXITCODE -ne 0 -or $version -notmatch '^\d+\.\d+\.\d+$') { throw 'La ve
 $previousQtPlatform = [Environment]::GetEnvironmentVariable('QT_QPA_PLATFORM', 'Process')
 try {
     $env:QT_QPA_PLATFORM = 'offscreen'
-    Invoke-Checked -FilePath $python -Arguments @('-m', 'pytest', '-q') -Failure "Les tests doivent réussir avant la création de l'installateur"
+    Invoke-Checked -FilePath $python -Arguments @('-m', 'pytest', '-q') -Failure "Les tests doivent réussir avant la création du logiciel portable"
     # Native Windows Qt platform must load in both actual-executable checks.
     Remove-Item Env:QT_QPA_PLATFORM -ErrorAction SilentlyContinue
     Invoke-Checked -FilePath $python -Arguments @('-m', 'PyInstaller', '--noconfirm', '--clean', 'GardePlan.spec') -Failure "Création de l'exécutable impossible"
-    $portable = Join-Path $projectRoot 'dist\GardePlan\Planificateur-SDG.exe'
-    Test-FrozenApplication -Executable $portable -ReportPath (Join-Path $verificationDirectory 'portable.json') -ExpectedVersion $version
+    $bundle = Join-Path $projectRoot 'dist\GardePlan'
+    Test-FrozenApplication -Executable (Join-Path $bundle 'Planificateur-SDG.exe') -ReportPath (Join-Path $verificationDirectory 'bundle.json') -ExpectedVersion $version
+    $stageData = Join-Path $stage 'donnees'
+    if (Test-Path -LiteralPath $stageData) {
+        if (Get-ChildItem -LiteralPath $stageData -Force | Select-Object -First 1) {
+            throw "Le dossier de fabrication contient déjà des données. Conservez ou déplacez le dossier $stage avant une nouvelle compilation."
+        }
+    }
+    if (Test-Path -LiteralPath $stage) { Remove-Item -LiteralPath $stage -Recurse -Force }
+    New-Item -ItemType Directory -Path (Split-Path $stage -Parent) -Force | Out-Null
+    Copy-Item -LiteralPath $bundle -Destination $stage -Recurse -Force
+    New-Item -ItemType Directory -Path $stageData -Force | Out-Null
+    [IO.File]::WriteAllText((Join-Path $stage 'portable.mode'), "portable`n", [Text.Encoding]::UTF8)
+    @'
+PLANIFICATEUR - SERVICE DE GARDE : VERSION PORTABLE
+
+1. Extraire tout le dossier Planificateur-SDG dans un dossier ou une cle USB ou vous pouvez ecrire.
+2. Ouvrir Planificateur-SDG.exe depuis ce dossier. Aucune installation.
+3. Vos horaires sont conserves dans le sous-dossier donnees. Conserver le dossier complet.
+
+Ne pas lancer depuis le ZIP. Pour une mise a jour, sauvegarder puis conserver le sous-dossier donnees.
+'@ | Set-Content -LiteralPath (Join-Path $stage 'LIRE-MOI.txt') -Encoding UTF8
+    Test-FrozenApplication -Executable (Join-Path $stage 'Planificateur-SDG.exe') -ReportPath (Join-Path $verificationDirectory 'portable.json') -ExpectedVersion $version -ExpectedPortable $true
+    if (Get-ChildItem -LiteralPath $stageData -Force | Select-Object -First 1) {
+        throw 'Le contrôle portable doit nettoyer ses données de test avant de créer le ZIP.'
+    }
+    Compress-Archive -LiteralPath $stage -DestinationPath $archive -Force
+    $extraction = Join-Path ([IO.Path]::GetTempPath()) ('PlanificateurArchive-' + [guid]::NewGuid().ToString('N'))
+    try {
+        Expand-Archive -LiteralPath $archive -DestinationPath $extraction -Force
+        $extractedExecutable = Join-Path $extraction 'Planificateur-SDG\Planificateur-SDG.exe'
+        Test-FrozenApplication -Executable $extractedExecutable -ReportPath (Join-Path $verificationDirectory 'portable-archive.json') -ExpectedVersion $version -ExpectedPortable $true
+    } finally {
+        if (Test-Path -LiteralPath $extraction) { Remove-Item -LiteralPath $extraction -Recurse -Force }
+    }
+
+    if ($BuildInstaller) {
     Invoke-Checked -FilePath $compiler -Arguments @(("/DAppVersion=$version"), ("/DSourceRoot=$projectRoot"), (Join-Path $projectRoot 'installer\GardePlan.iss')) -Failure "Création de l'installateur impossible"
     if (-not (Test-Path -LiteralPath $installer -PathType Leaf)) { throw "Inno Setup n'a pas créé Planificateur-SDG-Installation.exe." }
 
@@ -181,13 +236,13 @@ try {
             catch { Write-Warning "Le dossier de contrôle nécessite une désinstallation manuelle : $installDirectory. $_" }
         }
     }
-    if ($PortableArchive) {
-        Compress-Archive -Path (Join-Path $projectRoot 'dist\GardePlan') -DestinationPath (Join-Path $projectRoot 'dist\Planificateur-SDG-Portable.zip') -Force
+        Write-Host "Installateur facultatif vérifié : $installer"
     }
-    Write-Host "Installateur vérifié : $installer"
+    Write-Host "Logiciel portable vérifié, sans installation : $archive"
     Write-Host "Comptes rendus : $verificationDirectory"
 } catch {
-    # A compiled installer is distributable only after every installed-app test.
+    # Deliver only an archive whose real extracted executable passed validation.
+    if (Test-Path -LiteralPath $archive) { Remove-Item -LiteralPath $archive -Force -ErrorAction SilentlyContinue }
     if (Test-Path -LiteralPath $installer) { Remove-Item -LiteralPath $installer -Force -ErrorAction SilentlyContinue }
     throw
 } finally {
