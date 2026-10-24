@@ -1,0 +1,39 @@
+name: Vérifier et construire Windows
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: x64
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Tests, exécutable, installateur et installation réelle
+        # The same fail-fast pipeline is used by local Windows builds. It locates
+        # Inno Setup 6 on PATH/standard install locations and fails if absent.
+        # Checks run the frozen portable exe, silent install, installed exe, and
+        # uninstall while preserving a sentinel in the real app-data directory.
+        run: .\scripts\build-windows.ps1 -UseCurrentPython
+      - name: Livrer l’installateur vérifié et ses comptes rendus
+        uses: actions/upload-artifact@v4
+        with:
+          name: Planificateur-SDG-Installation-Windows
+          if-no-files-found: error
+          path: |
+            dist/installer/Planificateur-SDG-Installation.exe
+            dist/verification/*.json
