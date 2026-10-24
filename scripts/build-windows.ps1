@@ -26,7 +26,7 @@ function Find-InnoCompiler {
         }
         return (Resolve-Path -LiteralPath $InnoSetupCompiler).Path
     }
-    $onPath = Get-Command ISCC.exe -CommandType Application -ErrorAction SilentlyContinue
+    $onPath = Get-Command ISCC.exe -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
     $candidates = @()
     if ($onPath) { $candidates += $onPath.Source }
     if (${env:ProgramFiles(x86)}) { $candidates += (Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe') }
@@ -115,7 +115,7 @@ Assert-NoExistingInstallation
 
 $pythonCheck = "import sys,struct; assert sys.version_info[:2] == (3,12) and struct.calcsize('P') == 8, 'Python 3.12 64 bits est requis'"
 if ($UseCurrentPython) {
-    $bootstrap = (Get-Command python -CommandType Application -ErrorAction Stop).Source
+    $bootstrap = (Get-Command python -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
     Invoke-Checked -FilePath $bootstrap -Arguments @('-c', $pythonCheck) -Failure 'Python 3.12 64 bits est requis'
     Invoke-Checked -FilePath $bootstrap -Arguments @('-m', 'venv', '.venv') -Failure "Création de l'environnement Python impossible"
 } else {
