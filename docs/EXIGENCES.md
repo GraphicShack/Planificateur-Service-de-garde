@@ -45,7 +45,9 @@ Ce document distingue les contrôles automatisables du contrôle de prise en mai
 | Aperçu et impression | Accès dans l'interface ; vérifier la prévisualisation et l'impression sur le poste cible. |
 | Noir et blanc | Horaires et noms restent présents dans les tableaux sans dépendre uniquement des couleurs. |
 | Annuler une action | Commandes d'annulation de la fenêtre principale ; essai de prise en main nécessaire. |
-| Exécutable Windows simple à remettre | Installateur français `Planificateur-SDG-Installation.exe` préparé avec Inno Setup, raccourcis, installation par utilisateur et contrôles du binaire avant/après installation ; compilation et essai Windows à exécuter. |
+| Exécutable Windows sans installation | ZIP portable avec `Planificateur-SDG.exe`, bibliothèques incluses et données à côté ; contrôle du dossier et du ZIP extrait. |
+| Construction Mac | Workflow et script natifs, application `.app` dans un ZIP portable, données hors du bundle signé. |
+| Interface modernisée et logo choisi | Identité visuelle locale, pictogrammes SVG, recherche des éducatrices, commandes regroupées et calendrier sauge ; tests Qt6 natifs. |
 
 ## Points à garder explicites
 
@@ -54,7 +56,7 @@ Ce document distingue les contrôles automatisables du contrôle de prise en mai
 - Une règle inscrite uniquement comme note libre dans les « restrictions particulières » n'est pas interprétée automatiquement. Les contraintes que le moteur applique doivent être saisies dans les champs structurés de disponibilité, absence, limites, buffers et pauses.
 - La politique de pause n'est pas présumée conventionnelle ou réglementaire. La durée requise et son seuil sont configurables ; une durée à zéro désactive cette règle.
 - La version conserve les profils et paramètres de la semaine. Pour une ancienne semaine, les profils archivés sont ceux de cette photographie.
-- Le projet et la procédure de compilation ne constituent pas un exécutable Windows déjà compilé ou certifié. Un essai sur le poste Windows de destination reste à effectuer.
+- Les premières versions natives Windows et Mac ont été compilées et vérifiées sur GitHub Actions. Les ZIP portables doivent provenir de leur propre exécution réussie ; les résultats sont détaillés dans `ETAT_VERIFICATION.md`. La prise en main sur le poste de l’école reste nécessaire.
 
 ## Contrôle de prise en main sur Windows
 

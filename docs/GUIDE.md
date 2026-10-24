@@ -35,7 +35,7 @@ Après une modification, consultez le compteur et la liste des alertes. Les mess
 
 ## Générer une proposition
 
-Cliquez sur « Générer automatiquement ». Le moteur respecte les contraintes obligatoires qu'il modélise et les quarts verrouillés, puis cherche à améliorer les heures et les préférences. Examinez la proposition avant de l'accepter. Si la recherche échoue, lisez l'explication ; vous pouvez modifier les disponibilités, effectifs ou quarts et recommencer. Un échec dans les candidats examinés ne signifie pas nécessairement qu'aucune solution manuelle n'existe.
+Cliquez sur « Générer ». Le moteur respecte les contraintes obligatoires qu'il modélise et les quarts verrouillés, puis cherche à améliorer les heures et les préférences. Examinez la proposition avant de l'accepter. Si la recherche échoue, lisez l'explication ; vous pouvez modifier les disponibilités, effectifs ou quarts et recommencer. Un échec dans les candidats examinés ne signifie pas nécessairement qu'aucune solution manuelle n'existe.
 
 ## Sauvegarder, revenir en arrière et exporter
 

@@ -11,10 +11,13 @@ Le Planificateur — Service de garde est une application de bureau Python 3 / P
 | `validation.py` | Contraintes obligatoires, avertissements et intervalles de couverture. |
 | `optimizer.py` | Proposition par OR-Tools CP-SAT ; conservation des quarts verrouillés et validation finale. |
 | `storage.py` | SQLite, versions complètes, duplication, restauration, sauvegarde et import local. |
+| `data_paths.py` | Données du dossier portable ou emplacement historique ; déplacement du dossier sans reconfiguration. |
 | `pdf.py` | PDF général, individuel et regroupé avec ReportLab. |
 | `ui/calendar.py` | Calendriers Jour/Semaine, manipulation graphique et repères d'alertes. |
 | `ui/forms.py` | Formulaires simples et réglages détaillés. |
 | `ui/main_window.py` | Coordination de l'interface, annulation, sauvegarde et commandes. |
+| `ui/visuals.py` | Logo et pictogrammes SVG locaux, rendus pour les écrans à haute densité. |
+| `ui/localization.py` | Locale française et traduction des boutons standard Qt. |
 | `app.py` | Démarrage de Qt et gestion du chemin local de la base. |
 
 ## Temps et couverture
@@ -33,6 +36,8 @@ Les effectifs et périodes d'ouverture sont définis par groupe et journée. L�
 
 ## Versions et fichiers
 
+La distribution principale est un dossier portable avec son exécutable, ses bibliothèques, un marqueur `portable.mode` et un sous-dossier `donnees`. Le lancement détecte automatiquement ce mode ; il conserve SQLite, l'historique et les sauvegardes dans `donnees`, sans installation ni enregistrement système par l'application. Sur macOS, le bundle déclare aussi son intention portable dans `Info.plist` ; les données restent à côté du `.app`, jamais à l'intérieur du bundle signé. Les anciens chemins de profil sont conservés pour les installations historiques qui n'utilisent pas le mode portable.
+
 Chaque sauvegarde conserve une photographie complète de la semaine, incluant les profils et paramètres. Une publication reste consultable dans l'historique même lorsque de nouveaux brouillons sont enregistrés. Une restauration produit une nouvelle version. La sauvegarde de sécurité utilise l'API de sauvegarde SQLite ; l'import vérifie la base avant remplacement et conserve une copie de sécurité de l'ancienne base.
 
 ## Limites d'optimisation
@@ -43,4 +48,4 @@ La génération cherche une solution dans un ensemble de quarts candidats. Elle 
 
 Les tests contrôlent les minutes, les contraintes de couverture, les lieux, les sauvegardes, les versions et les PDF. Les opérations locales sont également exécutées avec l'accès aux sockets désactivé. Les tests d'interface utilisent le moteur Qt hors écran. Une exécution hors écran ne remplace pas un essai avec souris et imprimante sur un poste Windows.
 
-Le script `scripts/build-windows.ps1` compile sur Windows avec PyInstaller. Le dossier portable produit doit rester complet. Aucune compilation exécutée sous Linux ne doit être présentée comme un exécutable Windows testé.
+Les scripts `scripts/build-windows.ps1` et `scripts/build-macos.sh` compilent nativement avec PyInstaller. Ils contrôlent l'exécutable préparé puis le même logiciel après extraction du ZIP, avec le moteur Qt natif, SQLite, PDF et CP-SAT. Ils exigent une écriture réelle des données à côté du programme. Le dossier portable doit rester complet.

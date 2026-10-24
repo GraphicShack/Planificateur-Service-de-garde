@@ -58,3 +58,7 @@ Les données du diagnostic sont temporaires sous **donnees** et sont supprimées
 La construction locale utilise une signature **ad hoc**. Pour distribuer à d’autres personnes avec une ouverture reconnue par Gatekeeper, la signature **Developer ID** et la **notarisation Apple** restent à préparer. Un paquet portable ne contourne pas les autorisations d’exécution du poste ; aucun certificat ni identifiant Apple n’est demandé par le script.
 
 Une construction native précédente a réussi sur macOS 15 Apple Silicon avec 110 tests et contrôle du DMG. Le nouveau format principal est le ZIP portable : vérifiez les rapports de son exécution correspondante avant livraison. Les anciennes consignes de déplacement vers Applications ne s’appliquent plus à ce format.
+
+## Construction vérifiée
+
+Le [workflow portable du 24 octobre 2026](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40141657434) a réussi 118 tests, la signature locale et les trois contrôles natifs. Le [ZIP arm64 vérifié](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40141657434/artifacts/12579051978) cible macOS 15 et versions ultérieures. Il est distinct de l’ancien DMG : aucun déplacement dans Applications n’est demandé.

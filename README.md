@@ -16,32 +16,9 @@ Application de bureau en français pour planifier un service de garde scolaire a
 
 Les règles initiales sont : ouverture à 7 h avec deux éducatrices dès 6 h 50, fermeture à 17 h 30 avec deux jusqu'à 17 h 35, relève de quinze minutes, couverture continue et ratio de 1/20 avec au moins deux éducatrices par groupe actif. Le ratio et les paramètres restent configurables. Les buffers rémunérés n'assurent pas automatiquement la couverture des enfants.
 
-## Lancer depuis les sources
-
-Python 3.11 ou 3.12 recommandé. Le téléchargement des dépendances nécessite Internet une première fois ; l'utilisation est ensuite hors ligne.
-
-Sous Windows, double-cliquer sur `scripts/lancer-windows.bat`, ou dans PowerShell depuis le dossier du projet :
-
-```powershell
-py -3.12 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
-.\.venv\Scripts\python.exe -m gardeplan
-```
-
-Sous Linux :
-
-```sh
-python3 -m venv .venv
-.venv/bin/python -m pip install -e '.[dev]'
-.venv/bin/python -m gardeplan
-```
-
-`python -m gardeplan --example` ouvre une base d'exemple distincte, contenant des noms fictifs. Sans cet argument, l'application démarre avec vos données ou une semaine vide. `--database chemin.sqlite` permet de choisir un autre emplacement. Les fichiers SQLite personnels sont exclus de Git.
-
-
 ## Version prête à utiliser, sans installation
 
-La livraison principale est un **ZIP portable**. Décompressez le dossier complet dans un emplacement autorisé en écriture ou sur une clé USB, puis ouvrez **`Planificateur-SDG.exe`** sous Windows ou **`Planificateur-SDG.app`** sous macOS. Aucun programme d’installation, Python, compte ni connexion Internet n’est nécessaire sur le poste cible. Gardez le dossier complet : les horaires et sauvegardes restent dans son sous-dossier **`donnees`**.
+La livraison principale est un **ZIP portable**. Téléchargements vérifiés : [Windows](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40141657387/artifacts/12578819035) · [Mac Apple Silicon, macOS 15+](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40141657434/artifacts/12579051978). Les artefacts contiennent le ZIP portable à remettre et les rapports de vérification. Décompressez le dossier complet dans un emplacement autorisé en écriture ou sur une clé USB, puis ouvrez **`Planificateur-SDG.exe`** sous Windows ou **`Planificateur-SDG.app`** sous macOS. Aucun programme d’installation, Python, compte ni connexion Internet n’est nécessaire sur le poste cible. Gardez le dossier complet : les horaires et sauvegardes restent dans son sous-dossier **`donnees`**.
 
 Les contrôles de construction vérifient le mode portable et l’écriture réelle des données à côté du logiciel, puis refont le contrôle après extraction du ZIP. Le poste doit permettre l’exécution de ce logiciel portable et l’écriture dans le dossier choisi.
 
@@ -67,7 +44,29 @@ powershell -ExecutionPolicy Bypass -File .\scripts\build-windows.ps1
 
 Le résultat principal est **`dist/Planificateur-SDG-Portable.zip`**. Le script par défaut ne dépend pas d’Inno Setup et n’exécute aucune installation ou désinstallation système. Il teste le binaire, le dossier portable et l’archive extraite. Le workflow **« Vérifier et construire Windows »** remet l’artefact **`Planificateur-SDG-Portable-Windows`** contenant le ZIP et ses comptes rendus. Voir la [procédure Windows](docs/DISTRIBUTION_WINDOWS.md).
 
-Les versions natives antérieures ont été compilées et testées sur GitHub Actions ; la validation du nouveau format portable doit être confirmée par les rapports de l’exécution correspondant à la version remise. Les [résultats réellement vérifiés](docs/ETAT_VERIFICATION.md) distinguent ces étapes. Aucune release n’est publiée automatiquement.
+Les deux versions portables ont réussi **118 tests chacune**, ainsi que les contrôles natifs après extraction du ZIP. Les [résultats réellement vérifiés](docs/ETAT_VERIFICATION.md) donnent les exécutions et rapports correspondants. Aucune release n’est publiée automatiquement.
+
+## Développement : lancer depuis les sources
+
+Python 3.11 ou 3.12 recommandé. Le téléchargement des dépendances nécessite Internet une première fois ; l'utilisation est ensuite hors ligne.
+
+Sous Windows, double-cliquer sur `scripts/lancer-windows.bat`, ou dans PowerShell depuis le dossier du projet :
+
+```powershell
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\.venv\Scripts\python.exe -m gardeplan
+```
+
+Sous Linux :
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install -e '.[dev]'
+.venv/bin/python -m gardeplan
+```
+
+`python -m gardeplan --example` ouvre une base d'exemple distincte, contenant des noms fictifs. Sans cet argument, l'application démarre avec vos données ou une semaine vide. `--database chemin.sqlite` permet de choisir un autre emplacement. Les fichiers SQLite personnels sont exclus de Git.
 
 ## Tests et documentation
 
