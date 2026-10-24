@@ -18,6 +18,9 @@ gardeplan = "gardeplan.app:main"
 [tool.setuptools.packages.find]
 include = ["gardeplan*"]
 
+[tool.setuptools.package-data]
+gardeplan = ["assets/*.svg", "assets/*.png"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]

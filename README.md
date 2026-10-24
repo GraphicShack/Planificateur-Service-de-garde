@@ -38,6 +38,21 @@ python3 -m venv .venv
 
 `python -m gardeplan --example` ouvre une base d'exemple distincte, contenant des noms fictifs. Sans cet argument, l'application démarre avec vos données ou une semaine vide. `--database chemin.sqlite` permet de choisir un autre emplacement. Les fichiers SQLite personnels sont exclus de Git.
 
+
+## Construire sur Mac
+
+Sur un Mac équipé de Python 3.12, depuis le dossier du projet :
+
+```bash
+bash scripts/build-macos.sh
+```
+
+Le script exécute les tests, crée **`Planificateur-SDG.app`**, vérifie le binaire avec Qt natif macOS puis produit un **DMG** avec le raccourci Applications. L’application livrée contient ses bibliothèques et fonctionne hors ligne. Le DMG est nommé selon sa version et son architecture réelle (`arm64` ou `x86_64`) ; une construction cible une seule architecture.
+
+Vous pouvez aussi lancer **« Vérifier et construire macOS »** dans GitHub Actions et récupérer l’artefact **`Planificateur-SDG-macOS-<architecture>`** après réussite. Depuis votre Mac, le workflow **Windows** permet séparément de construire l’installateur `.exe` sur un runner Windows.
+
+Le détail des sorties, des contrôles et de la signature de distribution se trouve dans la [procédure macOS](docs/DISTRIBUTION_MACOS.md). **La compilation macOS n’a pas été exécutée dans l’environnement Linux du projet.**
+
 ## Construire pour Windows
 
 Le fichier à remettre à la responsable est **`Planificateur-SDG-Installation.exe`**. Elle l’ouvre, suit l’installation en français, puis lance le **Planificateur — Service de garde** depuis son Bureau ou le menu Démarrer. Son poste n’a besoin ni de Python ni d’Internet. L’installation se fait pour son compte Windows, sans droits administrateur ; les données et historiques restent conservés après une mise à jour ou une désinstallation. Windows 10 (version 1809 ou ultérieure) ou Windows 11, en 64 bits, est requis.
@@ -52,7 +67,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\build-windows.ps1
 
 Le script exécute tous les tests, vérifie l’exécutable PyInstaller, construit l’installateur, l’installe dans un dossier temporaire, vérifie l’application installée puis contrôle sa désinstallation et la conservation des données. La sortie livrable est `dist/installer/Planificateur-SDG-Installation.exe`. Pour protéger une installation existante, ce contrôle exige un poste Windows de test vierge ou le runner GitHub Actions. Le détail figure dans la [procédure de distribution Windows](docs/DISTRIBUTION_WINDOWS.md).
 
-**L’installateur Windows n’a pas été compilé ni exécuté dans cet environnement Linux.** Les scripts sont prêts ; seule une exécution réussie du pipeline Windows permet de livrer le fichier `.exe` comme vérifié. Voir les [résultats réellement vérifiés](docs/ETAT_VERIFICATION.md).
+Les installateurs vérifiés sont disponibles dans les artefacts des [exécutions Windows réussies](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/workflows/build-windows.yml). La première construction a réussi les tests, l'installation et la désinstallation. Vérifiez que l'exécution correspond à la version à remettre ; voir les [résultats réellement vérifiés](docs/ETAT_VERIFICATION.md).
 
 ## Tests et documentation
 

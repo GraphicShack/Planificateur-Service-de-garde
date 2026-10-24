@@ -2,6 +2,7 @@
 from PyInstaller.utils.hooks import collect_all
 
 datas, binaries, hiddenimports = [], [], []
+datas.append(('gardeplan/assets', 'gardeplan/assets'))
 for package in ('ortools', 'reportlab'):
     package_datas, package_binaries, package_hiddenimports = collect_all(package)
     datas += package_datas
@@ -19,6 +20,7 @@ exe = EXE(
     pyz, analysis.scripts, [], exclude_binaries=True, name='Planificateur-SDG',
     debug=False, bootloader_ignore_signals=False, strip=False, upx=False,
     console=False, disable_windowed_traceback=False,
+    icon='gardeplan/assets/logo.png',
 )
 collect = COLLECT(exe, analysis.binaries, analysis.datas,
                   strip=False, upx=False, name='GardePlan')

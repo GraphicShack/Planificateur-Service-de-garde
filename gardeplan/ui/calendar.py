@@ -10,10 +10,10 @@ from datetime import date, timedelta
 import math
 from typing import Any
 
-from PySide6.QtCore import Qt, QRectF, QSize, Signal, QPointF
-from PySide6.QtGui import QColor, QFont, QPainter, QPen, QBrush, QPalette
+from PySide6.QtCore import Qt, QRectF, QSize, Signal, QPointF, QTimer, QEvent
+from PySide6.QtGui import QColor, QFont, QPainter, QPen
 from PySide6.QtWidgets import (
-    QWidget, QScrollArea, QGridLayout, QLabel, QSizePolicy, QMenu, QToolTip,
+    QWidget, QScrollArea, QGridLayout, QLabel, QMenu, QToolTip,
 )
 
 from ..models import format_time, format_duration
@@ -30,6 +30,13 @@ def _color(value: str, fallback: str = "#427b69") -> QColor:
 def _light(value: QColor, opacity: float = .13) -> QColor:
     return QColor(*(round(255 * (1 - opacity) + component * opacity)
                     for component in (value.red(), value.green(), value.blue())))
+
+
+def _font(size: float, weight=QFont.Weight.Normal) -> QFont:
+    font = QFont("Segoe UI")
+    font.setPointSizeF(size)
+    font.setWeight(weight)
+    return font
 
 
 def _day_name(week: Any, day: int) -> str:
@@ -55,22 +62,23 @@ class _Gutter(QWidget):
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.fillRect(self.rect(), QColor("#f8fafb"))
-        painter.setPen(QColor("#74818d"))
-        painter.setFont(QFont("Segoe UI", 9))
+        painter.fillRect(self.rect(), QColor("#fafbf8"))
+        painter.setFont(_font(8.5))
         c = self.calendar
         offset = c.scroll.verticalScrollBar().value()
         for minute in range(c.start_minute, c.end_minute + 1, 30):
             y = (minute - c.start_minute) * c.scale - offset
             if -10 <= y <= self.height() + 10:
                 if minute % 60 == 0:
-                    painter.setPen(QColor("#475467"))
+                    if c.scale < .4 and minute % 120:
+                        continue
+                    painter.setPen(QColor("#69766e"))
                     painter.drawText(QRectF(0, y + 3, 58, 20), Qt.AlignmentFlag.AlignRight,
                                      f"{minute // 60:02d} h")
-                else:
-                    painter.setPen(QColor("#9aa4af"))
+                elif c.scale >= 1:
+                    painter.setPen(QColor("#a6afa7"))
                     painter.drawText(QRectF(0, y + 3, 58, 18), Qt.AlignmentFlag.AlignRight, "30")
-        painter.setPen(QColor("#e6ebef"))
+        painter.setPen(QColor("#e5eae3"))
         painter.drawLine(self.width() - 1, 0, self.width() - 1, self.height())
 
 
@@ -80,6 +88,8 @@ class _Header(QWidget):
         self.calendar = calendar
         self.setFixedHeight(66)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setMouseTracking(True)
+        self.hover_column = -1
 
     def paintEvent(self, event):
         c = self.calendar
@@ -88,21 +98,52 @@ class _Header(QWidget):
         p.fillRect(self.rect(), QColor("#ffffff"))
         for i, (title, subtitle, color) in enumerate(c.columns()):
             x = i * c.column_width
-            p.setPen(QColor("#e4e9ee"))
-            p.drawLine(int(x), 0, int(x), self.height())
-            p.setPen(Qt.PenStyle.NoPen)
-            p.setBrush(_color(color))
-            p.drawRoundedRect(QRectF(x + 15, 17, 5, 31), 2, 2)
-            p.setPen(QColor("#202f3d"))
-            p.setFont(QFont("Segoe UI", 10, QFont.Weight.DemiBold))
-            p.drawText(QRectF(x + 30, 10, c.column_width - 42, 24),
-                       Qt.AlignmentFlag.AlignVCenter, title)
-            p.setFont(QFont("Segoe UI", 8))
-            p.setPen(QColor("#718091"))
-            p.drawText(QRectF(x + 30, 34, c.column_width - 42, 20),
-                       Qt.AlignmentFlag.AlignVCenter, subtitle)
-        p.setPen(QColor("#dce4ea"))
+            accent = _color(color)
+            is_week = c.mode == "Semaine"
+            active = is_week and i == c.day
+            if is_week:
+                p.setPen(QPen(QColor("#d5e4da") if active else QColor("#edf0e9"), 1))
+                p.setBrush(QColor("#eef5ef") if active else QColor("#f7f9f5")
+                           if i == self.hover_column else QColor("#ffffff"))
+                p.drawRoundedRect(QRectF(x + 7, 6, c.column_width - 14, 53), 10, 10)
+                text_x = x + 20
+                text_width = c.column_width - 40
+            else:
+                p.setPen(Qt.PenStyle.NoPen)
+                p.setBrush(_light(accent, .12))
+                p.drawRoundedRect(QRectF(x + 14, 15, 32, 32), 9, 9)
+                p.setPen(accent.darker(125))
+                p.setFont(_font(9.5, QFont.Weight.DemiBold))
+                parts = title.split()
+                initial = parts[1][:2] if len(parts) > 1 and parts[0].lower() == "groupe" else title[:1]
+                p.drawText(QRectF(x + 14, 15, 32, 32), Qt.AlignmentFlag.AlignCenter, initial)
+                text_x = x + 56
+                text_width = c.column_width - 68
+            p.setPen(QColor("#234332") if active else QColor("#2f4035"))
+            p.setFont(_font(10, QFont.Weight.DemiBold))
+            text = p.fontMetrics().elidedText(title, Qt.TextElideMode.ElideRight, int(text_width))
+            p.drawText(QRectF(text_x, 11, text_width, 23), Qt.AlignmentFlag.AlignVCenter, text)
+            p.setFont(_font(8))
+            p.setPen(QColor("#7a897b"))
+            text = p.fontMetrics().elidedText(subtitle, Qt.TextElideMode.ElideRight, int(text_width))
+            p.drawText(QRectF(text_x, 34, text_width, 19), Qt.AlignmentFlag.AlignVCenter, text)
+        p.setPen(QColor("#e5eae3"))
         p.drawLine(0, self.height() - 1, self.width(), self.height() - 1)
+
+    def mouseMoveEvent(self, event):
+        column = int(event.position().x() // self.calendar.column_width)
+        if column != self.hover_column:
+            self.hover_column = column
+            self.update()
+        columns = self.calendar.columns()
+        if 0 <= column < len(columns):
+            title, subtitle, _ = columns[column]
+            self.setToolTip(f"{title}\n{subtitle}")
+
+    def leaveEvent(self, event):
+        self.hover_column = -1
+        self.update()
+        super().leaveEvent(event)
 
     def mouseReleaseEvent(self, event):
         if self.calendar.mode == "Semaine" and event.button() == Qt.MouseButton.LeftButton:
@@ -118,6 +159,7 @@ class _Canvas(QWidget):
         self.blocks: list[_Block] = []
         self.drag: dict | None = None
         self.selection: tuple[str, str] | None = None
+        self.hover: tuple[str, str] | None = None
         self.setAcceptDrops(True)
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
@@ -199,14 +241,17 @@ class _Canvas(QWidget):
         bounds = event.rect()
         n = len(c.columns())
         for i in range(n):
-            if i % 2:
+            if c.mode == "Semaine" and i == c.day:
                 p.fillRect(QRectF(i * c.column_width, bounds.top(), c.column_width, bounds.height()),
-                           QColor("#fcfdfe"))
+                           QColor("#f8fbf7"))
+            elif i % 2:
+                p.fillRect(QRectF(i * c.column_width, bounds.top(), c.column_width, bounds.height()),
+                           QColor("#fdfefb"))
         # Closed periods are subdued, leaving open periods clearly identifiable.
         if c.week and c.mode == "Jour":
             for index, group in enumerate(c.week.groups):
                 p.fillRect(QRectF(index*c.column_width, bounds.top(), c.column_width, bounds.height()),
-                           QColor("#f3f5f7"))
+                           QColor("#f4f6f1"))
                 for period in group.periods:
                     if period.day == c.day:
                         p.fillRect(QRectF(index*c.column_width, c.y(period.start), c.column_width,
@@ -229,14 +274,16 @@ class _Canvas(QWidget):
                     columns = []
                 for i in columns:
                     rect = QRectF(i*c.column_width, c.y(start), c.column_width, (end-start)*c.scale)
-                    p.fillRect(rect, QColor(221, 70, 70, 20))
-                    p.fillRect(QRectF(rect.left(), rect.top(), 3, rect.height()), QColor("#da5454"))
+                    p.fillRect(rect, QColor(191, 81, 74, 13))
+                    p.fillRect(QRectF(rect.left(), rect.top(), 2, rect.height()), QColor("#c56a60"))
         first = max(c.start_minute, int(bounds.top()/c.scale+c.start_minute)//30*30)
         last = min(c.end_minute, int(bounds.bottom()/c.scale+c.start_minute)+30)
         for minute in range(first, last+1, 30):
-            p.setPen(QPen(QColor("#e0e6ec") if minute % 60 == 0 else QColor("#f0f3f6"), 1))
+            if c.scale < .5 and minute % 60:
+                continue
+            p.setPen(QPen(QColor("#e6ebe3") if minute % 60 == 0 else QColor("#f3f5ef"), 1))
             p.drawLine(QPointF(0, c.y(minute)), QPointF(self.width(), c.y(minute)))
-        p.setPen(QColor("#e4e9ee"))
+        p.setPen(QColor("#e7ece4"))
         for i in range(n + 1):
             p.drawLine(QPointF(i*c.column_width, bounds.top()),
                        QPointF(i*c.column_width, bounds.bottom()))
@@ -254,68 +301,125 @@ class _Canvas(QWidget):
             group = groups.get(value.group_id)
             color = _color(educator.color if educator else (group.color if group else "#667b9d"))
             is_activity = block.kind == "activity"
-            border = QColor("#d74c4c") if value.id in error_ids else _light(color, .45)
+            border = QColor("#c56a60") if value.id in error_ids else _light(color, .28)
             selected = self.selection == (block.kind, value.id)
-            p.setPen(QPen(QColor("#293f57") if selected else border, 2 if selected else 1,
+            hovered = self.hover == (block.kind, value.id)
+            moving = bool(self.drag and self.drag["block"] is block)
+            p.setPen(Qt.PenStyle.NoPen)
+            p.setBrush(QColor(31, 54, 39, 8 if hovered or moving else 4))
+            p.drawRoundedRect(rect.translated(0, 2), 8, 8)
+            p.setPen(QPen(QColor("#38644a") if selected else border, 1.7 if selected else 1,
                           Qt.PenStyle.DashLine if is_activity else Qt.PenStyle.SolidLine))
-            p.setBrush(_light(color, .08 if is_activity else .16))
-            p.drawRoundedRect(rect, 5, 5)
+            p.setBrush(_light(color, .10 if is_activity else .18 if hovered or moving else .12))
+            p.drawRoundedRect(rect, 8, 8)
             p.save()
             p.setClipRect(rect.adjusted(1, 1, -1, -1))
             if not is_activity:
+                p.fillRect(QRectF(rect.left()+1, rect.top()+7, 2.5, max(0,rect.height()-14)),
+                           _light(color,.75))
                 # Buffers and breaks are presence, never ordinary pupil coverage.
                 start, end = (self.drag["start"], self.drag["end"]) if self.drag and self.drag["block"] is block else (value.start, value.end)
                 if value.buffer_before:
                     p.fillRect(QRectF(rect.left(), c.y(start), rect.width(), value.buffer_before*c.scale),
-                               QBrush(_light(color,.30), Qt.BrushStyle.BDiagPattern))
+                               _light(color,.23))
+                    p.setPen(QPen(_light(color,.38), 1, Qt.PenStyle.DotLine))
+                    y = c.y(start+value.buffer_before)
+                    p.drawLine(QPointF(rect.left(),y),QPointF(rect.right(),y))
                 if value.buffer_after:
                     p.fillRect(QRectF(rect.left(), c.y(end-value.buffer_after), rect.width(), value.buffer_after*c.scale),
-                               QBrush(_light(color,.30), Qt.BrushStyle.BDiagPattern))
+                               _light(color,.23))
+                    p.setPen(QPen(_light(color,.38), 1, Qt.PenStyle.DotLine))
+                    y = c.y(end-value.buffer_after)
+                    p.drawLine(QPointF(rect.left(),y),QPointF(rect.right(),y))
                 delta = start - value.start
                 for pause in value.breaks:
-                    p.fillRect(QRectF(rect.left(), c.y(pause.start+delta), rect.width(), (pause.end-pause.start)*c.scale),
-                               QBrush(QColor("#c6cbd3"), Qt.BrushStyle.Dense4Pattern))
-            p.setPen(color.darker(135))
-            p.setFont(QFont("Segoe UI", 9, QFont.Weight.DemiBold))
+                    pause_rect = QRectF(rect.left(),c.y(pause.start+delta),rect.width(),
+                                        (pause.end-pause.start)*c.scale)
+                    p.fillRect(pause_rect, QColor("#e7ebe4"))
+                    p.setPen(QPen(QColor("#cbd4c8"), 1, Qt.PenStyle.DotLine))
+                    p.drawLine(pause_rect.topLeft(),pause_rect.topRight())
+                    p.drawLine(pause_rect.bottomLeft(),pause_rect.bottomRight())
+                    if pause_rect.height() >= 19:
+                        p.setPen(QColor("#74806e"))
+                        p.setFont(_font(7.5))
+                        p.drawText(pause_rect.adjusted(9,0,-5,0),Qt.AlignmentFlag.AlignVCenter,"Pause")
+            p.setPen(color.darker(150))
+            compact = rect.width() < 70
+            padding = 4 if compact else 10
+            p.setFont(_font(7.5 if compact else 9 if rect.width() >= 120 else 8.5,
+                            QFont.Weight.DemiBold))
             title = value.name if is_activity else (educator.name if educator else "Éducatrice manquante")
+            if compact:
+                title="".join(word[:1].upper() for word in title.replace("—"," ").split()[:3])
             if getattr(value, "locked", False):
-                title = "• " + title
-            p.drawText(rect.adjusted(7, 7, -5, -4), Qt.AlignmentFlag.AlignTop | Qt.TextFlag.TextWordWrap, title)
-            if rect.height() >= 53:
-                p.setFont(QFont("Segoe UI", 8))
+                title = "· " + title
+            text_width=max(0,int(rect.width()-padding-5))
+            title=p.fontMetrics().elidedText(title,Qt.TextElideMode.ElideRight,text_width)
+            p.drawText(QRectF(rect.left()+padding,rect.top()+9,text_width,20),
+                       Qt.AlignmentFlag.AlignVCenter,title)
+            if rect.height() >= 44:
+                p.setFont(_font(6.5 if compact else 8))
+                p.setPen(color.darker(125))
                 start = self.drag["start"] if self.drag and self.drag["block"] is block else value.start
                 end = self.drag["end"] if self.drag and self.drag["block"] is block else value.end
-                subtitle = f"{format_time(start)}\n{format_time(end)}"
-                if c.mode == "Semaine" and group:
-                    subtitle += "\n" + group.name
+                time_range=f"{format_time(start)} – {format_time(end)}"
+                if compact:
+                    subtitle=f"{start//60}:{start%60:02d}\n{end//60}:{end%60:02d}"
+                    line_count=2
+                    # Preserve every digit in narrow weekly lanes. The full
+                    # French range and names remain available in the tooltip.
+                    padding=2
+                    text_width=max(0,int(rect.width()-4))
+                    required=max(p.fontMetrics().horizontalAdvance(line) for line in subtitle.splitlines())
+                    if required>text_width and required:
+                        p.setFont(_font(max(5.5,6.5*text_width/required)))
+                elif p.fontMetrics().horizontalAdvance(time_range) <= text_width:
+                    subtitle=time_range
+                    line_count=1
+                else:
+                    subtitle=f"{format_time(start)}\n{format_time(end)}"
+                    line_count=2
+                if c.mode == "Semaine" and group and not compact:
+                    subtitle += "\n" + p.fontMetrics().elidedText(group.name,Qt.TextElideMode.ElideRight,text_width)
+                    line_count+=1
                 if is_activity:
                     room = rooms.get(value.room_id)
-                    subtitle += "\n" + (room.name if room else "Sans lieu")
-                p.drawText(rect.adjusted(7, 38, -5, -3), Qt.AlignmentFlag.AlignTop | Qt.TextFlag.TextWordWrap, subtitle)
+                    label=room.name if room else "Sans lieu"
+                    subtitle += "\n" + p.fontMetrics().elidedText(label,Qt.TextElideMode.ElideRight,text_width)
+                    line_count+=1
+                p.drawText(QRectF(rect.left()+padding,rect.top()+32,text_width,min(rect.height()-36,line_count*18)),
+                           Qt.AlignmentFlag.AlignTop,subtitle)
             p.restore()
-            if not getattr(value, "locked", False) and c.mode == "Jour" and rect.height() > 17:
-                p.setPen(QPen(_light(color,.55), 2))
+            if (not getattr(value,"locked",False) and not c.read_only and c.mode=="Jour"
+                    and rect.height()>17 and (hovered or selected or moving)):
+                p.setPen(QPen(_light(color,.52),1.5))
                 center = rect.center().x()
-                half = min(12, rect.width()/5)
+                half = min(11, rect.width()/5)
                 for y in (rect.top()+4, rect.bottom()-4):
                     p.drawLine(QPointF(center-half, y), QPointF(center+half, y))
         if not n:
-            p.setPen(QColor("#637387"))
-            p.setFont(QFont("Segoe UI", 12))
-            p.drawText(QRectF(25, 55, self.width()-50, 90), Qt.TextFlag.TextWordWrap,
-                       "Ajoutez un groupe pour commencer la planification.")
+            p.setPen(QColor("#324a37"))
+            p.setFont(_font(12,QFont.Weight.DemiBold))
+            p.drawText(QRectF(30,55,self.width()-60,50),Qt.TextFlag.TextWordWrap,
+                       "Votre calendrier commence ici")
+            p.setFont(_font(9.5))
+            p.setPen(QColor("#83907e"))
+            p.drawText(QRectF(30,108,self.width()-60,90),Qt.TextFlag.TextWordWrap,
+                       "Créez vos groupes avec Inscriptions, puis glissez une éducatrice dans le calendrier.")
 
     def _hit(self, pos):
         return next((b for b in reversed(self.blocks) if b.rect.contains(pos)), None)
 
     def _tip(self, block):
         c, value = self.calendar, block.value
+        group=next((g for g in c.week.groups if g.id==value.group_id),None)
+        group_name=group.name if group else "Groupe manquant"
         if block.kind == "activity":
             room = next((r for r in c.week.rooms if r.id == value.room_id), None)
-            return (f"{value.name}\n{format_time(value.start)} à {format_time(value.end)}"
+            return (f"{value.name}\n{group_name}\n{format_time(value.start)} à {format_time(value.end)}"
                     f"\n{room.name if room else 'Aucun lieu'}\n{value.notes}")
         educator = next((e for e in c.week.educators if e.id == value.educator_id), None)
-        return (f"{educator.name if educator else 'Éducatrice'}\n"
+        return (f"{educator.name if educator else 'Éducatrice'}\n{group_name}\n"
                 f"Présence : {format_time(value.start)} à {format_time(value.end)}\n"
                 f"Couverture : {format_time(value.start+value.buffer_before)} à "
                 f"{format_time(value.end-value.buffer_after)} (hors pauses)\n"
@@ -364,6 +468,10 @@ class _Canvas(QWidget):
             self.update()
             return
         block = self._hit(event.position())
+        hover=(block.kind,block.value.id) if block else None
+        if hover != self.hover:
+            self.hover=hover
+            self.update()
         if block:
             self.setToolTip(self._tip(block))
             edge = (event.position().y()-block.rect.top() <= 7 or
@@ -375,6 +483,11 @@ class _Canvas(QWidget):
         else:
             self.setToolTip("")
             self.setCursor(Qt.CursorShape.ArrowCursor)
+
+    def leaveEvent(self, event):
+        self.hover=None
+        self.update()
+        super().leaveEvent(event)
 
     def mouseReleaseEvent(self, event):
         if not self.drag:
@@ -492,10 +605,11 @@ class CalendarWidget(QWidget):
         layout = QGridLayout(self)
         layout.setContentsMargins(0,0,0,0)
         layout.setSpacing(0)
-        corner = QLabel("HEURE")
+        corner = QLabel("HEURES")
         corner.setFixedSize(65,66)
         corner.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        corner.setStyleSheet("background:#f8fafb;color:#7b8795;font-size:10px;border-bottom:1px solid #dce4ea;")
+        corner.setStyleSheet("background:#fafbf8;color:#96a18f;font-size:9px;font-weight:600;"
+                             "border-bottom:1px solid #e5eae3;")
         self.header = _Header(self)
         self.header_scroll = QScrollArea()
         self.header_scroll.setFrameShape(QScrollArea.Shape.NoFrame)
@@ -517,7 +631,20 @@ class CalendarWidget(QWidget):
         layout.setColumnStretch(1,1)
         self.scroll.verticalScrollBar().valueChanged.connect(lambda _: self.gutter.update())
         self.scroll.horizontalScrollBar().valueChanged.connect(self.header_scroll.horizontalScrollBar().setValue)
-        self.setStyleSheet("QScrollArea {background:white;} QScrollBar:vertical {width:12px;} QScrollBar:horizontal {height:12px;}")
+        self._layout_timer=QTimer(self)
+        self._layout_timer.setSingleShot(True)
+        self._layout_timer.timeout.connect(self._layout_calendar)
+        self.scroll.viewport().installEventFilter(self)
+        self.setStyleSheet("""
+            QScrollArea {background:#ffffff;border:0;}
+            QScrollBar:vertical {background:#f6f8f3;width:10px;margin:2px;}
+            QScrollBar:horizontal {background:#f6f8f3;height:10px;margin:2px;}
+            QScrollBar::handle:vertical {background:#cbd6c8;border-radius:3px;min-height:40px;}
+            QScrollBar::handle:horizontal {background:#cbd6c8;border-radius:3px;min-width:40px;}
+            QScrollBar::handle:hover {background:#a7b9a2;}
+            QScrollBar::add-line,QScrollBar::sub-line {width:0;height:0;}
+            QScrollBar::add-page,QScrollBar::sub-page {background:transparent;}
+        """)
 
     def columns(self):
         if not self.week:
@@ -531,7 +658,7 @@ class CalendarWidget(QWidget):
                 subtitle=_day_name(self.week,day) or "Cliquer pour ouvrir la journée"
                 result.append((title,subtitle,"#477d6c" if day==self.day else "#90a4b7"))
             return result
-        return [(g.name,f"Ratio 1/{g.ratio} · minimum {max(2,g.min_educators)}",g.color)
+        return [(g.name,f"1/{g.ratio} · {max(2,g.min_educators)} éducatrices min.",g.color)
                 for g in self.week.groups]
 
     def y(self,minute):
@@ -597,3 +724,11 @@ class CalendarWidget(QWidget):
     def resizeEvent(self,event):
         super().resizeEvent(event)
         self._layout_calendar()
+        # The parent resize event precedes layout and scrollbar settlement.
+        # Re-evaluate once the viewport has received its final dimensions.
+        self._layout_timer.start(0)
+
+    def eventFilter(self,watched,event):
+        if watched is self.scroll.viewport() and event.type()==QEvent.Type.Resize:
+            self._layout_timer.start(0)
+        return super().eventFilter(watched,event)

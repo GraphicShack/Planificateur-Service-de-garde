@@ -108,3 +108,28 @@ def test_week_header_selects_day_and_shows_custom_name(calendar):
                      Qt.KeyboardModifier.NoModifier,
                      QPoint(round(calendar.column_width + 20), 25))
     assert requests == [1]
+
+
+def test_first_show_and_resize_fill_final_viewport(qapp, valid_week):
+    """Layout follows the settled viewport, including scrollbar width changes."""
+    widget = CalendarWidget()
+    widget.set_week(valid_week, 0, [])
+    widget.resize(1120, 640)
+    widget.show()
+    qapp.processEvents()
+    qapp.processEvents()
+    assert abs(widget.column_width - widget.scroll.viewport().width()) <= 1
+    assert abs(widget.canvas.width() - widget.scroll.viewport().width()) <= 1
+    widget.resize(730, 550)
+    qapp.processEvents()
+    qapp.processEvents()
+    assert abs(widget.column_width - widget.scroll.viewport().width()) <= 1
+    widget.set_mode('Semaine')
+    qapp.processEvents()
+    qapp.processEvents()
+    expected_width = max(220, widget.scroll.viewport().width() / 5)
+    assert abs(widget.column_width - expected_width) <= 1
+    assert abs(widget.canvas.width() - int(expected_width * 5)) <= 1
+    widget.close()
+    widget.deleteLater()
+    qapp.processEvents()

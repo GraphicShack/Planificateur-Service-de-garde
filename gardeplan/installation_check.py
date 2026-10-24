@@ -51,6 +51,7 @@ def check_installation(destination: str | Path) -> int:
         from PySide6.QtPdf import QPdfDocument
         from PySide6.QtPdfWidgets import QPdfView
         from PySide6.QtPrintSupport import QPrinter
+        from PySide6.QtSvg import QSvgRenderer
 
         from gardeplan.models import Week, Educator, Group, GroupPeriod, Shift
         from gardeplan.optimizer import generate
@@ -58,10 +59,13 @@ def check_installation(destination: str | Path) -> int:
         from gardeplan.storage import Repository
         from gardeplan.validation import validate
         from gardeplan.ui.main_window import MainWindow
+        from gardeplan.ui.visuals import LOGO_PATH
 
         report["qt_version"] = qVersion()
         application = QApplication.instance() or QApplication(["GardePlan-verification"])
         report["qt_platform"] = application.platformName()
+        if not LOGO_PATH.is_file() or not QSvgRenderer(str(LOGO_PATH)).isValid():
+            raise RuntimeError("Le logo vectoriel n'est pas disponible dans la distribution.")
         report["checks"]["qt_application"] = True
 
         def refuse_network(*args, **kwargs):

@@ -6,6 +6,7 @@ from datetime import date, timedelta
 
 import pytest
 pytest.importorskip("PySide6")
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QInputDialog, QMessageBox
 
 from gardeplan.models import Break, Window, paid_minutes
@@ -191,3 +192,40 @@ def test_fit_entire_day_includes_opening_and_closing_buffers(dashboard, qapp):
     assert calendar.y(1055) - offset <= calendar.scroll.viewport().height() + 2
     assert window.week == original
     assert not window.dirty
+
+
+def test_educator_search_filters_accents_and_preserves_week(dashboard):
+    window = dashboard
+    window.week.educators[0].name = "Élodie Tremblay"
+    window.refresh()
+    original = deepcopy(window.week)
+    window.educator_search.setText("elodie")
+    assert window.educator_list.count() == 1
+    assert window.educator_list.item(0).data(Qt.ItemDataRole.UserRole) == "e1"
+    assert window.edit_educator_button.isEnabled()
+    window.educator_search.setText("nom absent")
+    assert not window.edit_educator_button.isEnabled()
+    assert window.educator_list.item(0).data(Qt.ItemDataRole.UserRole) is None
+    window.educator_search.clear()
+    assert window.educator_list.count() == 2
+    assert window.week == original and not window.dirty
+
+
+def test_profile_shortcut_opens_selected_educator(dashboard, monkeypatch):
+    window = dashboard
+    selected = []
+    monkeypatch.setattr(window, "edit_educator", lambda identifier: selected.append(identifier))
+    window.educator_list.setCurrentRow(1)
+    window.edit_selected_educator()
+    assert selected == ["e2"]
+
+
+def test_top_alert_summary_reopens_collapsed_details(dashboard):
+    window = dashboard
+    window.alert_toggle.setChecked(False)
+    window.toggle_alerts()
+    assert window.alert_panel.isHidden()
+    window.top_alert_button.click()
+    assert not window.alert_panel.isHidden()
+    assert window.alert_toggle.isChecked()
+    assert "0 erreur" in window.top_alert_button.toolTip()
