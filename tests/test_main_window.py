@@ -229,3 +229,84 @@ def test_top_alert_summary_reopens_collapsed_details(dashboard):
     assert not window.alert_panel.isHidden()
     assert window.alert_toggle.isChecked()
     assert "0 erreur" in window.top_alert_button.toolTip()
+
+
+def test_alerts_start_closed_and_close_button_keeps_schedule(dashboard):
+    window = dashboard
+    original = deepcopy(window.week)
+    assert window.alert_panel.isHidden()
+    assert not window.alert_toggle.isChecked()
+    window.top_alert_button.click()
+    assert not window.alert_panel.isHidden()
+    assert window.alert_toggle.isChecked()
+    window.close_alerts_button.click()
+    assert window.alert_panel.isHidden()
+    assert not window.alert_toggle.isChecked()
+    assert window.week == original and not window.dirty
+
+
+def test_named_menus_call_existing_commands(dashboard, monkeypatch):
+    window = dashboard
+    called = []
+    monkeypatch.setattr(window, "name_day", lambda: called.append("name"))
+    monkeypatch.setattr(window, "edit_educator", lambda: called.append("educator"))
+    monkeypatch.setattr(window, "manage_entities", lambda collection: called.append(collection))
+    monkeypatch.setattr(window, "new_shift", lambda: called.append("shift"))
+    monkeypatch.setattr(window, "new_activity", lambda: called.append("activity"))
+    monkeypatch.setattr(window, "save_week", lambda manual=True: called.append("save"))
+    for key in ("name_day", "add_educator", "groups", "rooms", "add_shift", "add_activity", "save"):
+        action = window.menu_actions[key]
+        assert action.text().strip()
+        action.trigger()
+    assert called == ["name", "educator", "groups", "rooms", "shift", "activity", "save"]
+    assert window.more_button.text() == "Menu"
+    assert window.more_button.menu() is window.command_menu
+
+
+def test_display_options_use_live_calendar_controls(dashboard, monkeypatch):
+    window = dashboard
+    snap, zoom = window.snap_combo, window.zoom
+    captured = []
+    def inspect(dialog):
+        assert snap.parent() is dialog
+        assert zoom.parent() is dialog
+        if captured:
+            assert snap.currentData() == 5
+            assert zoom.value() == 70
+        index = snap.findData(5)
+        snap.setCurrentIndex(index)
+        snap.activated.emit(index)
+        zoom.setValue(70)
+        captured.append(dialog.windowTitle())
+        return QDialog.DialogCode.Accepted
+    monkeypatch.setattr(QDialog, "exec", inspect)
+    window.menu_actions["display"].trigger()
+    window.menu_actions["display"].trigger()
+    assert captured == ["Affichage du calendrier", "Affichage du calendrier"]
+    assert window.week.settings.snap_minutes == 5
+    assert window.calendar.snap_minutes == 5
+    assert window.calendar.scale == pytest.approx(1.65 * .7)
+    assert snap.parent() is window._hidden_controls
+    assert zoom.parent() is window._hidden_controls
+    assert window.snap_combo is snap and window.zoom is zoom
+    assert window.dirty
+
+
+def test_menu_respects_archive_and_running_generation(dashboard):
+    window = dashboard
+    archived = deepcopy(window.week)
+    archived.status = "archived"
+    window._load(archived)
+    for key in ("add_shift", "add_activity", "name_day", "enrolment", "add_educator", "edit_educator", "settings", "status_published"):
+        assert not window.menu_actions[key].isEnabled()
+    assert window.menu_actions["history"].isEnabled()
+    window._load(deepcopy(dashboard.repo.load_version(1)))
+    worker_sentinel = object()
+    window._worker = worker_sentinel
+    try:
+        window.refresh()
+        for key in ("save", "add_shift", "duplicate", "history", "import"):
+            assert not window.menu_actions[key].isEnabled()
+    finally:
+        window._worker = None
+        window.refresh()

@@ -23,11 +23,15 @@ STYLE = """
 QWidget { font-family:'Segoe UI','SF Pro Text','Noto Sans',sans-serif; font-size:13px; color:#293D34; }
 QMainWindow, QDialog, QWidget#workspace { background:#F6F8F5; }
 QLabel { background:transparent; }
-QLabel#brandTitle { font-size:24px; font-weight:700; color:#203F30; }
+QLabel#brandTitle { font-size:22px; font-weight:700; color:#203F30; }
 QLabel#brandSubtitle { font-size:10px; font-weight:600; color:#7F9385; }
 QLabel#sectionTitle { font-size:17px; font-weight:650; color:#2D4435; }
 QLabel#muted { color:#7A8B7F; font-size:12px; }
 QLabel#smallMuted { color:#7C8C80; font-size:11px; }
+QLabel#saveStatus { color:#6D8271; font-size:12px; }
+QDialog#displayOptions { background:#F8FAF6; }
+QDialog#displayOptions QLabel { color:#435C47; }
+QFrame#simpleHeader { background:transparent; border:0; }
 QFrame#weekNavigation { background:#FFFFFF; border:1px solid #E1E8DF; border-radius:12px; }
 QDateEdit#weekDate { background:transparent; border:0; font-weight:600; color:#38533F; padding:4px 5px; }
 QDateEdit#weekDate::drop-down { border:0; width:20px; }
@@ -46,6 +50,8 @@ QPushButton#primary:disabled { background:#AABDAC; color:#F4F7F2; border-color:#
 QPushButton#iconButton { background:transparent; border:0; border-radius:9px; padding:8px; }
 QPushButton#iconButton:hover { background:#E8EFE5; }
 QPushButton#iconButton:disabled { background:transparent; }
+QPushButton#menuButton { padding-right:24px; }
+QPushButton#menuButton::menu-indicator { subcontrol-origin:padding; subcontrol-position:center right; right:8px; }
 QPushButton#subtleButton { background:transparent; border:0; color:#5D7761; padding:7px 9px; }
 QPushButton#subtleButton:hover { background:#EAF1E6; }
 QPushButton#subtleButton:checked { background:#EBF2E8; color:#436A48; }
@@ -66,7 +72,7 @@ QListWidget#educatorList::item:selected { border-color:#A3BCA0; background:#E5EE
 QListWidget#educatorList::item:hover { border-color:#CEDDC6; }
 QFrame#educatorCard { background:#FFFFFF; border:1px solid #E3EADD; border-radius:11px; }
 QLabel#educatorName { font-weight:600; font-size:13px; color:#354D3B; }
-QLabel#educatorHours { font-size:17px; font-weight:650; color:#385442; }
+QLabel#educatorHours { font-size:14px; font-weight:600; color:#385442; }
 QFrame#calendarSurface { background:#FFFFFF; border:1px solid #DFE7DC; border-radius:15px; }
 QWidget#calendarToolbar { background:transparent; border-bottom:1px solid #E9EEE5; }
 QComboBox#daySelector { background:transparent; border:0; color:#35513D; font-size:14px; font-weight:600; padding:8px 2px; }
