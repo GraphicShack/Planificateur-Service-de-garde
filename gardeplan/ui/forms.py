@@ -9,7 +9,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QValidator
 from PySide6.QtWidgets import (
     QAbstractItemView, QCheckBox, QColorDialog, QComboBox, QDialog,
-    QDialogButtonBox, QFormLayout, QHBoxLayout, QLabel, QLineEdit,
+    QApplication, QDialogButtonBox, QFormLayout, QFrame, QGridLayout, QHBoxLayout, QLabel, QLineEdit,
     QListWidget, QListWidgetItem, QMessageBox, QPushButton, QSpinBox,
     QTabWidget, QTableWidget, QTableWidgetItem, QTextEdit, QVBoxLayout,
     QWidget, QHeaderView, QScrollArea,
@@ -19,6 +19,7 @@ from gardeplan.models import (
     Window, new_id, format_duration, format_time,
 )
 from gardeplan.identity import next_educator_color
+from .theme import EDITOR_STYLE, light_palette
 
 DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"]
 
@@ -73,7 +74,8 @@ def check(text, checked=False):
 def note(text):
     label = QLabel(text)
     label.setWordWrap(True)
-    label.setStyleSheet("color: #64748b; font-size: 12px;")
+    label.setObjectName("formHint")
+    label.setStyleSheet("color: #52655E; font-size: 14px;")
     return label
 
 
@@ -106,11 +108,12 @@ class ColorButton(QPushButton):
 
 class IntervalsEditor(QWidget):
     """Périodes hebdomadaires éditées par jour, heure exacte et effectif éventuel."""
-    def __init__(self, periods=(), *, students=False, parent=None, daily_label=""):
+    def __init__(self, periods=(), *, students=False, parent=None, daily_label="", compact=False):
         super().__init__(parent)
         self.students = students
         self.day_labels = [daily_label] if daily_label else DAYS
         self.daily_label = daily_label
+        self.compact = compact
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         self.table = QTableWidget(0, 4 if students else 3)
@@ -118,7 +121,9 @@ class IntervalsEditor(QWidget):
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.table.verticalHeader().hide()
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.table.setMinimumHeight(220)
+        self.table.setMinimumHeight(112 if compact else 220)
+        if compact:
+            self.table.setMaximumHeight(112)
         layout.addWidget(self.table)
         row = QHBoxLayout()
         add = QPushButton("+ Ajouter une période")
@@ -148,7 +153,7 @@ class IntervalsEditor(QWidget):
         self.table.setCellWidget(row, 2, MinuteEdit(end))
         if self.students:
             self.table.setCellWidget(row, 3, integer(students, 0, 10000))
-        self.table.setRowHeight(row, 40)
+        self.table.setRowHeight(row, 48 if self.compact else 40)
 
     def remove_selected(self):
         rows = {i.row() for i in self.table.selectedIndexes()}
@@ -251,8 +256,12 @@ class BreaksEditor(QWidget):
 
 
 class EditorDialog(QDialog):
-    def __init__(self, title, *, existing=False, parent=None):
+    def __init__(self, title, *, existing=False, parent=None, tabbed=True):
         super().__init__(parent)
+        self.setObjectName("editorDialog")
+        self.setPalette(light_palette())
+        self.setAutoFillBackground(True)
+        self.setStyleSheet(EDITOR_STYLE)
         self.setWindowTitle(title)
         self.setMinimumWidth(620)
         self.resize(720, 680)
@@ -261,13 +270,28 @@ class EditorDialog(QDialog):
         self.root = QVBoxLayout(self)
         self.root.setContentsMargins(18, 18, 18, 18)
         heading = QLabel(title)
-        heading.setStyleSheet("font-size: 21px; font-weight: 650; color: #16352d; margin-bottom: 8px;")
+        heading.setObjectName("editorHeading")
+        heading.setWordWrap(True)
         self.root.addWidget(heading)
-        self.tabs = QTabWidget()
-        self.root.addWidget(self.tabs, 1)
+        if tabbed:
+            self.tabs = QTabWidget()
+            self.root.addWidget(self.tabs, 1)
+        else:
+            self.scroll = QScrollArea()
+            self.scroll.setWidgetResizable(True)
+            self.scroll.setFrameShape(QFrame.Shape.NoFrame)
+            self.body = QWidget()
+            self.body.setObjectName("editorBody")
+            self.body_layout = QVBoxLayout(self.body)
+            self.body_layout.setContentsMargins(0, 0, 8, 0)
+            self.body_layout.setSpacing(12)
+            self.scroll.setWidget(self.body)
+            self.root.addWidget(self.scroll, 1)
         buttons = QDialogButtonBox()
         buttons.addButton("Annuler", QDialogButtonBox.ButtonRole.RejectRole)
-        buttons.addButton("Enregistrer", QDialogButtonBox.ButtonRole.AcceptRole)
+        save = buttons.addButton("Enregistrer", QDialogButtonBox.ButtonRole.AcceptRole)
+        save.setObjectName("editorSave")
+        save.setDefault(True)
         buttons.accepted.connect(self.try_accept)
         buttons.rejected.connect(self.reject)
         if existing:
@@ -275,6 +299,7 @@ class EditorDialog(QDialog):
             delete.setStyleSheet("color: #b42318;")
             delete.clicked.connect(self.delete_item)
         self.root.addWidget(buttons)
+        self.buttons = buttons
 
     def add_page(self, title):
         widget, layout = page()
@@ -313,24 +338,82 @@ class EditorDialog(QDialog):
         return name
 
 
+class ProfileColumns(QWidget):
+    """One continuous form, with two columns only when they fit comfortably."""
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.columns = QGridLayout(self)
+        self.columns.setContentsMargins(0, 0, 0, 0)
+        self.columns.setSpacing(12)
+        self.left, self.right = QWidget(), QWidget()
+        self.left_layout = QVBoxLayout(self.left)
+        self.right_layout = QVBoxLayout(self.right)
+        for layout in (self.left_layout, self.right_layout):
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.setSpacing(12)
+        self.columns.addWidget(self.left, 0, 0)
+        self.columns.addWidget(self.right, 0, 1)
+        self.columns.setColumnStretch(0, 1)
+        self.columns.setColumnStretch(1, 1)
+        self.stacked = False
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        stacked = self.width() < 920
+        if stacked != self.stacked:
+            self.stacked = stacked
+            self.columns.removeWidget(self.right)
+            self.columns.addWidget(self.right, 1 if stacked else 0, 0 if stacked else 1)
+            self.columns.setColumnStretch(1, 0 if stacked else 1)
+
+
+def profile_section(title):
+    frame = QFrame()
+    frame.setObjectName("formSection")
+    layout = QVBoxLayout(frame)
+    layout.setContentsMargins(14, 12, 14, 12)
+    layout.setSpacing(8)
+    heading = QLabel(title)
+    heading.setObjectName("formSectionTitle")
+    layout.addWidget(heading)
+    return frame, layout
+
+
 class EducatorDialog(EditorDialog):
     def __init__(self, week, educator=None, parent=None):
-        super().__init__("Modifier l'éducatrice" if educator else "Ajouter une éducatrice", existing=educator is not None, parent=parent)
+        super().__init__("Modifier le profil" if educator else "Ajouter un éducateur ou une éducatrice",
+                         existing=educator is not None, parent=parent, tabbed=False)
+        self.setMinimumSize(480, 420)
+        screen = self.screen() or QApplication.primaryScreen()
+        available = screen.availableGeometry() if screen else None
+        self.resize(min(1120, available.width()-32) if available else 1120,
+                    min(900, available.height()-48) if available else 900)
         self.week = week
         self.source = deepcopy(educator) if educator else Educator(id=new_id(), name="", target_minutes=0 if week.planning_date else 2100, max_minutes=(week.settings.max_daily_minutes or 1440) if week.planning_date else 2400)
         if educator is None:
             self.source.color = next_educator_color(week.educators)
             self.source.seniority = min(11, max((person.seniority for person in week.educators), default=0) + 1)
         ed = self.source
-        form = self.add_page("Profil")
+        self.body_layout.addWidget(note("Le nom est obligatoire. Les disponibilités et les préférences sont facultatives."))
+        self.profile_columns = ProfileColumns()
+        self.body_layout.addWidget(self.profile_columns)
+        identity, identity_layout = profile_section("Profil et ancienneté")
+        form = QFormLayout()
+        form.setSpacing(8)
+        form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
+        form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        identity_layout.addLayout(form)
+        self.profile_columns.left_layout.addWidget(identity)
         self.name = QLineEdit(ed.name)
+        self.name.setPlaceholderText("Ex. : Camille Roy")
+        self.name.setAccessibleName("Nom et prénom")
         self.color = ColorButton(ed.color)
         self.seniority = integer(ed.seniority, 1, 11)
         self.seniority.setPrefix("Rang ")
         self.seniority.setToolTip("Choisissez un rang de 1 à 11. Les rangs intermédiaires peuvent rester libres.")
         self.seniority_date = QLineEdit(ed.seniority_date)
         self.seniority_date.setPlaceholderText("Facultative — AAAA-MM-JJ")
-        self.active = check("Éducatrice active", ed.active)
+        self.active = check("Profil actif", ed.active)
         self.target = MinuteEdit(ed.target_minutes, duration=True)
         self.guaranteed = MinuteEdit(ed.guaranteed_minutes, duration=True)
         self.maximum = MinuteEdit(ed.max_minutes, duration=True)
@@ -338,30 +421,58 @@ class EducatorDialog(EditorDialog):
         form.addRow("Couleur", self.color)
         form.addRow("Rang d'ancienneté", self.seniority)
         form.addRow("Date d'ancienneté", self.seniority_date)
-        form.addRow("Objectif pour la journée (h:min)" if week.planning_date else "Objectif hebdomadaire (h:min)", self.target)
+        form.addRow(self.active)
+        identity_layout.addWidget(note("Rang 1 = plus grande ancienneté. Les rangs de 1 à 11 peuvent rester libres."))
+        hours, hours_layout = profile_section("Heures pour la journée" if week.planning_date else "Heures hebdomadaires")
+        form = QFormLayout()
+        form.setSpacing(8)
+        form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
+        form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        hours_layout.addLayout(form)
+        form.addRow("Objectif (h:min)", self.target)
         form.addRow("Heures garanties (h:min)", self.guaranteed)
         form.addRow("Maximum obligatoire (h:min)", self.maximum)
-        form.addRow(self.active)
-        form.addRow(note("Rangs de 1 à 11 : le rang 1 est le plus ancien. Vous pouvez laisser des rangs libres (ex. 1, 4, 9). Durées en heures:minutes ; un objectif de zéro reste à définir."))
-        form = self.add_page("Disponibilités et absences")
-        self.availability = IntervalsEditor(ed.availability, daily_label=week.day_label(0) if week.planning_date else "")
-        self.absences = IntervalsEditor(ed.absences, daily_label=week.day_label(0) if week.planning_date else "")
-        form.addRow(note("Sans période de disponibilité, l'éducatrice est disponible pendant la période planifiée. Les absences ci-dessous sont propres à cet horaire."))
-        form.addRow("Disponibilités", self.availability)
-        form.addRow("Absences / congés", self.absences)
-        form = self.add_page("Préférences")
+        hours_layout.addWidget(note("Durées exactes en heures:minutes. Un objectif de 00:00 reste à définir."))
+        self.profile_columns.left_layout.addWidget(hours)
+        availability, availability_layout = profile_section("Disponibilités et absences")
+        self.availability = IntervalsEditor(ed.availability, daily_label=week.day_label(0) if week.planning_date else "", compact=True)
+        self.absences = IntervalsEditor(ed.absences, daily_label=week.day_label(0) if week.planning_date else "", compact=True)
+        availability_layout.addWidget(note("Sans période saisie, le profil est disponible toute la journée. Les absences sont propres à cet horaire."))
+        for title, editor in (("Disponibilités", self.availability), ("Absences et congés", self.absences)):
+            availability_layout.addWidget(QLabel(title))
+            availability_layout.addWidget(editor)
+            editor.table.setAccessibleName(title)
+            for action in editor.findChildren(QPushButton):
+                action.setAutoDefault(False)
+            editor.table.setSizeAdjustPolicy(QAbstractItemView.SizeAdjustPolicy.AdjustIgnored)
+        self.profile_columns.right_layout.addWidget(availability)
+        preferences, preferences_layout = profile_section("Groupes préférés")
         self.preferences = QListWidget()
+        self.preferences.setMinimumHeight(80)
+        self.preferences.setMaximumHeight(112)
+        self.preferences.setAccessibleName("Groupes préférés")
+        if not week.groups:
+            preferences_layout.addWidget(note("Les groupes préférés pourront être choisis après la création des groupes."))
         for group in week.groups:
             item = QListWidgetItem(group.name)
             item.setData(Qt.ItemDataRole.UserRole, group.id)
             item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
             item.setCheckState(Qt.CheckState.Checked if group.id in ed.preferred_groups else Qt.CheckState.Unchecked)
             self.preferences.addItem(item)
+        notes, notes_layout = profile_section("Notes et restrictions")
         self.restrictions = QTextEdit(ed.restrictions)
-        self.restrictions.setPlaceholderText("Notes pour la responsable. Les indisponibilités obligatoires se saisissent dans l'onglet précédent.")
-        form.addRow("Groupes préférés", self.preferences)
-        form.addRow("Notes et restrictions", self.restrictions)
-        form.addRow(note("Les notes sont consultables par la responsable. Elles ne créent pas automatiquement une règle de planification."))
+        self.restrictions.setFixedHeight(72)
+        self.restrictions.setAccessibleName("Notes et restrictions")
+        self.restrictions.setPlaceholderText("Notes pour la responsable…")
+        preferences_layout.addWidget(self.preferences)
+        notes_layout.addWidget(self.restrictions)
+        notes_layout.addWidget(note("Notes informatives ; utilisez les absences pour les indisponibilités."))
+        self.profile_columns.left_layout.addWidget(notes)
+        self.profile_columns.right_layout.addWidget(preferences)
+        self.profile_columns.left_layout.addStretch()
+        self.profile_columns.right_layout.addStretch()
+        self.body_layout.addStretch()
+        self.name.setFocus()
 
     def build_item(self):
         ed = deepcopy(self.source)

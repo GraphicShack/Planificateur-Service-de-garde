@@ -136,6 +136,7 @@ def test_export_button_writes_one_pdf_without_format_selection(day_window, tmp_p
 
 def test_folder_menu_has_real_save_open_duplicate_history_and_backup_commands(day_window, monkeypatch):
     assert day_window.folder_button.menu() is day_window.file_menu
+    assert day_window.folder_button.parentWidget() is day_window.navigation_rail
     called = []
     monkeypatch.setattr(day_window, "save_week", lambda manual=True: called.append("save"))
     monkeypatch.setattr(day_window, "choose_week", lambda: called.append("open"))
@@ -148,6 +149,52 @@ def test_folder_menu_has_real_save_open_duplicate_history_and_backup_commands(da
         assert action in day_window.file_menu.actions()
         action.trigger()
     assert called == ["save", "open", "duplicate", "history", "backup", "import"]
+
+
+def test_sidebar_add_opens_one_readable_form_and_persists_full_profile(day_window, monkeypatch, qapp):
+    from PySide6.QtCore import Qt
+    from PySide6.QtWidgets import QDialog, QDialogButtonBox, QTabWidget
+    from gardeplan.models import Window
+    existing = deepcopy(day_window.week)
+
+    def complete(dialog):
+        assert not dialog.findChildren(QTabWidget)
+        dialog.name.setText("Élodie Gagnon")
+        dialog.seniority.setValue(4)
+        dialog.seniority_date.setText("2020-08-24")
+        dialog.target.setValue(433)
+        dialog.guaranteed.setValue(300)
+        dialog.maximum.setValue(645)
+        dialog.availability.add_row(0, 410, 1055)
+        dialog.absences.add_row(0, 540, 555)
+        dialog.preferences.item(0).setCheckState(Qt.CheckState.Checked)
+        dialog.restrictions.setPlainText("Préférence pour le groupe A")
+        dialog.show()
+        qapp.processEvents()
+        save = next(button for button in dialog.buttons.buttons()
+                    if dialog.buttons.buttonRole(button) == QDialogButtonBox.ButtonRole.AcceptRole)
+        save.click()
+        assert dialog.result() == QDialog.DialogCode.Accepted
+        return dialog.result()
+
+    monkeypatch.setattr(EducatorDialog, "exec", complete)
+    day_window.add_educator_button.click()
+    created = day_window.week.educators[-1]
+    assert created.name == "Élodie Gagnon" and created.seniority == 4
+    assert created.seniority_date == "2020-08-24"
+    assert (created.target_minutes, created.guaranteed_minutes, created.max_minutes) == (433, 300, 645)
+    assert created.availability == [Window(0, 410, 1055)]
+    assert created.absences == [Window(0, 540, 555)]
+    assert created.preferred_groups == [existing.groups[0].id]
+    assert created.color not in {ed.color for ed in existing.educators}
+    assert created.restrictions == "Préférence pour le groupe A"
+    assert day_window.week.shifts == existing.shifts
+    assert day_window.save_week(manual=False)
+    assert day_window.repo.load_day(day_window.week.planning_date).educators[-1] == created
+
+
+def test_planner_has_no_today_button(day_window):
+    assert not any(button.text() == "Aujourd’hui" for button in day_window.findChildren(QPushButton))
 
 
 def test_activities_and_rooms_are_not_exposed_and_do_not_block_schedules(day_window):

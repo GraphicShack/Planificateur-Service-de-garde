@@ -4,10 +4,10 @@ os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 from copy import deepcopy
 import pytest
 pytest.importorskip('PySide6')
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QValidator
+from PySide6.QtCore import Qt, QPoint
+from PySide6.QtGui import QColor, QPalette, QValidator
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QApplication, QDialog, QDialogButtonBox, QMessageBox
+from PySide6.QtWidgets import QApplication, QDialog, QDialogButtonBox, QMessageBox, QTabWidget, QWidget
 from gardeplan.models import Activity, Break, GroupPeriod, Room, Window, paid_minutes
 from gardeplan.ui.forms import (
     MinuteEdit, IntervalsEditor, BreaksEditor, EducatorDialog, GroupDialog,
@@ -94,6 +94,54 @@ def test_invalid_educator_stays_open_with_simple_warning(valid_week, track_dialo
     dialog.try_accept()
     assert 'maximum' in warnings[-1]
     assert dialog.result_item() is None
+
+
+def test_profile_stays_light_with_a_dark_parent(valid_week, track_dialog, qapp):
+    from gardeplan.ui.theme import contrast
+    parent = track_dialog(QWidget())
+    dark = QPalette()
+    for role in (QPalette.ColorRole.Window, QPalette.ColorRole.Base, QPalette.ColorRole.Button):
+        dark.setColor(role, QColor("#111111"))
+    dark.setColor(QPalette.ColorRole.Text, QColor("white"))
+    parent.setPalette(dark)
+    dialog = track_dialog(EducatorDialog(valid_week, parent=parent))
+    dialog.show()
+    qapp.processEvents()
+    for widget in (dialog.name, dialog.target, dialog.restrictions, dialog.availability.table):
+        palette = widget.palette()
+        text = palette.color(QPalette.ColorRole.Text).name()
+        base = palette.color(QPalette.ColorRole.Base).name()
+        assert QColor(base).lightness() >= 240
+        assert contrast(text, base) >= 4.5
+        assert widget.font().pixelSize() >= 16
+    assert not dialog.findChildren(QTabWidget)
+
+
+def test_profile_sections_share_one_window_and_stack_on_small_screens(valid_week, track_dialog, qapp):
+    dialog = track_dialog(EducatorDialog(valid_week))
+    dialog.resize(1120, 960)
+    dialog.show()
+    for _ in range(3):
+        qapp.processEvents()
+    assert not dialog.profile_columns.stacked
+    assert dialog.scroll.verticalScrollBar().maximum() == 0
+    for widget in (dialog.name, dialog.seniority, dialog.target, dialog.maximum,
+                   dialog.availability, dialog.absences, dialog.preferences, dialog.restrictions):
+        assert widget.isVisible() and widget.window() is dialog
+        position = widget.mapTo(dialog.scroll.viewport(), QPoint())
+        assert position.y() >= 0
+        assert position.y()+widget.height() <= dialog.scroll.viewport().height()
+    dialog.resize(540, 600)
+    for _ in range(3):
+        qapp.processEvents()
+    assert dialog.profile_columns.stacked
+    assert dialog.scroll.horizontalScrollBar().maximum() == 0
+    assert dialog.scroll.verticalScrollBar().maximum() > 0
+    dialog.scroll.ensureWidgetVisible(dialog.preferences)
+    qapp.processEvents()
+    assert dialog.buttons.isVisible()
+    assert dialog.preferences.font().pixelSize() >= 16
+    assert dialog.name.font().pixelSize() >= 16
 
 
 def test_group_dialog_variable_daily_enrolment(valid_week, track_dialog):

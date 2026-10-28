@@ -4,15 +4,15 @@
 
 L’équipe reste à gauche et le calendrier occupe le reste de l’écran. Les commandes courantes sont **Générer**, **Exporter PDF**, **Inscriptions**, **Ajouter** et **Vérifier**. La sauvegarde est automatique ; le bas de l’écran confirme son état.
 
-- **Ajouter** propose un quart ou une activité.
+- **Ajouter un quart** crée un bloc de travail dans le calendrier.
 - **Vérifier** ouvre le détail des alertes ; **Fermer** redonne toute la place au calendrier. La validation continue même lorsque ce panneau est fermé.
 - **Menu → Organisation** contient les groupes, profils et règles.
 - **Menu → Affichage** permet de régler le zoom, le magnétisme et la visibilité du panneau de l’équipe.
-- **Dossier** regroupe l’enregistrement, l’ouverture des journées, la duplication, l’historique et les sauvegardes. **Menu** conserve les règles, le statut, l’affichage et l’annulation.
+- L’icône **Dossier**, dans la barre latérale verte, regroupe l’enregistrement, l’ouverture des journées, la duplication, l’historique et les sauvegardes. **Menu** conserve les règles, le statut, l’affichage et l’annulation.
 
 ## Préparer une journée pédagogique
 
-1. Choisissez la **date exacte** avec les flèches, le calendrier ou Aujourd’hui. Chaque date possède son propre horaire, même si deux journées tombent dans la même semaine.
+1. Choisissez la **date exacte** avec les flèches ou le calendrier. Chaque date possède son propre horaire, même si deux journées tombent dans la même semaine.
 2. Cliquez sur le **+ de L’équipe**. Une couleur encore inutilisée est proposée automatiquement ; vous pouvez la changer dans le profil. Choisissez le **rang de 1 à 11** : le rang 1 est le plus ancien, et des rangs peuvent rester libres (1, 4, 9, par exemple). Aucun profil n’est renuméroté automatiquement.
 3. Saisissez les heures cibles, garanties et maximales **pour cette journée**. Une cible de zéro signifie « à définir ». Précisez les disponibilités et absences si nécessaire.
 4. Cliquez sur **Inscriptions** : indiquez le nombre d’enfants, la taille souhaitée des groupes et le nom facultatif de la journée. Les groupes sont préparés pour cette seule date. Le minimum de deux éducatrices et le ratio configuré restent contrôlés.
@@ -91,8 +91,14 @@ La grille commence exactement à 6 h 50 et se termine à 17 h 35. Les dix minute
 
 La barre affiche la date complète, par exemple « Lundi 26 octobre 2026 ». Entrée, Espace, F4 ou Alt + Flèche bas ouvrent le calendrier. Ses cases font au moins 44 × 44 pixels et les dates utilisent un texte d’au moins 16 pixels. Le mois et l’année sont modifiables directement.
 
-Dans la grille, les flèches déplacent le focus ; Page précédente/suivante change de mois et Ctrl + Page change d’année. Entrée ou Espace choisit la date ; Échap ferme sans modifier l’horaire. Le bouton Aujourd’hui choisit la date actuelle. La sélection reste simple : une journée à la fois.
+Dans la grille, les flèches déplacent le focus ; Page précédente/suivante change de mois et Ctrl + Page change d’année. Entrée ou Espace choisit la date ; Échap ferme sans modifier l’horaire. La sélection reste simple : une journée à la fois.
 
 Le vert forêt identifie la sélection. Aujourd’hui conserve un contour et un point, même s’il est sélectionné. Les jours voisins portent leur mois abrégé ; les jours indisponibles sont barrés. Sur un petit écran ou à 200 %, les contrôles gardent leur taille et le panneau peut défiler. La barre principale remet ses actions sur plusieurs lignes ; le panneau d’équipe se replie sur une fenêtre étroite et peut être rouvert par son icône.
 
 La sauvegarde automatique est conservée. Si l’enregistrement échoue, le changement de date est annulé pour garder les modifications en cours à l’écran.
+
+## Ajouter ou modifier un profil
+
+Le bouton **+** à côté de « L’équipe » ouvre un formulaire clair, sans onglets. Le profil, le rang d’ancienneté, les heures, les disponibilités, les absences, les groupes préférés et les notes se remplissent dans une seule fenêtre. Une couleur distincte est proposée dès la création. Les rangs vont de 1 à 11 et peuvent rester libres.
+
+Sur un grand écran, les sections apparaissent en deux colonnes. Sur un petit écran, elles s’empilent avec un défilement vertical ; les boutons **Enregistrer** et **Annuler** restent visibles. Les textes et les champs restent lisibles lorsque le système utilise un thème sombre.

@@ -8,7 +8,7 @@ import sys
 import pytest
 from PySide6.QtCore import Qt, QDate, QPoint
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QApplication, QDialog
+from PySide6.QtWidgets import QApplication, QDialog, QPushButton
 
 from gardeplan.ui.day_selector import DayPicker, DaySelector, full_date
 from gardeplan.ui.theme import TEXT, SECONDARY, SURFACE, SOFT, FOREST, HOVER, contrast
@@ -108,11 +108,12 @@ def test_page_keys_and_year_field_handle_leap_year(picker):
     assert not any(c.current_month and c.value.day() == 29 for c in picker.cells)
 
 
-def test_today_and_cancel_preserve_single_selection(qapp):
+def test_date_click_and_cancel_preserve_single_selection_without_today_button(qapp):
     dialog = DayPicker(QDate(2026, 10, 26), today=QDate(2026, 10, 28))
     chosen = []
     dialog.dateChosen.connect(chosen.append)
-    dialog.today_button.click()
+    assert not any(button.text() == "Aujourd’hui" for button in dialog.findChildren(QPushButton))
+    cell_for(dialog, QDate(2026, 10, 28)).click()
     assert chosen == [QDate(2026, 10, 28)]
     dialog.deleteLater()
     dialog = DayPicker(QDate(2026, 10, 26))
@@ -159,7 +160,7 @@ def test_popup_small_size_scrolls_without_shrinking_targets(picker, qapp):
     assert all(cell.width() >= 44 and cell.height() >= 44 for cell in picker.cells)
     assert all(cell.font().pixelSize() >= 16 for cell in picker.cells)
     assert picker.scroll.verticalScrollBar().maximum() > 0
-    assert picker.today_button.isVisible()
+    assert picker.close_button.isVisible()
 
 
 def test_popup_date_updates_planning_and_reopens_saved_day(day_window, monkeypatch):
@@ -216,7 +217,7 @@ def test_small_planner_wraps_controls_and_keeps_date_untruncated(day_window, qap
     assert day_window.week_date.text() == full_date(day_window.week_date.date())
     assert day_window.week_date.width() >= day_window.week_date.fontMetrics().horizontalAdvance(day_window.week_date.text())+40
     for widget in (day_window.week_date, day_window.previous_day_button,
-                   day_window.next_day_button, day_window.today_day_button, day_window.folder_button):
+                   day_window.next_day_button, day_window.folder_button):
         top = widget.mapTo(day_window, QPoint())
         assert top.x() >= 0 and top.x()+widget.width() <= day_window.width()
         assert widget.height() >= 44
