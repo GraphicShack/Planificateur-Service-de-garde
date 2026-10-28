@@ -853,8 +853,8 @@ class MainWindow(QMainWindow):
         self.alert_panel.setVisible(self.alert_toggle.isChecked())
 
     def fit_day(self):
-        first = max(0, self.week.settings.open_minute - self.week.settings.opening_buffer)
-        last = min(1440, self.week.settings.close_minute + self.week.settings.closing_buffer)
+        first = self.calendar.start_minute
+        last = self.calendar.end_minute
         height = max(120, self.calendar.scroll.viewport().height() - 14)
         factor = max(.15, min(2.0, height / max(1, last - first) / 1.65))
         self.zoom.setValue(round(factor * 100))

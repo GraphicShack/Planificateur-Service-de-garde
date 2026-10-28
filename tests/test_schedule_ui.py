@@ -47,3 +47,16 @@ def test_valid_day_explicitly_reports_no_alert(planner):
     assert planner.top_alert_button.text() == "Vérifier (0)"
     assert planner.alert_heading_label.text() == "Aucune alerte"
     assert planner.alert_list.item(0).text() == "Aucune alerte"
+
+
+def test_opening_shift_is_visible_from_the_first_hour(planner, qapp):
+    planner.fit_day()
+    qapp.processEvents()
+    assert planner.calendar.start_minute == 360
+    assert planner.calendar.scroll.verticalScrollBar().value() == 0
+    block = planner.calendar.canvas.blocks[0]
+    assert block.rect.top() > 0
+    assert planner.calendar.y(410) >= 0
+    planner.calendar.scroll_to(900)
+    planner.navigate_day(1)
+    assert planner.calendar.scroll.verticalScrollBar().value() == 0

@@ -209,4 +209,4 @@ def test_activities_and_rooms_are_not_exposed_and_do_not_block_schedules(day_win
     assert all(block.kind == "shift" for block in day_window.calendar.canvas.blocks)
     assert "add_activity" not in day_window.menu_actions and "rooms" not in day_window.menu_actions
     assert not any("activité" in action.text().lower() for action in day_window.add_menu.actions())
-    assert (day_window.calendar.start_minute, day_window.calendar.end_minute) == (410, 1055)
+    assert (day_window.calendar.start_minute, day_window.calendar.end_minute) == (360, 1080)

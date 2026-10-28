@@ -700,6 +700,7 @@ class CalendarWidget(QWidget):
         return min(1439,max(0,self.snap(y/self.scale+self.start_minute)))
 
     def set_week(self,week,day=0,issues=None):
+        changed_day = self.week is None or self.week.storage_key != week.storage_key or self.day != day
         self.week=week
         self.day=max(0,min(4,int(day)))
         self.issues=list(issues or [])
@@ -709,9 +710,12 @@ class CalendarWidget(QWidget):
         ends=[s.end for s in week.shifts]+([a.end for a in week.activities] if self.show_activities else [])
         opening = week.settings.open_minute-week.settings.opening_buffer
         closing = week.settings.close_minute+week.settings.closing_buffer
-        self.start_minute=max(0,min([opening]+starts))
-        self.end_minute=min(1440,max([closing]+ends))
+        self.start_minute=max(0,min([opening]+starts)//60*60)
+        self.end_minute=min(1440,(max([closing]+ends)+59)//60*60)
         self._layout_calendar()
+        if changed_day:
+            self.highlighted_interval = None
+            self.scroll.verticalScrollBar().setValue(0)
 
     def set_mode(self,mode):
         self.mode="Semaine" if mode=="Semaine" and not getattr(self.week, "planning_date", "") else "Jour"
