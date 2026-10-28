@@ -1,6 +1,6 @@
 {
-  "version": "0.3.1",
-  "commit": "a7456ec72d6705f8d9643f2216a5894460278c8b",
+  "version": "0.3.2",
+  "commit": "8bb801276a79a9cacee14887776c7cbd31a7453f",
   "approved": true,
-  "authorization": "Autorisation explicite : « Montre moi un aperçu une fois ça fait et ensuite release » puis « publie now ». L’aperçu réel de l’accueil a été montré. La publication attend les deux constructions natives réussies du SHA exact, avec leurs contrôles après extraction et les notes issues du CHANGELOG."
+  "authorization": "Publication explicitement autorisée dans cette conversation : « fait tout les changement et ensuite push et release le programme » et « Montre moi un aperçu une fois ça fait et ensuite release ». Les changements demandés, avec le dernier minimum strict de deux éducateurs par groupe, sont inclus ; l’aperçu conforme a été montré. La livraison attend les deux constructions natives réussies du SHA exact et leurs contrôles après extraction."
 }

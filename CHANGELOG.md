@@ -19,6 +19,7 @@ version sans notes. Les téléchargements sont dans les [Releases GitHub](https:
 - Bouton Supprimer sur chaque journée de l’accueil, avec confirmation. Les versions sont conservées ; la date reste supprimée après réouverture et import/export de sauvegarde. Une restauration ou une création explicite permet de réutiliser la date.
 - Les profils restent accessibles après suppression de la dernière journée. Modifier un profil ne fait pas réapparaître la journée supprimée.
 - Retrait des annotations « Votre calendrier commence ici » et du texte superposé à la grille vide.
+- Correction du champ de date devenu invisible avec les styles Qt 6.12 ; saisie au clavier conservée.
 - Format SQLite 3 avec copie de sécurité avant migration ; les anciennes versions publiées/archivées gardent leurs règles et leur contenu.
 - Contrôle du logiciel portable étendu aux groupes, à l’attribution à toute l’équipe, à l’ordre des rangs et au plafond de huit heures.
 
