@@ -54,8 +54,7 @@ application = BUNDLE(
         'CFBundleName': 'Planificateur — Service de garde',
         'CFBundleDisplayName': 'Planificateur — Service de garde',
         'CFBundleShortVersionString': version,
-        'PlanificateurPortable': True,
-        # Keep data beside the bundle even if Gatekeeper translocates it.
+        # Preserve portable intent; startup resolves AppTranslocation separately.
         'PlanificateurPortable': True,
         'NSHighResolutionCapable': True,
         'LSApplicationCategoryType': 'public.app-category.productivity',

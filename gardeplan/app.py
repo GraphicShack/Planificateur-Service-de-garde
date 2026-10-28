@@ -17,6 +17,7 @@ from gardeplan.branding import DISPLAY_NAME, STORAGE_APPLICATION, STORAGE_ORGANI
 from gardeplan.models import Week
 from gardeplan.storage import Repository
 from gardeplan.data_paths import database_path, portable_root
+from gardeplan.macos_paths import is_translocated_path
 from gardeplan.ui.localization import install_french_translations
 
 STYLE = """
@@ -142,10 +143,16 @@ def main(argv=None):
     app.setFont(QFont("Segoe UI", 10))
     app.setStyleSheet(STYLE)
     location = Path(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppLocalDataLocation))
-    portable = portable_root(force=args.portable) is not None and args.database is None
+    root = portable_root(force=args.portable) if args.database is None else None
+    if root is not None and sys.platform == "darwin" and is_translocated_path(root):
+        from gardeplan.ui.portable_startup import choose_portable_folder
+        root = choose_portable_folder()
+        if root is None:
+            return 0
+    portable = root is not None and args.database is None
     app.setProperty("portableMode", portable)
     database = database_path(location, database=args.database, example=args.example,
-                             force_portable=args.portable)
+                             force_portable=args.portable, portable_directory=root)
     try:
         database.parent.mkdir(parents=True, exist_ok=True)
     except OSError as exc:
