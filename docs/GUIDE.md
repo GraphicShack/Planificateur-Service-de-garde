@@ -129,3 +129,26 @@ Les versions archivées restent en consultation.
 Les dîners ne sont plus dessinés ni nommés dans les blocs du calendrier.
 Ils restent modifiables dans le formulaire du quart. Ils sont exclus de la
 couverture et, lorsqu’ils ne sont pas payés, du total rémunéré.
+
+
+## Groupes et sous-colonnes
+
+L’en-tête de chaque groupe couvre les sous-colonnes de ses éducatrices. Une
+éducatrice affectée à plusieurs groupes apparaît dans chacun d’eux, avec ses
+quarts distincts et leurs heures exactes. Les en-têtes restent visibles pendant
+le défilement. Les noms passent en initiales si nécessaire ; l’infobulle et le
+nom accessible donnent le libellé complet. Les profils sans affectation restent
+dans une section « À affecter » et les groupes vides offrent une cible de dépôt.
+
+Le double-clic dans une plage vide présélectionne le groupe et l’éducatrice de
+la sous-colonne. Le dépôt depuis l’équipe et le déplacement horizontal d’un
+quart ciblent le groupe situé sous le pointeur. Les heures ne changent pas lors
+d’un déplacement purement horizontal. Déplacer un quart au clavier conserve son
+groupe ; le formulaire permet de le changer explicitement.
+
+Les inscriptions réutilisent la préparation par groupes de vingt enfants,
+en conservant les identifiants et les affectations existantes. Les périodes des
+groupes devenus inutiles sont fermées ; aucun quart n’est supprimé. La taille de
+préparation des groupes ne constitue pas un ratio réglementaire. Les règles de
+couverture globales, les heures d’ouverture et de fermeture ne sont pas changées
+par cette révision de la grille.
