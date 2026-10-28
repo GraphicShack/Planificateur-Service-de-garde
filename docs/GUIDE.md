@@ -32,7 +32,7 @@ Un quart verrouillé est conservé pendant la génération ; déverrouillez-le d
 
 ## Ouverture, fermeture et relève
 
-Pour une journée ouverte de 7 h à 17 h 30, prévoyez deux éducatrices dès 6 h 50 et deux jusqu'à 17 h 35. Les dix minutes de préparation avant l'ouverture et les cinq minutes après la fermeture sont des temps de présence rémunérés. Ils ne constituent pas de la couverture d'enfants.
+Pour une journée ouverte de 7 h à 17 h 30, une éducatrice peut suffire de 6 h 50 à 7 h et de 17 h 20 à 17 h 35. Entre ces plages, prévoyez au moins deux éducatrices. Le ratio reste applicable jusqu’au départ des enfants : avec plus de vingt enfants présents, une seule éducatrice ne suffit pas. Les dix minutes de préparation avant l'ouverture et les cinq minutes après la fermeture sont des temps de présence rémunérés. Ils ne constituent pas de la couverture d'enfants.
 
 Pour une relève à 12 h 30, l'éducatrice entrante peut commencer sa présence à 12 h 15 avec quinze minutes de préparation avant sa couverture de 12 h 30. L'éducatrice sortante reste présente pendant ces quinze minutes. Le besoin de couverture du groupe doit rester satisfait, même pendant les pauses et les relèves.
 
@@ -152,3 +152,27 @@ groupes devenus inutiles sont fermées ; aucun quart n’est supprimé. La taill
 préparation des groupes ne constitue pas un ratio réglementaire. Les règles de
 couverture globales, les heures d’ouverture et de fermeture ne sont pas changées
 par cette révision de la grille.
+
+
+## Règles de la version 0.3.1
+
+Le minimum de présence est de **1** de 6 h 50 à 7 h, de **2** de 7 h à
+17 h 20, puis de **1** de 17 h 20 à 17 h 35. Pendant l’accueil, le besoin est
+le maximum de ce minimum et du nombre d’enfants divisé par le ratio, arrondi
+au supérieur. Avec 21 enfants encore présents à 17 h 20, deux éducatrices
+restent nécessaires. Les effectifs variables se règlent dans les périodes des
+groupes (Réglages → Organisation → Groupes des affectations).
+
+Les dix minutes de préparation et les cinq minutes de fermeture restent
+rémunérées et distinctes de la couverture. Les pauses, même payées, ne couvrent
+jamais les enfants. Les relèves conservent leurs quinze minutes communes.
+Si les heures d’ouverture/fermeture changent, les plages allégées suivent
+l’ouverture aux enfants et les quinze dernières minutes de présence.
+
+Les anciens brouillons passent aux nouvelles règles et sont enregistrés comme
+une nouvelle version. Les anciens horaires publiés/archivés restent inchangés ;
+une modification ou une duplication crée un brouillon aux règles actuelles.
+
+La barre latérale présente Planning, Équipe, Inscriptions, Ratio et Vérification.
+Dossier et Réglages sont placés en bas. Annuler/Rétablir sont sur la ligne du
+nom de la journée ; leurs raccourcis clavier restent disponibles.

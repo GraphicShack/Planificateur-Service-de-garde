@@ -4,7 +4,7 @@
 
 <h1 align="center">Planificateur — Service de garde</h1>
 
-<p align="center"><strong>Version 0.3.0 · Portable, sans installation</strong></p>
+<p align="center"><strong>Version 0.3.1 · Portable, sans installation</strong></p>
 
 <p align="center">
   <strong>Des horaires clairs pour chaque journée pédagogique.</strong><br>
@@ -12,16 +12,18 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.3.0/Planificateur-SDG-0.3.0-Windows-x64-Portable.zip">Télécharger pour Windows</a>
+  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.3.1/Planificateur-SDG-0.3.1-Windows-x64-Portable.zip">Télécharger pour Windows</a>
   &nbsp;·&nbsp;
-  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.3.0/Planificateur-SDG-0.3.0-macOS-arm64-Portable.zip">Télécharger pour Mac</a>
+  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.3.1/Planificateur-SDG-0.3.1-macOS-arm64-Portable.zip">Télécharger pour Mac</a>
   &nbsp;·&nbsp;
   <a href="docs/GUIDE.md">Guide d’utilisation</a>
 </p>
 
 ![Aperçu du planificateur avec des données fictives](docs/apercu-interface.png)
 
-La **version 0.3.0** propose une seule journée et un effectif global, une couverture verticale par plages fusionnées, des alertes sélectionnables, les pauses et le dîner, les couleurs individuelles et l’édition au clavier. Toutes les éducatrices tiennent dans la largeur de la grille ; les en-têtes compacts donnent davantage de place aux horaires. La bande de ratio peut être masquée et reste toujours absente du PDF. [Consulter le relevé des corrections](docs/CORRECTIONS_INTERFACE.md).
+La **version 0.3.1** organise la grille par groupes et sous-colonnes d’éducatrices. Les icônes Équipe, Inscriptions et Vérification partagent le panneau gauche ; le ratio est masquable et les alertes sont comptées dans un badge. Annuler et Rétablir sont alignés avec le nom de la journée. Les dîners restent calculés, sans être affichés dans les blocs.
+
+Une éducatrice peut suffire de **6 h 50 à 7 h** et de **17 h 20 à 17 h 35**. Le minimum reste de deux entre ces plages ; le ratio configuré (initialement 1/20) reste obligatoire pendant l’accueil. Les anciennes versions publiées et archivées conservent leurs règles. [Détails de la livraison](docs/LIVRAISON_0_3_1.md).
 
 [Voir la couverture et les alertes](docs/couverture-journee.png)
 
