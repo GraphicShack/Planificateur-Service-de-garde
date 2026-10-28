@@ -121,6 +121,57 @@ class _Gutter(QWidget):
         painter.drawLine(self.width() - 1, 0, self.width() - 1, self.height())
 
 
+class _StaffHeader(QWidget):
+    """Frozen group headings spanning their educator subcolumns."""
+    def __init__(self, calendar):
+        super().__init__()
+        self.calendar = calendar
+        self.setFixedHeight(60)
+        self.setMouseTracking(True)
+        self.setAccessibleName("Groupes et éducatrices des affectations")
+
+    def paintEvent(self, event):
+        c = self.calendar
+        p = QPainter(self)
+        p.fillRect(self.rect(), QColor("#F7FAF8"))
+        lanes = c.assignment_columns()
+        width = max(1,c.column_width-16)/max(1,len(lanes))
+        index = 0
+        while index < len(lanes):
+            group = lanes[index][0]
+            end = index+1
+            while end < len(lanes) and lanes[end][0] == group:
+                end += 1
+            x = 8+index*width
+            span = (end-index)*width
+            p.fillRect(QRectF(x,0,span,29), _light(_color(group.color if group else "#CDD8D0"), .15))
+            p.setPen(QColor(TEXT))
+            p.setFont(_pixel_font(16,QFont.Weight.Bold))
+            label = group.name if group else "À affecter"
+            label = p.fontMetrics().elidedText(label, Qt.TextElideMode.ElideRight,max(1,int(span-12)))
+            p.drawText(QRectF(x+6,0,max(1,span-12),29),Qt.AlignmentFlag.AlignCenter,label)
+            p.setPen(QPen(QColor("#9CAD9F"),2))
+            p.drawLine(QPointF(x,0),QPointF(x,60))
+            for lane in range(index,end):
+                person = lanes[lane][1]
+                left = 8+lane*width
+                p.setPen(QColor(TEXT))
+                p.setFont(_pixel_font(14,QFont.Weight.DemiBold))
+                label = fitted_name(person.name,max(1,width-8),p.font()) if person else "+"
+                p.drawText(QRectF(left+4,30,max(1,width-8),28),Qt.AlignmentFlag.AlignCenter,label)
+                p.setPen(QColor("#DFE5E1"))
+                p.drawLine(QPointF(left,30),QPointF(left,60))
+            index = end
+
+    def mouseMoveEvent(self, event):
+        lanes = self.calendar.assignment_columns()
+        index = self.calendar.assignment_index(event.position().x())
+        if lanes:
+            group,person = lanes[index]
+            self.setToolTip((group.name if group else "À affecter")+"\n"+(person.name if person else "Glissez une éducatrice dans ce groupe"))
+        super().mouseMoveEvent(event)
+
+
 class _Header(QWidget):
     def __init__(self, calendar: "CalendarWidget"):
         super().__init__()
@@ -237,10 +288,16 @@ class _Canvas(QWidget):
             activity_width = max(75, available * .30) if activities else 0
             work_width = available - activity_width - (5 if activities else 0)
             if c.single_service:
-                people = c.staff_lanes()
-                lanes = {person.id: index for index, person in enumerate(people)}
-                assigned = [(s, lanes[s.educator_id]) for s in shifts if s.educator_id in lanes]
-                lane_count = max(1, len(people))
+                if c.grouped_staff:
+                    columns = c.assignment_columns()
+                    lanes = {(g.id if g else "", e.id): i for i,(g,e) in enumerate(columns) if e}
+                    assigned = [(s, lanes[(s.group_id,s.educator_id)]) for s in shifts if (s.group_id,s.educator_id) in lanes]
+                    lane_count = max(1,len(columns))
+                else:
+                    people = c.staff_lanes()
+                    lanes = {person.id: index for index, person in enumerate(people)}
+                    assigned = [(s, lanes[s.educator_id]) for s in shifts if s.educator_id in lanes]
+                    lane_count = max(1, len(people))
             else:
                 lane_ends: list[int] = []
                 assigned = []
@@ -284,6 +341,11 @@ class _Canvas(QWidget):
             c = self.calendar
             rect = QRectF(block.rect)
             rect.translate((self.drag["column"] - block.column) * c.column_width, 0)
+            if c.grouped_staff and self.drag["group_id"] != block.value.group_id:
+                lanes = c.assignment_columns()
+                choices = [i for i,(g,e) in enumerate(lanes) if g and g.id == self.drag["group_id"]]
+                target = next((i for i in choices if lanes[i][1] and lanes[i][1].id == block.value.educator_id), choices[0] if choices else block.lane)
+                rect.moveLeft(8+target*(c.column_width-16)/max(1,len(lanes)))
             rect.setTop(c.y(self.drag["start"]) + 1)
             rect.setBottom(c.y(self.drag["end"]) - 1)
             return rect
@@ -344,7 +406,7 @@ class _Canvas(QWidget):
         for i in range(n + 1):
             p.drawLine(QPointF(i*c.column_width, bounds.top()),
                        QPointF(i*c.column_width, bounds.bottom()))
-        if c.single_service and c.week:
+        if c.single_service and c.week and not c.grouped_staff:
             people = c.staff_lanes()
             lane_width = (c.column_width-16)/max(1,len(people))
             p.setFont(_pixel_font(14, QFont.Weight.DemiBold))
@@ -355,6 +417,16 @@ class _Canvas(QWidget):
                 p.setPen(QColor(TEXT))
                 name = fitted_name(person.name, max(1,lane_width-8), p.font())
                 p.drawText(QRectF(x+4,8,max(1,lane_width-8),22),Qt.AlignmentFlag.AlignCenter,name)
+        if c.grouped_staff and c.week:
+            lanes = c.assignment_columns()
+            width = max(1,c.column_width-16)/max(1,len(lanes))
+            previous = object()
+            for index,(group,person) in enumerate(lanes):
+                boundary = group != previous
+                p.setPen(QPen(QColor("#9CAD9F" if boundary else "#DFE5E1"),2 if boundary else 1))
+                x = 8+index*width
+                p.drawLine(QPointF(x,bounds.top()),QPointF(x,bounds.bottom()))
+                previous = group
         educators = {e.id:e for e in c.week.educators} if c.week else {}
         groups = {g.id:g for g in c.week.groups} if c.week else {}
         rooms = {r.id:r for r in c.week.rooms} if c.week else {}
@@ -536,7 +608,7 @@ class _Canvas(QWidget):
     def _tip(self, block):
         c, value = self.calendar, block.value
         group=next((g for g in c.week.groups if g.id==value.group_id),None)
-        group_name="Service de garde" if c.single_service else group.name if group else "Affectation manquante"
+        group_name=group.name if group else "Affectation manquante"
         if block.kind == "activity":
             room = next((r for r in c.week.rooms if r.id == value.room_id), None)
             return (f"{value.name}\n{group_name}\n{format_time(value.start)} à {format_time(value.end)}"
@@ -586,7 +658,7 @@ class _Canvas(QWidget):
             action = "start"
         elif rect.bottom() - event.position().y() <= 7:
             action = "end"
-        self.drag = dict(block=block, action=action, press=event.position(),
+        self.drag = dict(block=block, group_id=block.value.group_id, action=action, press=event.position(),
                          start=block.value.start, end=block.value.end, column=block.column)
         self.setCursor(Qt.CursorShape.SizeVerCursor if action != "move" else Qt.CursorShape.ClosedHandCursor)
 
@@ -602,6 +674,8 @@ class _Canvas(QWidget):
                 drag["start"], drag["end"] = proposed, proposed+(end-start)
                 drag["column"] = max(0, min(len(c.columns())-1,
                                            int(event.position().x()//c.column_width)))
+                if c.grouped_staff:
+                    drag["group_id"] = c.group_at_x(event.position().x()) or block.value.group_id
             elif drag["action"] == "start":
                 drag["start"] = max(0, min(end-1, c.snap(start + delta)))
             else:
@@ -625,6 +699,12 @@ class _Canvas(QWidget):
                            if c.mode == "Jour" and not self.calendar.read_only and not getattr(block.value,"locked",False)
                            else Qt.CursorShape.PointingHandCursor)
         else:
+            if c.grouped_staff and c.week:
+                lanes = c.assignment_columns()
+                group,person = lanes[c.assignment_index(event.position().x())] if lanes else (None,None)
+                self.setToolTip((group.name if group else "À affecter")+" · "+(person.name if person else "Glisser une éducatrice"))
+                self.setCursor(Qt.CursorShape.ArrowCursor)
+                return
             people = c.staff_lanes() if c.single_service and c.week else []
             lane_width = (c.column_width-16)/max(1,len(people))
             index = int((event.position().x()-8)/lane_width) if lane_width > 0 else -1
@@ -644,8 +724,8 @@ class _Canvas(QWidget):
         QToolTip.hideText()
         block = drag["block"]
         c = self.calendar
-        if (drag["start"],drag["end"],drag["column"]) != (block.value.start,block.value.end,block.column):
-            group_id = c.group_id(drag["column"])
+        if (drag["start"],drag["end"],drag["column"],drag["group_id"]) != (block.value.start,block.value.end,block.column,block.value.group_id):
+            group_id = drag["group_id"] if c.grouped_staff else c.group_id(drag["column"])
             c.change_requested.emit(block.kind, block.value.id, c.day,
                                     drag["start"], drag["end"], group_id)
         self.update()
@@ -663,7 +743,12 @@ class _Canvas(QWidget):
             c.edit_requested.emit(block.kind, block.value.id)
         elif c.week and c.week.groups and not c.read_only:
             column = min(len(c.week.groups)-1, max(0, int(event.position().x()//c.column_width)))
-            c.create_requested.emit(c.day, c.minute(event.position().y()), c.group_id(column))
+            if c.grouped_staff:
+                lanes = c.assignment_columns()
+                group,person = lanes[c.assignment_index(event.position().x())] if lanes else (None,None)
+                c.staff_create_requested.emit(c.day,c.minute(event.position().y()),group.id if group else "",person.id if person else "")
+            else:
+                c.create_requested.emit(c.day, c.minute(event.position().y()),c.group_id(column))
 
     def contextMenuEvent(self, event):
         c = self.calendar
@@ -718,7 +803,7 @@ class _Canvas(QWidget):
         else:
             return super().keyPressEvent(event)
         if 0 <= start < end <= 1440 and 0 <= col < len(c.columns()):
-            c.change_requested.emit(block.kind,block.value.id,c.day,start,end,c.group_id(col))
+            c.change_requested.emit(block.kind,block.value.id,c.day,start,end,block.value.group_id if c.grouped_staff else c.group_id(col))
 
     def dragEnterEvent(self, event):
         c = self.calendar
@@ -739,7 +824,7 @@ class _Canvas(QWidget):
         if not any(e.id == educator_id and e.active for e in c.week.educators):
             return
         column = max(0,min(len(c.week.groups)-1,int(event.position().x()//c.column_width)))
-        c.educator_dropped.emit(educator_id,c.day,c.minute(event.position().y()),c.group_id(column))
+        c.educator_dropped.emit(educator_id,c.day,c.minute(event.position().y()),c.group_at_x(event.position().x()) if c.grouped_staff else c.group_id(column))
         event.acceptProposedAction()
 
 
@@ -750,12 +835,14 @@ class CalendarWidget(QWidget):
     educator_dropped = Signal(str,int,int,str)
     day_selected = Signal(int)
     create_requested = Signal(int,int,str)
+    staff_create_requested = Signal(int,int,str,str)
 
     def __init__(self,parent=None):
         super().__init__(parent)
         self.week = None
         self.show_activities = True
         self.single_service = False
+        self.grouped_staff = False
         self.day = 0
         self.mode = "Jour"
         self.read_only = False
@@ -844,6 +931,14 @@ class CalendarWidget(QWidget):
         self.coverage_header.hide()
         self.coverage_band.details_changed.connect(self._show_coverage_details)
         self.layout().addWidget(self.summary_strip,0,0,1,3)
+        if self.grouped_staff:
+            self.staff_header = _StaffHeader(self)
+            for widget,column in ((self.gutter,0),(self.coverage_band,1),(self.scroll,2)):
+                self.layout().removeWidget(widget)
+                self.layout().addWidget(widget,2,column)
+            self.layout().addWidget(self.staff_header,1,2)
+            self.layout().setRowStretch(1,0)
+            self.layout().setRowStretch(2,1)
 
     def _show_coverage_details(self, _label):
         if self._coverage_visible:
@@ -880,6 +975,21 @@ class CalendarWidget(QWidget):
 
     def group_id(self, column=0):
         return self.week.groups[0 if self.single_service else column].id if self.week.groups else ""
+
+    def assignment_columns(self):
+        from ..staff_layout import assignment_columns
+        return assignment_columns(self.week,self.day) if self.week else []
+
+    def assignment_index(self, x):
+        count = max(1,len(self.assignment_columns()))
+        return max(0,min(count-1,int((x-8)/max(1,self.column_width-16)*count)))
+
+    def group_at_x(self, x):
+        lanes = self.assignment_columns()
+        if not lanes:
+            return ""
+        group = lanes[self.assignment_index(x)][0]
+        return group.id if group else ""
 
     def staff_lanes(self):
         assigned = {s.educator_id for s in self.week.shifts if s.day == self.day}
@@ -974,6 +1084,9 @@ class CalendarWidget(QWidget):
         trailing=max(0,self.header_scroll.viewport().width()-self.scroll.viewport().width())
         self.header.resize(int(self.column_width*n)+trailing,66)
         self.header.update()
+        if hasattr(self,"staff_header"):
+            self.staff_header.update()
+            self.staff_header.setAccessibleDescription(" ; ".join((g.name if g else "À affecter")+" : "+(e.name if e else "Aucune affectation") for g,e in self.assignment_columns()))
         self.canvas.rebuild()
         self.gutter.update()
         self.coverage_band.update()

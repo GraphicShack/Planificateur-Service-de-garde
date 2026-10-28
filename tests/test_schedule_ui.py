@@ -166,11 +166,12 @@ def test_registration_preview_is_live_and_has_no_day_name_field(planner):
     dialog.deleteLater()
 
 
-def test_single_service_screen_has_no_groups_preferences_or_monthly_popup(planner):
+def test_daily_screen_has_group_subcolumns_without_preferences_or_monthly_popup(planner):
     from gardeplan.ui.forms import EducatorDialog
     from gardeplan.ui.date_field import DateField
     assert len(planner.calendar.columns()) == 1
-    assert "Groupe" not in planner.calendar.columns()[0][0]
+    assert planner.calendar.grouped_staff
+    assert planner.calendar.staff_header.isVisible()
     assert "groups" in planner.menu_actions
     assert isinstance(planner.week_date, DateField)
     assert not planner.week_date.calendarPopup()
@@ -279,3 +280,62 @@ def test_hidden_dinner_still_removes_coverage_and_unpaid_minutes(planner, qapp):
     assert "Dîner" not in planner.calendar.canvas._tip(block)
     assert paid_minutes(shift) == 615
     assert next(p for p in coverage_timeline(planner.week) if p.start == 720).actual == 1
+
+
+def test_group_headers_align_educator_subcolumns_and_target_the_group(planner, qapp, monkeypatch):
+    from gardeplan.models import Group, Shift
+    from PySide6.QtCore import QPoint
+    from PySide6.QtTest import QTest
+    planner.commit(lambda p: (p.groups.append(Group('second','Groupe B')),
+                             p.shifts.append(Shift('second','0','second',0,800,900))))
+    qapp.processEvents()
+    c = planner.calendar
+    assert c.staff_header.isVisible()
+    lanes = c.assignment_columns()
+    assert [(g.id,e.id if e else '') for g,e in lanes] == [('g','0'),('g','1'),('second','0')]
+    assert c.scroll.horizontalScrollBar().maximum() == 0
+    created = []
+    monkeypatch.setattr(planner,'new_shift',lambda **kwargs: created.append(kwargs))
+    width = (c.column_width-16)/len(lanes)
+    x = round(8+2.5*width)
+    assert c.group_at_x(x) == 'second'
+    QTest.mouseDClick(c.canvas,Qt.MouseButton.LeftButton,Qt.KeyboardModifier.NoModifier,QPoint(x,round(c.y(700))))
+    assert created[-1]['group_id'] == 'second'
+    assert created[-1]['educator_id'] == '0'
+    before = c.staff_header.geometry()
+    c.scroll.verticalScrollBar().setValue(100)
+    qapp.processEvents()
+    assert c.staff_header.geometry() == before
+
+
+def test_registration_changes_preserve_group_assignments(planner):
+    from gardeplan.models import Group, GroupPeriod
+    planner.commit(lambda p: p.groups.append(Group('second','Groupe B',periods=[GroupPeriod(0,420,1050,20)])))
+    planner.commit(lambda p: setattr(p.shifts[1],'group_id','second'))
+    original = [(s.id,s.educator_id,s.group_id,s.start,s.end) for s in planner.week.shifts]
+    planner.enrolment()
+    planner.enrolment_panel.count.setValue(41)
+    planner.enrolment_panel.save_button.click()
+    assert [(s.id,s.educator_id,s.group_id,s.start,s.end) for s in planner.week.shifts] == original
+    assert sum(p.students for g in planner.week.groups for p in g.periods) == 41
+    assert 'second' in {g.id for g in planner.week.groups}
+
+
+def test_dragging_a_shift_into_another_group_preserves_its_exact_hours(planner,qapp):
+    from gardeplan.models import Group
+    from PySide6.QtCore import QPoint
+    from PySide6.QtTest import QTest
+    planner.commit(lambda p: p.groups.append(Group('second','Groupe B')))
+    qapp.processEvents()
+    c = planner.calendar
+    block = c.canvas.blocks[0]
+    before = (block.value.start,block.value.end,block.value.educator_id)
+    width = (c.column_width-16)/len(c.assignment_columns())
+    start = QPoint(round(block.rect.center().x()),round(block.rect.top()+70))
+    end = QPoint(round(8+2.5*width),start.y())
+    QTest.mousePress(c.canvas,Qt.MouseButton.LeftButton,Qt.KeyboardModifier.NoModifier,start)
+    QTest.mouseMove(c.canvas,end)
+    QTest.mouseRelease(c.canvas,Qt.MouseButton.LeftButton,Qt.KeyboardModifier.NoModifier,end)
+    result = planner.week.shifts[0]
+    assert result.group_id == 'second'
+    assert (result.start,result.end,result.educator_id) == before

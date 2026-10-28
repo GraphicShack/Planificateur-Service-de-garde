@@ -409,6 +409,7 @@ class MainWindow(QMainWindow):
         surface.addWidget(self.version_banner)
         self.calendar = CalendarWidget()
         self.calendar.single_service = True
+        self.calendar.grouped_staff = True
         self.calendar.set_summary_widget(self.calendar_summary)
         self.calendar.show_activities = False
         self.calendar.canvas.setAccessibleName("Calendrier des horaires")
@@ -417,6 +418,7 @@ class MainWindow(QMainWindow):
         self.calendar.educator_dropped.connect(self.educator_drop)
         self.calendar.day_selected.connect(self.expand_day)
         self.calendar.create_requested.connect(self.calendar_create)
+        self.calendar.staff_create_requested.connect(lambda day,start,group,person: self.new_shift(day=day,start=start,group_id=group,educator_id=person))
         surface.addWidget(self.calendar, 1)
         self.schedule_panes.addWidget(calendar_surface)
         self.schedule_panes.setStretchFactor(0,1)
@@ -1094,8 +1096,8 @@ class MainWindow(QMainWindow):
     def apply_enrolment(self):
         if not self._can_edit():
             return
-        from ..planning import plan_service_day
-        self.commit(lambda week: plan_service_day(week, self.enrolment_panel.count.value()))
+        from ..planning import plan_pedagogical_day
+        self.commit(lambda week: plan_pedagogical_day(week, 0, self.enrolment_panel.count.value()))
         self.statusBar().showMessage("Inscriptions enregistrées.", 4000)
 
     def edit_educator(self, identifier=None):
