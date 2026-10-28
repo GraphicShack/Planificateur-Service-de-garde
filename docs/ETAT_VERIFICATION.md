@@ -2,6 +2,23 @@
 
 Les constructions et les contrôles natifs s’exécutent sur GitHub Actions. Les fichiers à remettre sont les ZIP portables d’une exécution réussie correspondant au code voulu. Une sortie compilée dont le contrôle échoue n’est pas livrée.
 
+## Correctif AppTranslocation — version 0.1.2
+
+La capture de l’utilisateur montrait une erreur `EROFS` dans `AppTranslocation/.../d/donnees`. Les contrôles précédents lançaient directement le binaire extrait et ne reproduisaient pas cette copie temporaire créée par Gatekeeper.
+
+Le correctif interroge la correspondance native macOS pour retrouver le dossier portable d’origine. En cas d’indisponibilité, le démarrage demande explicitement le dossier extrait. Il ne crée aucune base en cas d’annulation et ne bascule pas vers un profil différent. Les réglages de sécurité et la quarantaine ne sont pas modifiés.
+
+Les constructions natives ont réussi **132 tests chacune**, puis les contrôles des exécutables et ZIP portables extraits :
+
+- [Mac — 132 tests et ZIP portable vérifié](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40612486730).
+- [Windows — 132 tests et ZIP portable vérifié](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40612486807).
+
+Ces résultats correspondent au code `dcba9f901a5fbd62ba1502707c599118962a8db2`. Les dix nouveaux tests couvrent le chemin d’origine, la réouverture des horaires existants, le choix d’un dossier, les dossiers incomplets ou en lecture seule et l’annulation. L’appel ctypes est exécuté sur le vrai framework macOS avec un chemin non transloqué. Les cas de copie temporaire sont reproduits par injection des chemins et du sélecteur ; le téléchargement suivi d’une ouverture Gatekeeper sur le poste de l’utilisateur reste à confirmer.
+
+La [release publique v0.1.2](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/tag/v0.1.2) a été [publiée avec succès après contrôle des deux ZIP](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40612825567). Les cinq fichiers (deux ZIP, deux rapports et SHA256SUMS) sont téléversés et la release est publique.
+
+Les onze contrôles unitaires de chemins portables passent également sous Linux. Les six contrôles de démarrage ont passé un diagnostic local avec un adaptateur Qt5 temporaire avant la validation PySide6 native. Aucun adaptateur n’est livré. Aucun changement de schéma ni migration des horaires n’est nécessaire.
+
 ## Interface simplifiée — version 0.1.1
 
 Les deux constructions de l’interface simplifiée ont réussi **122 tests chacune**, avec PySide6/Qt6 et OR-Tools réels :

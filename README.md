@@ -21,10 +21,12 @@ Les règles initiales sont : ouverture à 7 h avec deux éducatrices dès 6 h 50
 
 La livraison principale est un **ZIP portable**, disponible dans les [téléchargements publics du projet](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/latest). **Aucune connexion GitHub n'est nécessaire.**
 
-- [Télécharger pour Windows 64 bits](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.1.1/Planificateur-SDG-0.1.1-Windows-x64-Portable.zip).
-- [Télécharger pour Mac Apple Silicon, macOS 15+](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.1.1/Planificateur-SDG-0.1.1-macOS-arm64-Portable.zip).
+- [Télécharger pour Windows 64 bits](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.1.2/Planificateur-SDG-0.1.2-Windows-x64-Portable.zip).
+- [Télécharger pour Mac Apple Silicon, macOS 15+](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.1.2/Planificateur-SDG-0.1.2-macOS-arm64-Portable.zip).
 
 Décompressez le dossier complet dans un emplacement autorisé en écriture ou sur une clé USB, puis ouvrez **`Planificateur-SDG.exe`** sous Windows ou **`Planificateur-SDG.app`** sous macOS. Aucun programme d’installation, Python, compte ni connexion Internet n’est nécessaire sur le poste cible. Gardez le dossier complet : les horaires et sauvegardes restent dans son sous-dossier **`donnees`**. Les liens GitHub Actions servent aux diagnostics de compilation et peuvent exiger une connexion ; les utilisateurs téléchargent les ZIP de la section **Releases**.
+
+Depuis la version **0.1.2**, le démarrage Mac gère les copies temporaires AppTranslocation : il retrouve le dossier portable d’origine ou vous demande de le sélectionner, puis rouvre les données de ce dossier. Aucun réglage de sécurité n’est modifié.
 
 Les contrôles de construction vérifient le mode portable et l’écriture réelle des données à côté du logiciel, puis refont le contrôle après extraction du ZIP. Le poste doit permettre l’exécution de ce logiciel portable et l’écriture dans le dossier choisi.
 
@@ -50,7 +52,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\build-windows.ps1
 
 Le résultat principal est **`dist/Planificateur-SDG-Portable.zip`**. Le script par défaut ne dépend pas d’Inno Setup et n’exécute aucune installation ou désinstallation système. Il teste le binaire, le dossier portable et l’archive extraite. Le workflow **« Vérifier et construire Windows »** remet l’artefact **`Planificateur-SDG-Portable-Windows`** contenant le ZIP et ses comptes rendus. Voir la [procédure Windows](docs/DISTRIBUTION_WINDOWS.md).
 
-Les deux versions portables ont réussi **122 tests chacune**, ainsi que les contrôles natifs après extraction du ZIP. Les [résultats réellement vérifiés](docs/ETAT_VERIFICATION.md) donnent les exécutions et rapports correspondants. Le workflow **Publier les téléchargements portables** publie une version seulement après réussite des deux constructions du même code et vérification des rapports natifs. Chaque livraison contient les ZIP directement utilisables, les rapports et les sommes SHA-256. Augmentez la version avant de publier une nouvelle livraison ; une version publiée reste figée.
+Les deux versions portables ont réussi **132 tests chacune**, ainsi que les contrôles natifs après extraction du ZIP. Les [résultats réellement vérifiés](docs/ETAT_VERIFICATION.md) donnent les exécutions et rapports correspondants. Le workflow **Publier les téléchargements portables** publie une version seulement après réussite des deux constructions du même code et vérification des rapports natifs. Chaque livraison contient les ZIP directement utilisables, les rapports et les sommes SHA-256. Augmentez la version avant de publier une nouvelle livraison ; une version publiée reste figée.
 
 ## Développement : lancer depuis les sources
 

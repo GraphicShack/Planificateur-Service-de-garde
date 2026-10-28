@@ -67,4 +67,12 @@ Vos horaires, éducatrices, archives et sauvegardes locales restent dans **donne
 
 Pour une mise à jour, sauvegardez vos données, décompressez la nouvelle version dans un autre dossier et conservez votre ancien sous-dossier **donnees** dans le nouveau dossier portable. Ne remplacez jamais vos données par un dossier vide. Pour transférer une planification entre Windows et Mac, utilisez l’export et l’import de sauvegarde locale.
 
+### Si macOS ouvre une copie temporaire
+
+Depuis la version 0.1.2, le logiciel demande à macOS le chemin du dossier d’origine lorsqu’il s’exécute sous **AppTranslocation**. Il utilise alors le sous-dossier **donnees** d’origine, avec vos horaires existants.
+
+Si ce chemin n’est pas disponible, une fenêtre demande de choisir le dossier portable. Sélectionnez le dossier extrait du ZIP qui contient **Planificateur-SDG.app** et **portable.mode**, puis confirmez. Ne choisissez pas le ZIP ni l’application seule. Le bouton Annuler ferme le logiciel sans créer de nouvelle base. Un dossier en lecture seule ou incomplet est refusé avec une explication.
+
+Si vous utilisez encore la version 0.1.1 et voyez une erreur contenant « AppTranslocation » ou « Read-only file system », téléchargez la nouvelle version, extrayez le dossier complet dans Documents et ouvrez cette nouvelle application. Conservez votre ancien sous-dossier **donnees** si vous aviez déjà des horaires.
+
 La préparation du fichier à remettre est décrite dans les procédures [Windows](DISTRIBUTION_WINDOWS.md) et [macOS](DISTRIBUTION_MACOS.md). Elle concerne la personne qui construit le logiciel.

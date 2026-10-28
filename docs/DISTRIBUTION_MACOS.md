@@ -68,3 +68,13 @@ Une construction native précédente a réussi sur macOS 15 Apple Silicon avec 1
 ## Construction vérifiée
 
 Le [workflow portable du 24 octobre 2026](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40141657434) a réussi 118 tests, la signature locale et les trois contrôles natifs. Le [ZIP arm64 vérifié](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40141657434/artifacts/12579051978) cible macOS 15 et versions ultérieures. Il est distinct de l’ancien DMG : aucun déplacement dans Applications n’est demandé.
+
+## Copie temporaire macOS et dossier des données
+
+Gatekeeper peut lancer une application téléchargée depuis un volume temporaire **AppTranslocation**, en lecture seule. La version 0.1.1 essayait alors de créer `donnees` dans ce volume. Le démarrage de la version 0.1.2 consulte la correspondance de chemins fournie par Security.framework et utilise le dossier portable d’origine seulement si son marqueur `portable.mode` est présent.
+
+Cette API est facultative. Si la correspondance n’est pas disponible, l’utilisateur choisit explicitement le dossier extrait via le sélecteur macOS. Les dossiers incomplets, temporaires ou non accessibles en écriture sont refusés ; Annuler ferme le logiciel. Le logiciel ne parcourt pas les disques pour chercher une base et ne bascule pas silencieusement vers une nouvelle base dans le profil. Les données restent hors du bundle signé.
+
+Les tests couvrent la récupération d’une base existante, le choix d’un dossier, les refus et l’annulation. Un contrôle source charge aussi les véritables API natives sur le runner Mac. Le lancement sous Gatekeeper après téléchargement n’est pas reproduit par les tests de compilation ; les contrôles du ZIP lancent directement son exécutable.
+
+La correction ne retire pas la quarantaine et ne modifie aucun réglage de sécurité. L’avertissement de Gatekeeper reste distinct : la livraison est signée localement, sans Developer ID ni notarisation Apple. Sur un Mac personnel, l’utilisateur peut autoriser l’ouverture dans Réglages Système → Confidentialité et sécurité. Les politiques d’un poste géré restent applicables.
