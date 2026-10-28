@@ -22,6 +22,8 @@ class EnrolmentPanel(QWidget):
         root.setContentsMargins(14, 14, 14, 14)
         title = QLabel("Inscriptions de la journée")
         title.setObjectName("editorHeading")
+        title.setWordWrap(True)
+        title.setStyleSheet("font-size:18px;font-weight:700;")
         root.addWidget(title)
         form = QFormLayout()
         form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapAllRows)
