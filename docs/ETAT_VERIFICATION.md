@@ -15,6 +15,18 @@ Les téléchargements destinés aux utilisateurs sont les ZIP des [Releases publ
 
 Le contrôle de publication possède sept tests indépendants : il refuse les rapports incomplets, les versions/plateformes incorrectes, les ZIP corrompus, les marqueurs manquants et l’absence d’une plateforme. Il valide les deux plateformes avant de préparer les fichiers et leurs sommes SHA-256.
 
+## Publication publique vérifiée
+
+La [release v0.1.1](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/tag/v0.1.1) contient directement les ZIP Windows x64 et macOS arm64, les deux rapports après extraction et leurs sommes SHA-256. Les cinq fichiers sont publiés, sans brouillon ni préversion.
+
+Les binaires publiés correspondent au code `38f535568ca2ce62d2103dbf97ddd520ee0276a1` :
+
+- [Windows — 122 tests et contrôles portables réussis](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40609894459).
+- [Mac — 122 tests et contrôles portables réussis](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40609894511).
+- [Publication — sept tests du contrôle, validation des deux ZIP et téléversement réussis](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40610162523).
+
+La publication remplace les liens d’artefacts Actions pour la distribution aux utilisateurs. Les artefacts Actions restent utiles pour les diagnostics de fabrication.
+
 ## Application et interface modernisée
 
 La version modernisée a réussi **110 tests sur Windows et 110 tests sur macOS 15 Apple Silicon**, avec Qt6/PySide6 et OR-Tools réellement installés. Le calendrier Jour/Semaine, le déplacement et redimensionnement à la minute, les formulaires, la recherche, l’annulation, les relèves, l’ouverture/fermeture, SQLite, les archives, les PDF et le solveur font partie des tests.
