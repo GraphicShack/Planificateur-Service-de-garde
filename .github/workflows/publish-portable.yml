@@ -2,11 +2,22 @@ name: Publier les téléchargements portables
 on:
   workflow_dispatch:
     inputs:
+      commit:
+        description: 'SHA complet du code testé et approuvé pour publication'
+        type: string
+        required: true
       publish:
         description: 'Publier uniquement après accord explicite du responsable du projet'
         type: boolean
         required: true
         default: false
+  push:
+    branches: [main]
+    paths: ['.github/release-request.json']
+  workflow_run:
+    workflows: ['Vérifier et construire Windows', 'Vérifier et construire macOS']
+    types: [completed]
+    branches: [main]
 
 permissions:
   actions: read
@@ -18,7 +29,7 @@ concurrency:
 
 jobs:
   publish:
-    if: github.event_name == 'workflow_dispatch' && inputs.publish == true
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.publish == true) || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -31,13 +42,23 @@ jobs:
         with:
           script: |
             const repo = context.repo;
-            const requested = context.payload.workflow_run?.head_sha;
+            const fs = require('fs');
+            const approval = JSON.parse(fs.readFileSync('.github/release-request.json', 'utf8'));
+            const requested = context.eventName === 'workflow_dispatch' ? context.payload.inputs?.commit : approval.commit;
+            if (!/^[0-9a-f]{40}$/.test(requested || '') || (context.eventName !== 'workflow_dispatch' && approval.approved !== true)) {
+              core.setOutput('ready', 'false');
+              return;
+            }
+            if (context.eventName === 'workflow_run' && context.payload.workflow_run.head_sha !== requested) {
+              core.setOutput('ready', 'false');
+              return;
+            }
             const runs = async (workflow_id) => (await github.rest.actions.listWorkflowRuns({
               ...repo, workflow_id, branch: 'main', event: 'push', status: 'success', per_page: 100
             })).data.workflow_runs.filter(r => r.head_repository?.full_name === `${repo.owner}/${repo.repo}`);
             const windows = await runs('build-windows.yml');
             const macos = await runs('build-macos.yml');
-            const win = windows.find(w => (!requested || w.head_sha === requested) && macos.some(m => m.head_sha === w.head_sha));
+            const win = windows.find(w => (w.head_sha === requested) && macos.some(m => m.head_sha === w.head_sha));
             if (!win) {
               core.notice('Publication en attente des deux constructions réussies du même code.');
               core.setOutput('ready', 'false');
@@ -87,9 +108,19 @@ jobs:
         run: |
           python - <<'PY'
           import os
+          import shutil
+          import hashlib
           from pathlib import Path
           repo = os.environ['GITHUB_REPOSITORY']
+          sample = Path('release-output/Horaire-pedagogique-exemple.pdf')
+          shutil.copyfile('docs/exemple-horaire-pedagogique.pdf', sample)
+          with Path('release-output/SHA256SUMS.txt').open('a', encoding='utf-8') as handle:
+              handle.write(hashlib.sha256(sample.read_bytes()).hexdigest() + '  ' + sample.name + '\n')
           Path('release-notes.md').write_text(
+              'Planification d’une journée pédagogique à la fois, avec une interface épurée.\n\n'
+              '- Couleur distincte par éducatrice ; rangs de 1 à 11, avec rangs intermédiaires libres.\n'
+              '- Un seul PDF lettre paysage selon le modèle fourni : huit éducateurs par page, grille 7 h–18 h et interruptions vides.\n'
+              '- Journées, heures, statuts et archives indépendants ; anciennes données préservées avec copie de sécurité.\n\n'
               'Logiciel portable en français, entièrement hors ligne. Aucun installateur ni Python requis.\n\n'
               '- **Windows 64 bits** : téléchargez le ZIP Windows.\n'
               '- **Mac Apple Silicon, macOS 15 ou plus récent** : téléchargez le ZIP macOS-arm64.\n\n'
