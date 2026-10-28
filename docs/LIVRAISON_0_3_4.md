@@ -7,11 +7,13 @@
 3. Thèmes Forêt, Bleu, Prune et Ardoise, accent personnalisé et désactivation des animations dans Réglages → Affichage. Application immédiate aux surfaces de navigation, formulaires, dates, boutons et sélections. Les couleurs d’alerte, d’éducatrice, de groupe et du PDF conservent leur rôle.
 4. Préférences locales dans `interface.json`, à côté de la base : écriture atomique, tolérance à un fichier endommagé, explication si l’écriture est impossible. Les préférences n’altèrent aucune version d’horaire. Les options d’affichage défilent sur les petits écrans ; Fermer reste hors de la zone défilante.
 
+5. Nettoyage des effets quand une fenêtre est masquée, réactivation à la réouverture et suppression de la modification des styles depuis un événement d’affichage. Cette dernière pouvait réentrer dans le moteur de styles Qt après des ouvertures répétées.
+
 Chaque étape possède son commit. Les notes de version sont reprises automatiquement dans la release GitHub depuis [CHANGELOG.md](../CHANGELOG.md).
 
 ## Vérifications
 
-Huit nouveaux tests ciblés vérifient la navigation immédiate, les clics pendant une transition, le focus, les changements rapides, le redimensionnement, la désactivation, le contraste, la conservation et la restauration des préférences, les erreurs de couleur et d’écriture et l’absence de modification des horaires. Le test des contrôles d’affichage existants suit leur déplacement dans la zone défilante. La suite complète et les contrôles portables natifs restent obligatoires avant publication ; leurs résultats sont consignés dans [État des vérifications](ETAT_VERIFICATION.md).
+Neuf nouveaux tests ciblés vérifient la navigation immédiate, les clics pendant une transition, le focus, les changements rapides, le redimensionnement, la désactivation, le contraste, la conservation et la restauration des préférences, les erreurs de couleur et d’écriture et l’absence de modification des horaires. Le test des contrôles d’affichage existants suit leur déplacement dans la zone défilante. La suite complète et les contrôles portables natifs restent obligatoires avant publication ; leurs résultats sont consignés dans [État des vérifications](ETAT_VERIFICATION.md).
 
 L’aperçu est capturé dans l’application Qt6 avec des données fictives. [Options d’apparence](themes-interface.png).
 

@@ -18,7 +18,8 @@ class Motion(QObject):
         super().__init__(window)
         self.window = window
         self.enabled = True
-        QApplication.instance().installEventFilter(self)
+        self._watching = False
+        window.installEventFilter(self)
 
     def set_enabled(self, enabled):
         enabled = bool(enabled)
@@ -27,11 +28,23 @@ class Motion(QObject):
             self.changed.emit(enabled)
 
     def eventFilter(self, watched, event):
+        if watched is self.window:
+            if event.type() == QEvent.Type.Show and not self._watching:
+                self._watching = True
+                QApplication.instance().installEventFilter(self)
+                for button in self.window.findChildren(QPushButton):
+                    self._attach(button)
+            elif event.type() == QEvent.Type.Hide and self._watching:
+                self._watching = False
+                QApplication.instance().removeEventFilter(self)
         if (event.type() == QEvent.Type.Show and isinstance(watched, QPushButton)
-                and self.window.isAncestorOf(watched)
-                and not hasattr(watched, "_motion_outline")):
-            watched._motion_outline = ButtonOutline(watched, self)
+                and self.window.isAncestorOf(watched)):
+            self._attach(watched)
         return False
+
+    def _attach(self, button):
+        if not hasattr(button, "_motion_outline"):
+            button._motion_outline = ButtonOutline(button, self)
 
 
 class ButtonOutline(QWidget):

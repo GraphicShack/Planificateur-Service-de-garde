@@ -5,7 +5,7 @@ from pathlib import Path
 import re
 import tempfile
 
-from PySide6.QtCore import QEvent, QObject, Signal
+from PySide6.QtCore import QObject, Signal
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
     QApplication, QCheckBox, QColorDialog, QComboBox, QFormLayout,
@@ -80,7 +80,6 @@ class Appearance(QObject):
         except (OSError, ValueError, TypeError):
             pass  # A damaged/missing preference file never prevents opening schedules.
         motion.changed.connect(lambda enabled: self.save())
-        QApplication.instance().installEventFilter(self)
         self.apply()
 
     @property
@@ -107,14 +106,6 @@ class Appearance(QObject):
                 widget.setStyleSheet(themed_css(widget._atelier_css))
                 widget.setPalette(light_palette())
             widget.update()
-
-    def eventFilter(self, watched, event):
-        if (event.type() == QEvent.Type.Show and isinstance(watched, QWidget)
-                and self.window.isAncestorOf(watched) and hasattr(watched, "_atelier_css")):
-            source = themed_css(watched._atelier_css)
-            if watched.styleSheet() != source:
-                watched.setStyleSheet(source)
-        return False
 
     def save(self):
         temporary = None

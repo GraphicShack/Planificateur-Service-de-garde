@@ -94,3 +94,18 @@ def test_initial_selection_and_same_page_do_not_start_an_animation(qapp):
         assert [p.text() for p in pages] == ["Page 0", "Page 1", "Page 2"]
     finally:
         dispose(root, qapp)
+
+
+def test_hidden_windows_release_event_observation_and_can_reopen(qapp):
+    root, motion, stack, pages = scene(qapp)
+    try:
+        assert motion._watching
+        root.hide()
+        assert not motion._watching
+        root.show()
+        qapp.processEvents()
+        assert motion._watching
+        stack.setCurrentIndex(1)
+        assert stack.animating
+    finally:
+        dispose(root, qapp)
