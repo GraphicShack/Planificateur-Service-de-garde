@@ -135,6 +135,14 @@ class _Header(QWidget):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
         p.fillRect(self.rect(), QColor("#ffffff"))
+        if c.single_service:
+            p.setFont(_pixel_font(14,QFont.Weight.DemiBold))
+            p.setPen(QColor(TEXT))
+            p.drawText(QRectF(12,0,self.width()-24,self.height()), Qt.AlignmentFlag.AlignVCenter,
+                       "Horaires des éducatrices")
+            p.setPen(QColor("#DFE5E1"))
+            p.drawLine(0,self.height()-1,self.width(),self.height()-1)
+            return
         for i, (title, subtitle, color) in enumerate(c.columns()):
             x = i * c.column_width
             accent = _color(color)
