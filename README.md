@@ -21,9 +21,9 @@
 
 ![Aperçu du planificateur avec des données fictives](docs/apercu-interface.png)
 
-La **version 0.3.1** organise la grille par groupes et sous-colonnes d’éducatrices. Les icônes Équipe, Inscriptions et Vérification partagent le panneau gauche ; le ratio est masquable et les alertes sont comptées dans un badge. Annuler et Rétablir sont alignés avec le nom de la journée. Les dîners restent calculés, sans être affichés dans les blocs.
+La **version 0.3.1** s’ouvre sur un accueil réunissant les journées récentes, le résumé d’aujourd’hui et l’équipe. La création d’une journée mène directement aux inscriptions. La grille reste organisée par groupes et sous-colonnes d’éducatrices. Les icônes Équipe, Inscriptions et Vérification partagent le panneau gauche ; le ratio est masquable et les alertes sont comptées dans un badge. Annuler et Rétablir sont alignés avec le nom de la journée. Les dîners restent calculés, sans être affichés dans les blocs.
 
-Une éducatrice peut suffire de **6 h 50 à 7 h** et de **17 h 20 à 17 h 35**. Le minimum reste de deux entre ces plages ; le ratio configuré (initialement 1/20) reste obligatoire pendant l’accueil. Les anciennes versions publiées et archivées conservent leurs règles. [Détails de la livraison](docs/LIVRAISON_0_3_1.md).
+Une éducatrice peut suffire de **6 h 50 à 7 h** et de **17 h 20 à 17 h 35**. Le minimum reste de deux entre ces plages ; le ratio configuré (initialement 1/20) reste obligatoire pendant l’accueil. Les anciennes versions publiées et archivées conservent leurs règles. [Détails de la livraison](docs/LIVRAISON_0_3_1.md) · [Notes de version](CHANGELOG.md).
 
 [Voir la couverture et les alertes](docs/couverture-journee.png)
 

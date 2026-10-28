@@ -1,5 +1,7 @@
 # Livraison 0.3.1
 
+Un accueil ouvre l’application : journées récentes cliquables, résumé d’aujourd’hui, équipe et création avec inscriptions. L’icône Accueil reste disponible depuis la grille.
+
 La grille affiche un groupe au-dessus des sous-colonnes de ses éducatrices.
 Équipe, Inscriptions et Vérification partagent le panneau gauche. Le ratio
 reste une bande masquable ; ses données et les alertes ne sont pas imprimées.
@@ -25,6 +27,15 @@ Les tests ciblés vérifient les bornes 6 h 50, 7 h et 17 h 20, un déficit d’
 Les contrôles d’interface vérifient la position des commandes et l’adoption des règles uniquement dans les versions de travail. Les résultats natifs et les sources exactes approuvées sont consignés dans [État des vérifications](ETAT_VERIFICATION.md).
 Les aperçus sont des rendus du code réel avec données fictives et un adaptateur Qt5 local non livré ; la certification des distributions repose sur les suites Qt6 et OR-Tools natives.
 
+## Hypothèses propres à l’accueil
+
+- Une seule journée est conservée par date. Une création visant une date existante ouvre la journée sans écraser ses données.
+- Le tri porte sur la date de la journée, et non sa dernière modification. Les journées futures sont incluses.
+- Les enfants et le minimum d’éducatrices affichés sont les maxima de la journée ; les heures sont rémunérées et le nombre d’éducatrices compte les personnes actives affectées au moins une fois.
+- Les badges reprennent les erreurs et avertissements de Vérifier, avec le même regroupement. Les profils proviennent du dernier snapshot enregistré, sans ajouter un second registre d’équipe. Une modification crée une version de travail ; une base vide utilise le brouillon du jour.
+- Les journées historiques sont résumées en mémoire sans migration ni création de journées pendant le simple affichage de la liste.
+- Les notes de version sont centralisées dans CHANGELOG.md. La publication refuse une version dont la section est absente ou vide.
+
 ## Limites
 
 Aucun service distant ni compte utilisateur n’est ajouté. Il n’y a pas de mise à jour automatique ni de notarisation DeveloperID Mac. Les essais avec le lecteur d’écran, l’imprimante physique et le poste de l’école restent à réaliser. Les ZIP se remplacent en conservant une copie du dossier `donnees`.
@@ -33,15 +44,21 @@ Aucun service distant ni compte utilisateur n’est ajouté. Il n’y a pas de m
 
 - `.github/release-request.json`
 - `.github/workflows/publish-portable.yml`
+- `CHANGELOG.md`
 - `README.md`
 - `docs/ETAT_VERIFICATION.md`
 - `docs/GUIDE.md`
 - `docs/LIVRAISON_0_3_1.md`
+- `docs/accueil.png`
 - `docs/apercu-interface.png`
 - `docs/couverture-journee.png`
 - `gardeplan/__init__.py`
+- `gardeplan/alerts.py`
+- `gardeplan/app.py`
 - `gardeplan/coverage.py`
 - `gardeplan/daily.py`
+- `gardeplan/home_data.py`
+- `gardeplan/installation_check.py`
 - `gardeplan/models.py`
 - `gardeplan/optimizer.py`
 - `gardeplan/staff_layout.py`
@@ -49,11 +66,20 @@ Aucun service distant ni compte utilisateur n’est ajouté. Il n’y a pas de m
 - `gardeplan/ui/calendar.py`
 - `gardeplan/ui/enrolment.py`
 - `gardeplan/ui/forms.py`
+- `gardeplan/ui/home.py`
 - `gardeplan/ui/main_window.py`
 - `gardeplan/ui/visuals.py`
 - `gardeplan/validation.py`
 - `pyproject.toml`
+- `scripts/prepare_release.py`
+- `scripts/release_notes.py`
+- `scripts/test_prepare_release.py`
+- `scripts/test_release_notes.py`
 - `tests/test_coverage.py`
+- `tests/test_daily_ui.py`
+- `tests/test_home_data.py`
+- `tests/test_home_ui.py`
+- `tests/test_main_window.py`
 - `tests/test_schedule_ui.py`
 - `tests/test_staff_layout.py`
 - `tests/test_staffing_policy.py`

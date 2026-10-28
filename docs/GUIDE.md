@@ -176,3 +176,35 @@ une modification ou une duplication crée un brouillon aux règles actuelles.
 La barre latérale présente Planning, Équipe, Inscriptions, Ratio et Vérification.
 Dossier et Réglages sont placés en bas. Annuler/Rétablir sont sur la ligne du
 nom de la journée ; leurs raccourcis clavier restent disponibles.
+
+
+## Accueil
+
+Le logiciel s’ouvre sur **Bonjour, bienvenue**. L’icône maison, première dans
+la barre latérale, permet d’y revenir depuis le planning. Les journées créées
+sont triées par date décroissante, y compris les dates futures. Cliquez une
+ligne pour ouvrir son horaire. La journée du jour est mise en évidence et
+reprend les heures exactes de présence.
+
+Les badges utilisent exactement les mêmes alertes que Vérifier dans la grille,
+y compris les avertissements. « Couverture complète » signifie qu’aucun point
+n’est à vérifier. Les compteurs d’aujourd’hui indiquent le plus grand effectif
+d’enfants et le besoin maximal sur la journée, les éducatrices actives ayant
+au moins un quart et le total rémunéré.
+
+**Nouvelle journée pédagogique** crée aujourd’hui et ouvre Inscriptions. Si
+aujourd’hui existe déjà, choisissez une autre date dans le champ proposé.
+Choisir une date existante ouvre son contenu sans l’écraser. **Ouvrir une
+journée précédente** permet de choisir dans la liste ou de saisir une date,
+sans calendrier mensuel.
+
+La carte **L’équipe** reprend les profils actifs du dernier horaire enregistré,
+comme le modèle de profils existant. Ajouter ou modifier ouvre le formulaire
+habituel et crée une nouvelle version de travail de cet horaire ; les archives
+restent conservées. Dans une base entièrement vide, l’ajout d’un profil utilise
+le brouillon d’aujourd’hui. Les modifications de la grille sont enregistrées
+avant le retour à l’accueil.
+
+Les cartes s’empilent sur les petites fenêtres ; la page défile verticalement.
+Les notes de chaque version sont conservées dans [CHANGELOG.md](../CHANGELOG.md)
+et reprises dans les Releases GitHub.
