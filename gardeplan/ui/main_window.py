@@ -273,6 +273,13 @@ class MainWindow(QMainWindow):
         title = QLabel("L'équipe")
         title.setObjectName("sectionTitle")
         side_head.addWidget(title)
+        help_text = "Glissez une éducatrice sur la grille ou double-cliquez sur une plage vide pour créer un quart. Au clavier, sélectionnez un nom et appuyez sur Entrée."
+        self.planning_help = self._button("ⓘ", lambda: QMessageBox.information(self, "Créer un quart", help_text), help_text)
+        self.planning_help.setObjectName("subtleButton")
+        self.planning_help.setFixedSize(32,32)
+        self.planning_help.setAccessibleName("Aide pour créer un quart")
+        self.planning_help.setAccessibleDescription(help_text)
+        side_head.addWidget(self.planning_help)
         side_head.addStretch()
         self.add_educator_button = self._button("", lambda: self.edit_educator(), "Ajouter une éducatrice", icon_name="plus")
         self.add_educator_button.setObjectName("subtleButton")
@@ -294,7 +301,6 @@ class MainWindow(QMainWindow):
         self.educator_list.itemSelectionChanged.connect(self._refresh_profile_button)
         self.educator_list.create_shift.connect(lambda identifier: self.new_shift(educator_id=identifier, group_id=self.week.groups[0].id if self.week.groups else ""))
         sidebar.addWidget(self.educator_list, 1)
-        sidebar.addWidget(note("Glissez un nom ou double-cliquez sur une plage vide pour créer un quart. Au clavier : sélectionnez un nom, puis Entrée."))
         self.splitter.addWidget(self.sidebar)
 
         right = QWidget()
