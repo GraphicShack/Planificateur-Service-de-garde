@@ -128,6 +128,8 @@ def validate(week: Week, *, _service=False) -> list[Issue]:
                     add("missing_data", _prefix(day, later.start, min(earlier.end, later.end)) + f"les périodes d'effectifs du groupe {g.name} se chevauchent.", day, later.start, min(earlier.end, later.end), g.id,
                         suggestion="Utiliser des périodes d'effectifs successives sans chevauchement.")
     for e in week.educators:
+        if week.planning_date and any(other.id != e.id and other.seniority == e.seniority for other in week.educators):
+            add("missing_data", f"Le rang {e.seniority} de {e.name} est déjà utilisé. Choisissez un rang libre de 1 à 11.")
         if week.planning_date and (type(e.seniority) is not int or not 1 <= e.seniority <= 11):
             add("missing_data", f"Choisissez un rang de 1 à 11 pour {e.name}. Les rangs intermédiaires peuvent rester libres.")
         if not e.name.strip() or any(type(x) is not int or x < 0 for x in (e.target_minutes, e.guaranteed_minutes, e.max_minutes)) or type(e.seniority) is not int or e.seniority < 1:

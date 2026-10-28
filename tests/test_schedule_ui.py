@@ -177,3 +177,29 @@ def test_single_service_screen_has_no_groups_preferences_or_monthly_popup(planne
     assert dialog.preferences.isHidden()
     dialog.close()
     dialog.deleteLater()
+
+
+def test_profile_defaults_use_free_rank_and_empty_unset_hours(planner):
+    from gardeplan.ui.forms import EducatorDialog, ClockEdit
+    from PySide6.QtWidgets import QDateTimeEdit
+    dialog = EducatorDialog(planner.week)
+    assert dialog.seniority.value() == 3
+    assert not dialog.target.text() and not dialog.guaranteed.text()
+    assert dialog.target_note.text() == "Aucun objectif défini"
+    assert "minimum obligatoire" in dialog.guaranteed.toolTip()
+    dialog.name.setText("Nouvelle personne")
+    dialog.seniority.setValue(1)
+    with pytest.raises(ValueError, match="déjà utilisé"):
+        dialog.build_item()
+    dialog.seniority.setValue(4)
+    assert dialog.build_item().seniority == 4
+    clock = ClockEdit(433)
+    assert isinstance(clock, QDateTimeEdit)
+    assert clock.value() == 433
+    clock.setValue(1440)
+    assert clock.value() == 1440
+    clock.lineEdit().setText("6 h 50")
+    clock.interpretText()
+    assert clock.value() == 410
+    clock.deleteLater()
+    dialog.deleteLater()

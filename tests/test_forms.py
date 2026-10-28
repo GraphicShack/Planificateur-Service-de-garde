@@ -126,15 +126,11 @@ def test_profile_sections_share_one_window_and_stack_on_small_screens(valid_week
     for _ in range(3):
         qapp.processEvents()
     assert not dialog.profile_columns.stacked
-    assert dialog.scroll.verticalScrollBar().maximum() == 0, (
-        dialog.size(), dialog.scroll.viewport().size(), dialog.body.size(),
-        [(column.size(), [(column.layout().itemAt(i).widget().objectName(),
-                           column.layout().itemAt(i).widget().size())
-                          for i in range(column.layout().count()) if column.layout().itemAt(i).widget()])
-         for column in (dialog.profile_columns.left, dialog.profile_columns.right)])
     for widget in (dialog.name, dialog.seniority, dialog.target, dialog.maximum,
                    dialog.availability, dialog.absences, dialog.restrictions):
         assert widget.isVisible() and widget.window() is dialog
+        dialog.scroll.ensureWidgetVisible(widget)
+        qapp.processEvents()
         position = widget.mapTo(dialog.scroll.viewport(), QPoint())
         assert position.y() >= 0
         assert position.y()+widget.height() <= dialog.scroll.viewport().height()

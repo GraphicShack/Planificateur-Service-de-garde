@@ -5,14 +5,14 @@ from copy import deepcopy
 from datetime import date
 import re
 
-from PySide6.QtCore import Qt, QEvent, Signal
+from PySide6.QtCore import Qt, QEvent, Signal, QDate, QTime, QDateTime
 from PySide6.QtGui import QColor, QValidator
 from PySide6.QtWidgets import (
     QAbstractItemView, QCheckBox, QColorDialog, QComboBox, QDialog,
     QApplication, QDialogButtonBox, QFormLayout, QFrame, QGridLayout, QHBoxLayout, QLabel, QLineEdit,
     QListWidget, QListWidgetItem, QMessageBox, QPushButton, QSpinBox,
     QTabWidget, QTableWidget, QTableWidgetItem, QTextEdit, QVBoxLayout,
-    QWidget, QHeaderView, QScrollArea,
+    QWidget, QHeaderView, QScrollArea, QDateTimeEdit, QTimeEdit,
 )
 from gardeplan.models import (
     Activity, Break, Educator, Group, GroupPeriod, Room, Settings, Shift,
@@ -25,11 +25,78 @@ from .flow_layout import FlowLayout
 DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"]
 
 
+class ClockEdit(QTimeEdit):
+    """Native hour/minute sections; 24 h 00 is preserved as an exact endpoint."""
+    valueChanged = Signal(int)
+
+    def __init__(self, value=0, parent=None):
+        self._end_of_day = False
+        self._last_value = 0
+        super().__init__(parent)
+        self.setDisplayFormat("H 'h' mm")
+        self.setTimeRange(QTime(0, 0), QTime(23, 59))
+        self.setKeyboardTracking(False)
+        self.setMinimumWidth(112)
+        self.setCurrentSection(QDateTimeEdit.Section.MinuteSection)
+        self.timeChanged.connect(self._time_changed)
+        self.editingFinished.connect(self._publish_value)
+        self.setValue(value)
+
+    def value(self):
+        return 1440 if self._end_of_day else self.time().hour()*60+self.time().minute()
+
+    def setValue(self, value):
+        if type(value) is not int or not 0 <= value <= 1440:
+            raise ValueError("L’heure doit rester dans la journée.")
+        self.blockSignals(True)
+        self._end_of_day = value == 1440
+        self.setTime(QTime(0, 0) if value == 1440 else QTime(value//60, value % 60))
+        self.lineEdit().setText(format_time(value))
+        self.blockSignals(False)
+        self._publish_value()
+
+    def _time_changed(self, value):
+        if value != QTime(0, 0):
+            self._end_of_day = False
+        self._publish_value()
+
+    def _publish_value(self):
+        value = self.value()
+        if value != self._last_value:
+            self._last_value = value
+            self.valueChanged.emit(value)
+
+    def stepBy(self, steps):
+        scale = 60 if self.currentSection() == QDateTimeEdit.Section.HourSection else 1
+        self.setValue(max(0, min(1440, self.value()+steps*scale)))
+
+    def textFromDateTime(self, value):
+        minutes = value.time().hour()*60+value.time().minute()
+        return format_time(1440 if self._end_of_day and not minutes else minutes)
+
+    def dateTimeFromText(self, text):
+        match = re.fullmatch(r"\s*(\d{1,2})\s*[:h]\s*(\d{1,2})\s*", text)
+        if match:
+            hours, minutes = map(int, match.groups())
+            if minutes < 60 and hours*60+minutes <= 1440:
+                self._end_of_day = hours == 24
+                return QDateTime(self.date(), QTime(hours % 24, minutes))
+        return self.dateTime()
+
+    def validate(self, text, pos):
+        match = re.fullmatch(r"\s*(\d{1,2})\s*[:h]\s*(\d{1,2})\s*", text)
+        if match:
+            hours, minutes = map(int, match.groups())
+            return (QValidator.State.Acceptable if minutes < 60 and hours*60+minutes <= 1440 else QValidator.State.Invalid), text, pos
+        return QValidator.State.Intermediate, text, pos
+
+
 class MinuteEdit(QSpinBox):
     """Heure ou durée entière, sans conversion en nombres flottants."""
-    def __init__(self, value=0, *, duration=False, parent=None):
+    def __init__(self, value=0, *, duration=False, empty_zero=False, parent=None):
         super().__init__(parent)
         self.duration = duration
+        self.empty_zero = empty_zero
         self.setRange(0, 10080 if duration else 1440)
         self.setKeyboardTracking(False)
         self.setAccelerated(True)
@@ -38,15 +105,21 @@ class MinuteEdit(QSpinBox):
         self.setToolTip("Saisir heures:minutes, par exemple 07:13. Les flèches ajustent d'une minute.")
 
     def textFromValue(self, value):
+        if self.empty_zero and value == 0:
+            return ""
         return f"{value // 60:02d}:{value % 60:02d}"
 
     def valueFromText(self, text):
+        if self.empty_zero and not text.strip():
+            return 0
         match = re.fullmatch(r"\s*(\d{1,3})\s*[:h]\s*(\d{1,2})\s*", text)
         if match:
             return min(self.maximum(), int(match[1]) * 60 + int(match[2]))
         return self.value()
 
     def validate(self, text, pos):
+        if self.empty_zero and not text.strip():
+            return QValidator.State.Acceptable, text, pos
         match = re.fullmatch(r"\s*(\d{1,3})\s*[:h]\s*(\d{1,2})\s*", text)
         if match:
             total = int(match[1]) * 60 + int(match[2])
@@ -154,8 +227,8 @@ class IntervalsEditor(QWidget):
         day_input.addItems(self.day_labels)
         day_input.setCurrentIndex(day)
         self.table.setCellWidget(row, 0, day_input)
-        self.table.setCellWidget(row, 1, MinuteEdit(start))
-        self.table.setCellWidget(row, 2, MinuteEdit(end))
+        self.table.setCellWidget(row, 1, ClockEdit(start))
+        self.table.setCellWidget(row, 2, ClockEdit(end))
         if self.students:
             self.table.setCellWidget(row, 3, integer(students, 0, 10000))
         self.table.setRowHeight(row, 48 if self.compact else 40)
@@ -233,8 +306,8 @@ class BreaksEditor(QWidget):
     def add_row(self, start=720, end=750, paid=False, kind="pause"):
         row = self.table.rowCount()
         self.table.insertRow(row)
-        self.table.setCellWidget(row, 0, MinuteEdit(start))
-        self.table.setCellWidget(row, 1, MinuteEdit(end))
+        self.table.setCellWidget(row, 0, ClockEdit(start))
+        self.table.setCellWidget(row, 1, ClockEdit(end))
         self.table.setCellWidget(row, 2, check("Oui", paid))
         category = QComboBox()
         category.addItem("Pause", "pause")
@@ -345,6 +418,8 @@ class EditorDialog(QDialog):
             # Commit any pending text in spin boxes before collecting values.
             for spin in self.findChildren(QSpinBox):
                 spin.interpretText()
+            for clock in self.findChildren(QDateTimeEdit):
+                clock.interpretText()
             self._item = self.build_item()
         except (ValueError, TypeError) as error:
             QMessageBox.warning(self, "À vérifier", str(error))
@@ -433,7 +508,8 @@ class EducatorDialog(EditorDialog):
         self.source = deepcopy(educator) if educator else Educator(id=new_id(), name="", target_minutes=0 if week.planning_date else 2100, max_minutes=(week.settings.max_daily_minutes or 1440) if week.planning_date else 2400)
         if educator is None:
             self.source.color = next_educator_color(week.educators)
-            self.source.seniority = min(11, max((person.seniority for person in week.educators), default=0) + 1)
+            used = {person.seniority for person in week.educators}
+            self.source.seniority = next((rank for rank in range(1, 12) if rank not in used), 1)
         ed = self.source
         self.body_layout.addWidget(note("Le nom est obligatoire. Les disponibilités et les préférences sont facultatives."))
         self.profile_columns = ProfileColumns(self.scroll.viewport())
@@ -455,8 +531,9 @@ class EducatorDialog(EditorDialog):
         self.seniority_date = QLineEdit(ed.seniority_date)
         self.seniority_date.setPlaceholderText("Facultative — AAAA-MM-JJ")
         self.active = check("Profil actif", ed.active)
-        self.target = MinuteEdit(ed.target_minutes, duration=True)
-        self.guaranteed = MinuteEdit(ed.guaranteed_minutes, duration=True)
+        self.target = MinuteEdit(ed.target_minutes, duration=True, empty_zero=True)
+        self.guaranteed = MinuteEdit(ed.guaranteed_minutes, duration=True, empty_zero=True)
+        self.guaranteed.setToolTip("Le générateur utilise cette durée comme minimum obligatoire d’heures rémunérées. Une proposition qui ne l’atteint pas est refusée.")
         self.maximum = MinuteEdit(ed.max_minutes, duration=True)
         for field in (self.name, self.color, self.seniority, self.seniority_date,
                       self.target, self.guaranteed, self.maximum):
@@ -466,7 +543,10 @@ class EducatorDialog(EditorDialog):
         form.addRow("Rang d'ancienneté", self.seniority)
         form.addRow("Date d'ancienneté", self.seniority_date)
         form.addRow(self.active)
-        identity_layout.addWidget(note("Rangs 1 à 11, avec des rangs libres. Le rang 1 est le plus ancien."))
+        self.rank_note = note("")
+        identity_layout.addWidget(self.rank_note)
+        self.seniority.valueChanged.connect(self.refresh_rank_note)
+        self.refresh_rank_note()
         hours, hours_layout = profile_section("Heures pour la journée" if week.planning_date else "Heures hebdomadaires")
         form = QFormLayout()
         form.setSpacing(8)
@@ -474,9 +554,13 @@ class EducatorDialog(EditorDialog):
         form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.DontWrapRows)
         hours_layout.addLayout(form)
         form.addRow("Objectif (h:min)", self.target)
-        form.addRow("Heures garanties (h:min)", self.guaranteed)
+        form.addRow("Heures garanties ⓘ", self.guaranteed)
         form.addRow("Maximum obligatoire (h:min)", self.maximum)
-        hours_layout.addWidget(note("Un objectif de 00:00 reste à définir."))
+        self.target_note = note("")
+        self.target.valueChanged.connect(lambda value: self.target_note.setText("Aucun objectif défini" if not value else f"Objectif : {format_duration(value)}"))
+        self.target_note.setText("Aucun objectif défini" if not ed.target_minutes else f"Objectif : {format_duration(ed.target_minutes)}")
+        hours_layout.addWidget(self.target_note)
+        hours_layout.addWidget(note("Le générateur respecte les heures garanties."))
         self.profile_columns.left_layout.addWidget(hours)
         availability, availability_layout = profile_section("Disponibilités et absences")
         self.availability = IntervalsEditor(ed.availability, daily_label=week.day_label(0) if week.planning_date else "", compact=True)
@@ -515,11 +599,20 @@ class EducatorDialog(EditorDialog):
         self.body_layout.addStretch()
         self.name.setFocus()
 
+    def refresh_rank_note(self):
+        others = [e for e in self.week.educators if e.id != self.source.id]
+        duplicates = [e.name for e in others if e.seniority == self.seniority.value()]
+        free = [str(rank) for rank in range(1, 12) if rank not in {e.seniority for e in others}]
+        self.rank_note.setText("Ce rang est déjà utilisé par " + ", ".join(duplicates) + ". Choisissez un rang libre." if duplicates else "Rang 1 : plus grande ancienneté. Rangs libres : " + ", ".join(free))
+        self.rank_note.setStyleSheet(f"font-size:14px;color:{'#952E28' if duplicates else '#52655E'};")
+
     def build_item(self):
         ed = deepcopy(self.source)
         ed.name = self.require_name(self.name)
         ed.color = self.color.color
         ed.seniority = self.seniority.value()
+        if any(other.id != ed.id and other.seniority == ed.seniority for other in self.week.educators):
+            raise ValueError(f"Le rang {ed.seniority} est déjà utilisé. Choisissez un rang libre de 1 à 11.")
         ed.seniority_date = self.seniority_date.text().strip()
         if ed.seniority_date:
             try:
@@ -618,8 +711,8 @@ class ShiftDialog(EditorDialog):
         self.day = QComboBox()
         self.day.addItems([week.day_label(0)] if week.planning_date else DAYS)
         self.day.setCurrentIndex(shift.day)
-        self.start = MinuteEdit(shift.start)
-        self.end = MinuteEdit(shift.end)
+        self.start = ClockEdit(shift.start)
+        self.end = ClockEdit(shift.end)
         self.before = integer(shift.buffer_before, 0, 240, " min")
         self.after = integer(shift.buffer_after, 0, 240, " min")
         self.before_paid = check("Rémunéré", shift.before_paid)
@@ -711,7 +804,7 @@ class ActivityDialog(EditorDialog):
         self.day = QComboBox()
         self.day.addItems([week.day_label(0)] if week.planning_date else DAYS)
         self.day.setCurrentIndex(activity.day)
-        self.start, self.end = MinuteEdit(activity.start), MinuteEdit(activity.end)
+        self.start, self.end = ClockEdit(activity.start), ClockEdit(activity.end)
         self.room = QComboBox()
         self.room.addItem("Choisir un lieu", "")
         for room in week.rooms:
@@ -766,8 +859,8 @@ class SettingsDialog(EditorDialog):
         self.source = deepcopy(week.settings)
         settings = self.source
         form = self.add_page("Ouverture et relèves")
-        self.open_time = MinuteEdit(settings.open_minute)
-        self.close_time = MinuteEdit(settings.close_minute)
+        self.open_time = ClockEdit(settings.open_minute)
+        self.close_time = ClockEdit(settings.close_minute)
         self.opening_buffer = integer(settings.opening_buffer, 10, 240, " min")
         self.closing_buffer = integer(settings.closing_buffer, 5, 240, " min")
         self.handover = integer(settings.handover_minutes, 15, 240, " min")

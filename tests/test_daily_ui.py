@@ -71,7 +71,7 @@ def test_daily_forms_only_offer_selected_date_and_daily_hours(day_window):
 def test_creation_assigns_distinct_colours_and_edit_preserves_manual_colour(day_window):
     plan = day_window.week
     forms = []
-    for index, rank in enumerate((1, 4, 9)):
+    for index, rank in enumerate((3, 4, 9)):
         dialog = EducatorDialog(plan)
         forms.append(dialog)
         dialog.name.setText(f"Nouvelle éducatrice {index}")
