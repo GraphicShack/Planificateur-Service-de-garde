@@ -27,7 +27,7 @@ Chaque étape correspond à un commit. La préparation de la release et la consi
 
 ## Vérification et limites
 
-La suite Qt6/OR-Tools comprend 260 tests et six sous-cas de pagination. Les contrôles ciblés des nouvelles règles, groupes et profils passent localement ; les résultats complets natifs sont consignés avant publication. Dix tests contrôlent la préparation de release et les notes de version. Les résultats natifs et le SHA exact sont consignés dans [État des vérifications](ETAT_VERIFICATION.md) avant la livraison publique.
+La suite Qt6/OR-Tools réussit 260 tests et six sous-cas de pagination, localement ainsi que sur Windows et Mac. Les exécutables compilés sont aussi contrôlés après extraction des ZIP. Dix tests contrôlent la préparation de release et les notes de version. Les résultats natifs et le SHA exact sont consignés dans [État des vérifications](ETAT_VERIFICATION.md) avant la livraison publique.
 
 Les nouvelles vérifications portent sur les 480/481 minutes, les horaires coupés, les pauses payées/non payées, la couverture de chaque groupe, les groupes et quarts verrouillés conservés, la participation, les rangs libres, les indisponibilités, l’impossibilité avec huit heures, la suppression, la restauration, les sauvegardes et la migration.
 

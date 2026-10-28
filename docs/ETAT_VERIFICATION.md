@@ -2,6 +2,27 @@
 
 Les constructions et les contrôles natifs s’exécutent sur GitHub Actions. Les fichiers à remettre sont les ZIP portables d’une exécution réussie correspondant au code voulu. Une sortie compilée dont le contrôle échoue n’est pas livrée.
 
+## Livraison 0.3.2 — rangs, tous les groupes et plafond de huit heures
+
+Le code exact testé est `8bb801276a79a9cacee14887776c7cbd31a7453f`. Les deux constructions natives réussissent **260 tests chacune**, plus les **six sous-cas de pagination**, sans test ignoré :
+
+- [Windows — tests, compilation et ZIP extrait vérifiés](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40768429513).
+- [Mac Apple Silicon — tests, compilation et ZIP extrait vérifiés](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40768429567).
+
+Le diagnostic de chaque exécutable confirme la couverture des deux groupes, la participation de l’équipe, l’ordre des rangs de profils équivalents et le plafond de huit heures, en plus de SQLite, de l’accueil, des PDF, du solveur et des opérations hors ligne. Ces contrôles sont exécutés sur le logiciel compilé, dans son dossier portable puis après extraction de son ZIP. La préparation de la release refuse un rapport sans le nouveau contrôle `daily_groups_seniority_eight_hours`.
+
+La dernière précision métier impose deux éducateurs minimum dans chaque groupe ouvert, y compris la préparation et la fermeture. Le ratio propre au groupe peut exiger davantage de personnel. Les pauses ne comptent jamais dans sa couverture et les relèves conservent quinze minutes communes. Les versions de travail adoptent les règles actuelles ; les snapshots historiques restent intacts.
+
+Le solveur maximise d’abord la participation, limite les heures inutiles, puis privilégie les rangs dans l’ordre : quarts continus, davantage d’heures et fin plus tôt. Une proposition initiale vérifiée amorce les cas de deux équipes continues par groupe. La limite de recherche peut empêcher de prouver l’optimalité de toutes les préférences ; le message de proposition le précise. Une erreur bloquante empêche toujours son application.
+
+La suite locale Qt6/OR-Tools réussit aussi 260 tests et six sous-cas. Les dix contrôles de préparation de release et de notes passent. Les tests supplémentaires couvrent les 480/481 minutes, les pauses, les groupes et leurs buffers, les inscriptions, les profils indisponibles, les rangs non consécutifs, la suppression avec restauration/sauvegarde, la migration et la date stylée Qt 6.12.
+
+Les aperçus et le PDF d’exemple sont générés par le code réel avec des données fictives : deux groupes et huit éducatrices, les quatre premiers rangs à 8 h et les quatre suivants à 3 h, avec deux personnes par groupe en continu et une relève de quinze minutes. Les captures Qt6 ont été inspectées avant publication ; les annotations de grille vide sont retirées et le bouton Supprimer est visible sur l’accueil.
+
+SQLite passe au format 3 avec copie de sécurité avant migration. Une suppression masque la date sans effacer ses versions et survit aux sauvegardes. [Fichiers modifiés, hypothèses et limites](LIVRAISON_0_3_2.md). Les notes sont versionnées dans le [CHANGELOG](../CHANGELOG.md) et reprises dans la release GitHub.
+
+Aucune mise à jour automatique ni notarisation DeveloperID Mac n’est ajoutée. Les essais sur le poste de l’école, avec un lecteur d’écran et une imprimante physique restent à faire. Les heures maximales correspondent aux minutes rémunérées, buffers compris et pauses non payées déduites. Conservez une copie du dossier `donnees` lors de la mise à jour.
+
 ## Livraison 0.3.1 — accueil, groupes et navigation latérale
 
 Le code exact testé est `a7456ec72d6705f8d9643f2216a5894460278c8b`. Les deux constructions natives ont réussi **238 tests chacune**, plus les **six sous-cas de pagination**, sans test ignoré :
