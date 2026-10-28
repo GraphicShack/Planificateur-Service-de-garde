@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
     QDialogButtonBox, QFileDialog, QFormLayout, QFrame, QHBoxLayout,
     QInputDialog, QLabel, QLineEdit, QListWidget, QListWidgetItem, QMainWindow,
     QMenu, QMessageBox, QProgressBar, QProgressDialog, QPushButton,
-    QSlider, QSpinBox, QSplitter, QStackedWidget, QScrollArea, QVBoxLayout, QWidget,
+    QSlider, QSpinBox, QSplitter, QScrollArea, QVBoxLayout, QWidget,
 )
 
 from ..branding import DISPLAY_NAME, SHORT_NAME
@@ -37,6 +37,7 @@ from .theme import DATE_STYLE
 from .inline_name import InlineDayName
 from .enrolment import EnrolmentPanel
 from .home import HomePage
+from .motion import AnimatedStack, Motion
 from .visuals import icon, logo_icon, logo_pixmap
 from .forms import EducatorDialog, GroupDialog, RoomDialog, ShiftDialog, ActivityDialog, SettingsDialog, integer, note
 
@@ -115,6 +116,7 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(640, 480)
         self._auto_hidden_sidebar = False
         self._sidebar_manual_hidden = False
+        self.motion = Motion(self)
         self._build_ui()
         self._upgrade_working_rules()
         self.refresh()
@@ -191,7 +193,7 @@ class MainWindow(QMainWindow):
         rail_layout.addStretch()
         shell.addWidget(rail)
         content = QWidget()
-        self.content_stack = QStackedWidget()
+        self.content_stack = AnimatedStack(self.motion)
         self.planner_page = content
         self.content_stack.addWidget(content)
         shell.addWidget(self.content_stack,1)
@@ -292,7 +294,7 @@ class MainWindow(QMainWindow):
         self.sidebar.setMinimumWidth(250)
         side_outer = QVBoxLayout(self.sidebar)
         side_outer.setContentsMargins(0,0,0,0)
-        self.management_stack = QStackedWidget()
+        self.management_stack = AnimatedStack(self.motion)
         side_outer.addWidget(self.management_stack)
         self.team_page = QWidget()
         self.management_stack.addWidget(self.team_page)
@@ -740,6 +742,10 @@ class MainWindow(QMainWindow):
         sidebar.setChecked(not self.sidebar.isHidden())
         sidebar.toggled.connect(self.sidebar.setVisible)
         layout.addRow(sidebar)
+        animations = QCheckBox("Animations discrètes (cette session)")
+        animations.setChecked(self.motion.enabled)
+        animations.toggled.connect(self.motion.set_enabled)
+        layout.addRow(animations)
         layout.addRow(note("Les heures restent exactes à la minute, quel que soit le zoom. Le magnétisme aide uniquement au déplacement des blocs."))
         layout.addRow(note("Au clavier dans la grille : gauche/droite sélectionne un quart, haut/bas le déplace, Maj + haut/bas ajuste la fin et Alt + haut/bas ajuste le début. Entrée ouvre les heures exactes."))
         buttons = QDialogButtonBox()
