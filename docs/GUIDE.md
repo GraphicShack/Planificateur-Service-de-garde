@@ -95,6 +95,8 @@ La barre affiche la date complète dans un champ modifiable, sans calendrier men
 
 La bande verticale est placée entre les heures et les quarts. Elle suit le même défilement que la grille et fusionne les plages consécutives dont les nombres de personnes présentes et requises sont identiques. **2 présentes / 2 requises · OK** indique le besoin exact en vert ; **1 présente / 2 requises · Manque 1** signale un déficit en rouge ; **3 présentes / 2 requises · +1** indique un surplus en gris neutre. Les limites restent exactes à la minute : aucune moyenne ne masque une pause. Cliquez une plage ou utilisez haut/bas puis Entrée pour la surligner ; le détail sélectionné reste affiché dans l’en-tête.
 
+Le bouton **− Ratio** masque la bande et rend cet espace aux quarts ; **+ Ratio** la réaffiche. Le contrôle reste accessible au clavier et la validation continue même lorsque la bande est fermée. Ce choix ne modifie ni les horaires ni les exports : le PDF ne contient aucune bande de ratio, aucun compte de présence et aucun panneau d’alertes.
+
 Toutes les éducatrices actives disposent d’une colonne, sans défilement horizontal. Si un nom ne tient pas, ses initiales sont affichées ; l’infobulle conserve le nom complet. Les noms des quarts sont en gras à 14 px minimum, les heures à 13 px. Le bouton ⓘ à côté de « L’équipe » explique la création des quarts sans prendre de place dans la liste. Annuler et Rétablir sont alignés à droite dans l’en-tête.
 
 **Vérifier (N)** ouvre les alertes. Cliquer sur une alerte ou l’activer au clavier sélectionne sa plage et fait défiler la grille et la bande de ratio. La validation continue même lorsque le panneau est fermé. Avec une journée valide, le panneau indique **Aucune alerte**.

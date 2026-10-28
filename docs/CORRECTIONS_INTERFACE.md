@@ -1,6 +1,6 @@
 # Corrections de l’interface quotidienne
 
-Les seize demandes initiales correspondent aux commits numérotés 01 à 16. Les huit corrections de grille suivantes ont chacune leur commit « Grille », en conservant la numérotation reçue (sans étape 03). Le style Atelier est conservé. Les constructions et la publication portable portent la version 0.3.0. Un commit de livraison distinct enregistre le code exact vérifié par les deux plateformes.
+Les seize demandes initiales correspondent aux commits numérotés 01 à 16. Les huit corrections de grille suivantes ont chacune leur commit « Grille », en conservant la numérotation reçue (sans étape 03). La demande complémentaire de fermeture du ratio constitue un neuvième commit « Grille 10 ». Le style Atelier est conservé. Les constructions et la publication portable portent la version 0.3.0. Un commit de livraison distinct enregistre le code exact vérifié par les deux plateformes.
 
 | Étape | Résultat |
 | --- | --- |
@@ -33,6 +33,7 @@ Les seize demandes initiales correspondent aux commits numérotés 01 à 16. Les
 | Grille 07 | Résumé et titre réunis, en-têtes compactés, alertes latérales sur grand écran ; adaptation des commandes aux petites fenêtres. |
 | Grille 08 | Axe à 13 px minimum et lignes horaires plus marquées. |
 | Grille 09 | Annuler et Rétablir à droite, avant l’indicateur unique de sauvegarde. |
+| Grille 10 | Bouton − Ratio / + Ratio pour fermer ou réafficher la bande ; la grille récupère sa largeur et la validation reste active. Aucun ratio n’est exporté dans le PDF. |
 
 ## Règles retenues
 
@@ -65,6 +66,10 @@ Le poste Linux dispose de ReportLab et d’un adaptateur temporaire Qt5 pour ins
 
 Cette révision n’ajoute pas de mise à jour automatique. Les ZIP publics se remplacent en conservant le dossier donnees, après sauvegarde. Le modèle PDF existant est conservé ; les pauses y restent vides, conformément à la demande précédente. Les contrôles d’accessibilité portent sur les widgets, les contrastes, les tailles et les événements clavier ; aucune certification avec un lecteur d’écran matériel n’est revendiquée.
 
+La fermeture/réouverture du ratio a également été vérifiée sur le code réel : récupération de 184 px, conservation du masquage après rafraîchissement et sélection d’une alerte, commande clavier standard, puis réaffichage. Le même horaire a été exporté avec la bande ouverte et fermée : le texte des deux PDF est identique, sans ratio ni comptes de couverture. Les six tests PDF existants passent sans changement de leur suite.
+
+[Voir la grille avec le ratio fermé](ratio-masque.png).
+
 Les captures sont des rendus du code réel avec des données fictives. Les valeurs de couverture se rapportent au personnel planifié, tandis que les incompatibilités de disponibilité restent signalées séparément par la validation.
 
 ## Fichiers modifiés
@@ -79,6 +84,7 @@ Les captures sont des rendus du code réel avec des données fictives. Les valeu
 - `docs/apercu-interface.png`
 - `docs/couverture-journee.png`
 - `docs/exemple-horaire-pedagogique.pdf`
+- `docs/ratio-masque.png`
 - `gardeplan/__init__.py`
 - `gardeplan/alerts.py`
 - `gardeplan/coverage.py`

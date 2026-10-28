@@ -361,6 +361,16 @@ class MainWindow(QMainWindow):
         self.top_alert_button.setObjectName("subtleButton")
         self.verify_button = self.top_alert_button
         day_row.addWidget(self.top_alert_button)
+        self.coverage_toggle = self._button("− Ratio", lambda: None,
+            "Masquer la bande de ratio. Elle n’est jamais incluse dans le PDF.")
+        self.coverage_toggle.setObjectName("subtleButton")
+        self.coverage_toggle.setStyleSheet("font-size:16px;")
+        self.coverage_toggle.setMinimumHeight(44)
+        self.coverage_toggle.setCheckable(True)
+        self.coverage_toggle.setChecked(True)
+        self.coverage_toggle.setAccessibleName("Masquer la bande de ratio")
+        self.coverage_toggle.toggled.connect(self.toggle_coverage)
+        day_row.addWidget(self.coverage_toggle)
         for button, name in ((self.undo_button, "undo"), (self.redo_button, "redo")):
             button.setObjectName("subtleButton")
             button.setIcon(icon(name))
@@ -923,7 +933,7 @@ class MainWindow(QMainWindow):
             self.brand_label.setStyleSheet("font-size:20px;font-weight:700;" if compact else "font-size:28px;font-weight:700;")
             self.date_navigation_layout.setContentsMargins(0,0,0,0) if compact else self.date_navigation_layout.setContentsMargins(4,3,4,3)
             self.day_controls_layout.setContentsMargins(12,2 if compact else 6,12,2 if compact else 6)
-            self.day_title.setMaximumWidth(250 if narrow else 440)
+            self.day_title.setMaximumWidth(210 if narrow else 440)
             self.export_button.setText("" if narrow else "Exporter PDF")
             self.generate_button.setText("" if narrow else "Générer l’horaire")
             self.export_button.setMinimumWidth(48)
@@ -933,6 +943,13 @@ class MainWindow(QMainWindow):
             if hasattr(self,"alert_panel"):
                 self._position_alerts()
 
+
+    def toggle_coverage(self, visible):
+        self.calendar.set_coverage_visible(visible)
+        action = "Masquer" if visible else "Afficher"
+        self.coverage_toggle.setText("− Ratio" if visible else "+ Ratio")
+        self.coverage_toggle.setAccessibleName(action+" la bande de ratio")
+        self.coverage_toggle.setToolTip(action+" la bande de ratio. Elle n’est jamais incluse dans le PDF.")
 
     def toggle_alerts(self):
         self.alert_panel.setVisible(self.alert_toggle.isChecked())

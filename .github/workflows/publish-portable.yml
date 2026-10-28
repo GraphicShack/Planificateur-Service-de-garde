@@ -119,7 +119,7 @@ jobs:
           Path('release-notes.md').write_text(
               'Planification d’une journée pédagogique à la fois, avec une interface épurée.\n\n'
               '- Effectif global du service, sans groupes dans l’interface ; minimum de deux éducatrices et ratio configurable, initialement 1/20.\n'
-              '- Couverture verticale alignée sur les heures, plages identiques fusionnées, pauses exclues ; comptes explicites et alertes sélectionnables.\n'
+              '- Couverture verticale alignée sur les heures, plages identiques fusionnées, pauses exclues ; comptes explicites et alertes sélectionnables. La bande Ratio peut être fermée et reste absente du PDF.\n'
               '- Colonnes de toutes les éducatrices sans défilement horizontal ; noms à 14 px, heures à 13 px et en-têtes compactés.\n'
               '- Quarts aux couleurs des éducatrices, pauses et dîner avec rémunération exacte, poignées toujours visibles et édition au clavier.\n'
               '- Annuler/Rétablir sur cinquante actions, nom de journée en place, champ de date simple et indicateur unique de sauvegarde.\n'

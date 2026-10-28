@@ -784,6 +784,7 @@ class CalendarWidget(QWidget):
         self.scroll.setWidget(self.canvas)
         self.gutter = _Gutter(self)
         self.coverage_band = CoverageBand(self)
+        self._coverage_visible = True
         self.coverage_band.interval_selected.connect(lambda a, b: self.highlight_interval(self.day, a, b))
         self.coverage_header = QLabel("Couverture")
         self.coverage_header.setWordWrap(True)
@@ -836,8 +837,20 @@ class CalendarWidget(QWidget):
         self.coverage_header.setParent(self.summary_strip)
         row.addWidget(self.coverage_header)
         self.coverage_header.hide()
-        self.coverage_band.details_changed.connect(lambda _: self.coverage_header.show())
+        self.coverage_band.details_changed.connect(self._show_coverage_details)
         self.layout().addWidget(self.summary_strip,0,0,1,3)
+
+    def _show_coverage_details(self, _label):
+        if self._coverage_visible:
+            self.coverage_header.show()
+
+    def set_coverage_visible(self, visible):
+        """A view-only choice; coverage validation and PDF data never change."""
+        self._coverage_visible = bool(visible)
+        self.coverage_band.setVisible(self._coverage_visible)
+        self.coverage_header.setVisible(self._coverage_visible and
+                                       (self.coverage_band.selected >= 0 or not hasattr(self, "summary_strip")))
+        self._layout_timer.start(0)
 
     def columns(self):
         if not self.week:
