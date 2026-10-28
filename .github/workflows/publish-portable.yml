@@ -35,7 +35,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Vérifier le contrôle des fichiers à publier
-        run: python -m unittest discover -s scripts -p test_prepare_release.py -v
+        run: |
+          python -m unittest discover -s scripts -p test_prepare_release.py -v
+          python -m unittest discover -s scripts -p test_release_notes.py -v
       - name: Trouver les deux constructions réussies du même code
         id: builds
         uses: actions/github-script@v7
@@ -116,32 +118,10 @@ jobs:
           shutil.copyfile('docs/exemple-horaire-pedagogique.pdf', sample)
           with Path('release-output/SHA256SUMS.txt').open('a', encoding='utf-8') as handle:
               handle.write(hashlib.sha256(sample.read_bytes()).hexdigest() + '  ' + sample.name + '\n')
-          Path('release-notes.md').write_text(
-              'Planification d’une journée pédagogique à la fois, avec une interface épurée.\n\n'
-              '- Grille par groupes et sous-colonnes d’éducatrices, en-têtes figés et heures exactes.\n'
-              '- Équipe, Inscriptions et Vérification partagent le panneau gauche ; badge du nombre d’alertes et outils du planning regroupés dans la barre latérale.\n'
-              '- Ratio masquable ; dîners masqués dans les blocs, avec calculs de couverture et de rémunération conservés.\n'
-              '- Annuler et Rétablir sur la ligne du nom de la journée ; cinquante actions et raccourcis clavier.\n'
-              '- Une éducatrice minimum de 6 h 50 à 7 h et de 17 h 20 à 17 h 35 ; deux entre ces plages. Le ratio configurable 1/20 reste obligatoire pendant l’accueil.\n'
-              '- Règles alignées dans la validation, la bande de couverture et le solveur ; groupes et affectations verrouillées conservés dans la proposition.\n'
-              '- Anciens horaires publiés/archivés conservés avec leurs règles d’origine ; les nouveaux brouillons utilisent les règles actuelles.\n'
-              '- PDF unique lettre paysage, huit éducateurs par page, interruptions vides ; aucun ratio ni panneau d’alertes imprimé.\n\n'
-              'Logiciel portable en français, entièrement hors ligne. Aucun installateur ni Python requis.\n\n'
-              '- **Windows 64 bits** : téléchargez le ZIP Windows.\n'
-              '- **Mac Apple Silicon, macOS 15 ou plus récent** : téléchargez le ZIP macOS-arm64.\n\n'
-              'Décompressez le dossier complet dans un emplacement où vous pouvez enregistrer des fichiers, '
-              'puis ouvrez Planificateur-SDG.exe ou Planificateur-SDG.app. Gardez tous les fichiers ensemble. '
-              'Vos données restent dans le sous-dossier donnees.\n\n'
-              '**Mac** : si macOS lance une copie temporaire, le logiciel retrouve le dossier portable '
-              'd’origine ou vous demande de le sélectionner. Choisissez le dossier extrait qui contient '
-              'Planificateur-SDG.app et portable.mode.\n\n'
-              '**Mise à jour** : fermez le logiciel, sauvegardez votre ancien dossier donnees, '
-              'puis transférez ce dossier dans la nouvelle version extraite. Ne le remplacez pas par un dossier vide.\n\n'
-              'Les ZIP proviennent des constructions natives réussies du même code. '
-              'Leurs contrôles confirment le mode portable, SQLite, les PDF et le solveur après extraction.\n\n'
-              f"[Contrôle Windows](https://github.com/{repo}/actions/runs/{os.environ['WINDOWS_RUN']}) · "
-              f"[Contrôle Mac](https://github.com/{repo}/actions/runs/{os.environ['MACOS_RUN']})\n\n"
-              'Le fichier SHA256SUMS permet de vérifier les téléchargements.\n', encoding='utf-8')
+          from scripts.release_notes import build_release_notes
+          notes = build_release_notes('CHANGELOG.md', os.environ['RELEASE_VERSION'], repo,
+                                      os.environ['WINDOWS_RUN'], os.environ['MACOS_RUN'])
+          Path('release-notes.md').write_text(notes, encoding='utf-8')
           PY
           if ! gh release view "v$RELEASE_VERSION" >/dev/null 2>&1; then
             gh release create "v$RELEASE_VERSION" --target "$RELEASE_SHA" --draft --title "Planificateur — Service de garde $RELEASE_VERSION" --notes-file release-notes.md
