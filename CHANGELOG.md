@@ -4,6 +4,16 @@ Chaque release reprend la section correspondant à sa version. Une section doit
 être ajoutée ici avant de publier ; le contrôle de publication refuse une
 version sans notes. Les téléchargements sont dans les [Releases GitHub](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases).
 
+## [0.3.3] — 2026-10-28
+
+- Accueil commun de 6 h 50 à 7 h et de 17 h à 17 h 35 : minimum de deux personnes au total, tous groupes confondus. Le minimum de deux par groupe demeure de 7 h à 17 h.
+- Le ratio initial de 1/20 reste applicable à l’ensemble des enfants pendant l’accueil commun ; plus de quarante enfants peuvent donc exiger plus de deux personnes.
+- La bande de couverture et les alertes identifient clairement les plages « Tous les groupes ». Les pauses et les buffers non dédiés à la couverture restent exclus du ratio.
+- La génération utilise exactement les mêmes bornes que la validation et autorise une transmission entre éducateurs de groupes différents pendant l’accueil commun.
+- Les inscriptions et les paramètres expliquent les plages communes. Les horaires d’ouverture restent inchangés : début à 6 h 50 et fin à 17 h 35.
+- Les nouveaux brouillons adoptent la règle actualisée ; les versions publiées/archivées conservent leurs règles. Les huit heures rémunérées maximum, les priorités de rang et les quarts verrouillés sont conservés.
+- Sept tests ciblés supplémentaires et contrôle des plages communes dans les logiciels portables extraits.
+
 ## [0.3.2] — 2026-10-28
 
 ### Génération et règles

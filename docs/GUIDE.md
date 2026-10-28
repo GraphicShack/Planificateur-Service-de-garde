@@ -32,7 +32,7 @@ Un quart verrouillé est conservé pendant la génération ; déverrouillez-le d
 
 ## Ouverture, fermeture et relève
 
-Pour une journée ouverte de 7 h à 17 h 30, chaque groupe exige au moins deux éducateurs de 6 h 50 à 17 h 35. Les dix minutes de préparation avant l’ouverture et les cinq minutes de fermeture sont des temps de présence rémunérés, distincts de la couverture des enfants. Pendant l’accueil, le besoin d’un groupe est le maximum de deux et du nombre d’enfants divisé par son ratio, arrondi au supérieur. Les pauses doivent être remplacées et les relèves comporter quinze minutes communes.
+Pour une journée ouverte aux enfants de 7 h à 17 h 30, le service exige deux personnes au total de 6 h 50 à 7 h et de 17 h à 17 h 35. De 7 h à 17 h, chaque groupe ouvert exige deux éducateurs minimum. Les dix minutes de préparation avant l’ouverture et les cinq minutes de fermeture sont des temps de présence rémunérés, distincts de la couverture des enfants. De 7 h à 17 h, le besoin d’un groupe est le maximum de deux et du nombre d’enfants divisé par son ratio, arrondi au supérieur. Pendant l’accueil commun, les enfants et la couverture sont comptés pour tout le service. Les pauses doivent être remplacées et les relèves comporter quinze minutes communes.
 
 Pour une relève à 12 h 30, l'éducatrice entrante peut commencer sa présence à 12 h 15 avec quinze minutes de préparation avant sa couverture de 12 h 30. L'éducatrice sortante reste présente pendant ces quinze minutes. Le besoin de couverture du groupe doit rester satisfait, même pendant les pauses et les relèves.
 
@@ -153,13 +153,21 @@ préparation des groupes ne constitue pas un ratio réglementaire. Les règles d
 couverture sont désormais appliquées à chaque groupe ; les heures d’ouverture et de fermeture sont conservées.
 
 
-## Règles de la version 0.3.2
+## Règles actuelles — version 0.3.3
 
-Chaque groupe conserve au moins deux éducateurs présents pendant toute son ouverture, avec deux personnes également pendant la préparation et la fermeture de ses locaux. Un ratio exigeant plus de personnel ou un minimum configuré plus élevé reste obligatoire. Aucune pause, même payée, ne couvre les enfants. Chaque relève conserve quinze minutes communes.
+| Plage initiale | Minimum de présence |
+| --- | --- |
+| 6 h 50 à 7 h | Deux personnes pour tout le service |
+| 7 h à 17 h | Deux personnes dans chaque groupe ouvert |
+| 17 h à 17 h 35 | Deux personnes pour tout le service |
 
-Deux groupes ouverts toute la plage exigent au moins quatre personnes simultanées. Avec une limite individuelle de huit heures, quatre personnes ne suffisent pas pour couvrir la journée entière : prévoyez une équipe plus grande ou corrigez les périodes réellement ouvertes. Le logiciel signale cette impossibilité au lieu de générer un horaire invalide.
+Pendant les plages communes, les enfants de tous les groupes sont comptés ensemble et le ratio reste obligatoire : avec 60 enfants présents et un ratio de 1/20, trois éducateurs sont nécessaires. Les noms et les colonnes de groupes sont conservés ; il n’est pas nécessaire de déplacer tous les quarts dans un seul groupe pour bénéficier de la règle commune.
 
-Les anciennes versions publiées/archivées conservent les règles historiques ; les versions de travail, nouvelles journées et duplications adoptent les règles actuelles.
+Une pause, même payée, ne couvre jamais les enfants. Les buffers servent à la présence avant l’ouverture et après la fermeture, mais ne comptent pas dans la couverture pendant l’accueil. Chaque relève conserve quinze minutes communes ; pendant l’accueil commun, la transmission peut se faire avec un éducateur d’un autre groupe.
+
+Les plages suivent les heures configurées : la préparation précède l’ouverture aux enfants, et l’accueil commun du soir commence trente minutes avant leur fermeture et se termine après le buffer de fermeture. Les heures initiales demeurent 6 h 50–17 h 35. Le minimum de deux par groupe est maintenu entre les plages communes.
+
+Les anciennes versions publiées/archivées conservent leurs règles ; les versions de travail, nouvelles journées et duplications adoptent les règles actuelles.
 
 La barre latérale présente Planning, Équipe, Inscriptions, Ratio et Vérification.
 Dossier et Réglages sont placés en bas. Annuler/Rétablir sont sur la ligne du
@@ -200,7 +208,7 @@ et reprises dans les Releases GitHub.
 
 ## Attribution des quarts et suppression — version 0.3.2
 
-Le générateur traite tous les groupes sans les fusionner. Chaque groupe doit respecter son ratio (initialement 1/20). Deux éducateurs minimum sont requis dans chaque groupe pendant toute sa plage, préparation et fermeture incluses ; un minimum de groupe supérieur reste applicable. Si des groupes demeurent ouverts avec des enfants à la fin de la journée, leur couverture reste nécessaire.
+Le générateur traite tous les groupes sans les fusionner. Chaque groupe doit respecter son ratio (initialement 1/20). Deux éducateurs minimum sont requis par groupe entre les plages communes ; pendant ces plages, le minimum est de deux pour tout le service, avec le ratio collectif maintenu. Si des groupes demeurent ouverts avec des enfants à la fin de la journée, leur couverture reste nécessaire.
 
 La recherche attribue d’abord des heures au plus grand nombre de personnes possible, sans modifier les contraintes obligatoires. Elle limite ensuite les heures inutiles, puis privilégie le rang 1, suivi des rangs suivants : quarts continus, plus d’heures, fin plus tôt. Les rangs n’ont pas besoin d’être consécutifs. Les horaires verrouillés et les disponibilités peuvent empêcher l’ordre idéal ; les personnes sans heures sont nommées dans la proposition. Une recherche interrompue signale que les préférences ne sont pas toutes prouvées optimales.
 

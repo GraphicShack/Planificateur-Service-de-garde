@@ -4,7 +4,7 @@
 
 <h1 align="center">Planificateur — Service de garde</h1>
 
-<p align="center"><strong>Version 0.3.2 · Portable, sans installation</strong></p>
+<p align="center"><strong>Version 0.3.3 · Portable, sans installation</strong></p>
 
 <p align="center">
   <strong>Des horaires clairs pour chaque journée pédagogique.</strong><br>
@@ -12,18 +12,18 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.3.2/Planificateur-SDG-0.3.2-Windows-x64-Portable.zip">Télécharger pour Windows</a>
+  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.3.3/Planificateur-SDG-0.3.3-Windows-x64-Portable.zip">Télécharger pour Windows</a>
   &nbsp;·&nbsp;
-  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.3.2/Planificateur-SDG-0.3.2-macOS-arm64-Portable.zip">Télécharger pour Mac</a>
+  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.3.3/Planificateur-SDG-0.3.3-macOS-arm64-Portable.zip">Télécharger pour Mac</a>
   &nbsp;·&nbsp;
   <a href="docs/GUIDE.md">Guide d’utilisation</a>
 </p>
 
 ![Aperçu du planificateur avec des données fictives](docs/apercu-interface.png)
 
-La **version 0.3.2** s’ouvre sur un accueil réunissant les journées récentes, le résumé d’aujourd’hui et l’équipe. La création d’une journée mène directement aux inscriptions. La grille reste organisée par groupes et sous-colonnes d’éducatrices. Les icônes Équipe, Inscriptions et Vérification partagent le panneau gauche ; le ratio est masquable et les alertes sont comptées dans un badge. Annuler et Rétablir sont alignés avec le nom de la journée. Les dîners restent calculés, sans être affichés dans les blocs.
+La **version 0.3.3** s’ouvre sur un accueil réunissant les journées récentes, le résumé d’aujourd’hui et l’équipe. La création d’une journée mène directement aux inscriptions. La grille reste organisée par groupes et sous-colonnes d’éducatrices. Les icônes Équipe, Inscriptions et Vérification partagent le panneau gauche ; le ratio est masquable et les alertes sont comptées dans un badge. Annuler et Rétablir sont alignés avec le nom de la journée. Les dîners restent calculés, sans être affichés dans les blocs.
 
-Chaque groupe ouvert exige **au moins deux éducateurs présents en tout temps**, de la préparation à la fermeture, avec remplacement pendant les pauses et chevauchement des relèves. Le ratio configuré (initialement 1/20) peut en exiger davantage. La génération attribue des heures au plus grand nombre de personnes possible, puis privilégie le rang 1 et les suivants : quarts continus, davantage d’heures et fin plus tôt, en limitant les heures inutiles. Le plafond quotidien est de **8 h rémunérées**, buffers compris et pauses non rémunérées déduites. Les anciennes versions publiées et archivées conservent leurs règles. [Détails de la livraison](docs/LIVRAISON_0_3_2.md) · [Notes de version](CHANGELOG.md).
+De **6 h 50 à 7 h** et de **17 h à 17 h 35**, le service exige **deux personnes au total, tous groupes confondus**. De **7 h à 17 h**, chaque groupe ouvert exige au moins deux éducateurs. Les pauses doivent être remplacées et les relèves conserver quinze minutes communes. Le ratio configuré (initialement 1/20) peut en exiger davantage. La génération attribue des heures au plus grand nombre de personnes possible, puis privilégie le rang 1 et les suivants : quarts continus, davantage d’heures et fin plus tôt, en limitant les heures inutiles. Le plafond quotidien est de **8 h rémunérées**, buffers compris et pauses non rémunérées déduites. Les anciennes versions publiées et archivées conservent leurs règles. [Détails de la livraison](docs/LIVRAISON_0_3_3.md) · [Notes de version](CHANGELOG.md).
 
 [Voir la couverture et les alertes](docs/couverture-journee.png)
 
@@ -57,7 +57,7 @@ L’interface se consacre aux horaires. Chaque date conserve ses propres inscrip
 | Accueil des enfants | **7 h à 17 h 30** |
 | Préparation et fermeture | Deux éducatrices pour ouvrir et deux pour fermer |
 | Relève | Quinze minutes de présence commune |
-| Couverture | Continue, avec au moins deux éducatrices simultanément |
+| Couverture | Deux par groupe de 7 h à 17 h ; deux au total avant 7 h et après 17 h |
 | Ratio de départ | Un éducateur pour vingt enfants, configurable |
 
 Les heures sont calculées en minutes entières. La présence, la rémunération et la couverture des enfants sont distinguées : une pause ou un temps de préparation ne constitue pas automatiquement de la surveillance. Le ratio configuré décrit le fonctionnement demandé ; il n’est pas présenté comme une disposition réglementaire.
