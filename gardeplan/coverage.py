@@ -1,5 +1,6 @@
-"""Minute-exact coverage, presented in quarter-hour slices without averaging."""
+"""Minute-exact coverage with merged intervals and legacy quarter-hour views."""
 from dataclasses import dataclass
+from .staffing import boundaries, minimum_presence, pupil_requirement
 from .models import coverage_intervals, working_intervals, required_educators
 from .models import totals, format_duration
 
@@ -20,7 +21,7 @@ class Coverage:
 def coverage_timeline(week, day=0, group_id=""):
     """A global SDG need, or the need of one specified historical group.
 
-    Preparation/closing require two working people. Pupil coverage excludes
+    Preparation/closing follow the versioned staffing policy. Pupil coverage excludes
     buffers and every break, including a paid break. Duplicate shifts never
     count the same person twice.
     """
@@ -32,14 +33,14 @@ def coverage_timeline(week, day=0, group_id=""):
     active = {e.id for e in week.educators if e.active}
     covered = {s.id: coverage_intervals(s) for s in shifts}
     worked = {s.id: working_intervals(s) for s in shifts}
-    boundaries = {start, end, week.settings.open_minute, week.settings.close_minute}
+    points_set = {start, end, week.settings.open_minute, week.settings.close_minute, *boundaries(week)}
     for _, period in periods:
-        boundaries.update((period.start, period.end))
+        points_set.update((period.start, period.end))
     for s in shifts:
         for intervals in (covered[s.id], worked[s.id]):
             for a, b in intervals:
-                boundaries.update((a, b))
-    points = sorted(x for x in boundaries if start <= x <= end)
+                points_set.update((a, b))
+    points = sorted(x for x in points_set if start <= x <= end)
     result = []
     ratio = min((g.ratio for g in groups if g.ratio > 0), default=20)
     for a, b in zip(points, points[1:]):
@@ -47,12 +48,12 @@ def coverage_timeline(week, day=0, group_id=""):
         opened = any(p.start <= a < p.end for _, p in periods)
         preparation = a < week.settings.open_minute or a >= week.settings.close_minute
         if preparation:
-            required = 2 if periods else 0
+            required = minimum_presence(week,a) if periods else 0
             intervals = worked
         else:
-            required = max(2, (students+ratio-1)//ratio) if opened else 0
+            required = pupil_requirement(week,a,students,ratio) if opened else 0
             if group_id and opened:
-                required = required_educators(groups[0], students)
+                required = pupil_requirement(week,a,students,groups[0].ratio,groups[0].min_educators)
             intervals = covered
         actual = len({s.educator_id for s in shifts if s.educator_id in active
                       and any(x <= a and b <= y for x, y in intervals[s.id])})

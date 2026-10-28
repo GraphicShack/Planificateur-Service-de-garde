@@ -4,6 +4,7 @@ La vérification balaye les minutes exactes puis regroupe les erreurs identiques
 adjacentes en intervalles lisibles. Aucun arrondi ni approximation par tranche.
 """
 from __future__ import annotations
+from .staffing import minimum_presence, pupil_requirement
 
 from dataclasses import dataclass, field
 from collections import defaultdict
@@ -113,7 +114,7 @@ def validate(week: Week, *, _service=False) -> list[Issue]:
         and (settings.break_minutes == 0 or settings.break_after_minutes > 0)
     )
     if not valid_settings:
-        add("missing_data", "Les paramètres sont invalides. Prévoyez au minimum 10 minutes pour ouvrir les locaux à deux, 5 minutes pour fermer l'école à deux et 15 minutes communes à chaque relève. Vérifiez aussi les heures d'ouverture et la politique de pauses.")
+        add("missing_data", "Les paramètres sont invalides. Prévoyez au minimum 10 minutes pour ouvrir les locaux, 5 minutes pour fermer l'école et 15 minutes communes à chaque relève. Vérifiez aussi les heures d'ouverture et la politique de pauses.")
 
     valid_periods = defaultdict(list)
     for g in week.groups:
@@ -231,9 +232,9 @@ def validate(week: Week, *, _service=False) -> list[Issue]:
             if not present_periods:
                 values.append((minute, None)); continue
             students = max(p.students for p in present_periods)
-            required = required_educators(g, students)
+            required = pupil_requirement(week,minute,students,g.ratio,g.min_educators)
             actual = len({s.educator_id for s in staff if any(a <= minute < b for a, b in coverage[s.id])})
-            code = "coverage" if actual < max(2, g.min_educators) else "ratio"
+            code = "coverage" if actual < max(minimum_presence(week,minute),g.min_educators if g.min_educators > 2 else 0) else "ratio"
             values.append((minute, (code, required, actual) if actual < required else None))
         for a, b, (code, required, actual) in _minute_runs(values):
             affected = [s.id for s in staff if _overlap(s.start, s.end, a, b)]
@@ -249,10 +250,11 @@ def validate(week: Week, *, _service=False) -> list[Issue]:
             for minute in range(a, b):
                 actual = len({s.educator_id for s in staff if any(x <= minute < y for x, y in working[s.id])})
                 code = "opening" if minute < settings.open_minute else "closing" if minute >= settings.close_minute else "school_coverage"
-                values.append((minute, (code, actual) if actual < 2 else None))
-            for start, end, (code, actual) in _minute_runs(values):
+                required = minimum_presence(week,minute)
+                values.append((minute, (code, actual, required) if actual < required else None))
+            for start, end, (code, actual, required) in _minute_runs(values):
                 subject = "l'ouverture des locaux" if code == "opening" else "la fermeture de l'école" if code == "closing" else "la continuité du service de garde"
-                add(code, _prefix(day, start, end) + f"{subject} exige deux éducatrices présentes; seulement {actual} sont au travail.", day, start, end, shift_ids=[s.id for s in staff if _overlap(s.start, s.end, start, end)], suggestion="Ajuster les quarts pour conserver deux éducatrices présentes simultanément.")
+                add(code, _prefix(day, start, end) + f"{subject} exige {required} éducatrice(s) présente(s); seulement {actual} sont au travail.", day, start, end, shift_ids=[s.id for s in staff if _overlap(s.start, s.end, start, end)], suggestion=f"Ajuster les quarts pour conserver {required} éducatrice(s) présente(s) simultanément.")
 
         # Une arrivée en cours d'ouverture doit avoir quinze minutes communes
         # avec une personne déjà responsable du même groupe. Les buffers payés

@@ -146,6 +146,7 @@ class Settings:
     break_minutes: int = 0
     break_paid: bool = False
     max_daily_minutes: int = 720
+    staffing_policy: int = 2  # Version 1 remains attached to older snapshots.
 
 
 @dataclass
@@ -195,6 +196,8 @@ def _construct(cls, raw: Any, children: dict[str, Any] | None = None):
     if unknown:
         raise ValueError(f"Champs inconnus pour {cls.__name__} : {', '.join(sorted(unknown))}.")
     values = dict(raw)
+    if cls is Settings:
+        values.setdefault("staffing_policy", 1)
     for key, child in (children or {}).items():
         if key in values:
             if not isinstance(values[key], list):
@@ -209,7 +212,7 @@ def _construct(cls, raw: Any, children: dict[str, Any] | None = None):
         "max_minutes", "ratio", "min_educators", "capacity", "buffer_before", "buffer_after",
         "open_minute", "close_minute", "opening_buffer", "closing_buffer", "handover_minutes",
         "snap_minutes", "seniority_weight", "preference_weight", "target_weight", "break_after_minutes",
-        "break_minutes", "max_daily_minutes",
+        "break_minutes", "max_daily_minutes", "staffing_policy",
     }
     bool_fields = {"active", "shared", "outdoor", "paid", "before_paid", "after_paid", "locked", "compatible", "break_paid"}
     for key in cls.__dataclass_fields__:
@@ -223,6 +226,8 @@ def _construct(cls, raw: Any, children: dict[str, Any] | None = None):
         if key in {"preferred_groups", "responsible_ids"} and (not isinstance(val, list) or not all(isinstance(x, str) for x in val)):
             raise ValueError(f"Liste invalide : {key}.")
     if cls is Settings:
+        if result.staffing_policy not in (1,2):
+            raise ValueError("Version des règles de personnel non prise en charge.")
         if type(result.zoom) not in (int, float) or not math.isfinite(result.zoom) or not 0.25 <= result.zoom <= 4:
             raise ValueError("Le zoom du calendrier doit être un nombre compris entre 0,25 et 4.")
         if result.snap_minutes not in (0, 1, 5, 15):

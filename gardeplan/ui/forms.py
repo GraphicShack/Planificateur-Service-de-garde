@@ -869,7 +869,7 @@ class SettingsDialog(EditorDialog):
         form.addRow("Préparation avant ouverture", self.opening_buffer)
         form.addRow("Fermeture après le départ", self.closing_buffer)
         form.addRow("Chevauchement de relève", self.handover)
-        form.addRow(note("Règles initiales : accueil de 7 h 00 à 17 h 30, deux éducatrices dès 6 h 50 et jusqu’à 17 h 35. Le service de garde conserve au moins deux éducatrices simultanément pendant l’accueil. La relève nécessite au moins quinze minutes de présence commune."))
+        form.addRow(note("Journée : une éducatrice minimum avant l’ouverture aux enfants et pendant les quinze dernières minutes de présence (6 h 50–7 h et 17 h 20–17 h 35 avec les heures initiales). Entre ces plages, deux éducatrices minimum. Le ratio enfants/éducatrice reste obligatoire pendant l’accueil. La relève conserve quinze minutes communes." if week.planning_date else "Deux éducatrices en continu et quinze minutes communes à chaque relève."))
         form = self.add_page("Pauses automatiques")
         self.break_after = MinuteEdit(getattr(settings, "break_after_minutes", 0), duration=True)
         self.break_minutes = integer(getattr(settings, "break_minutes", 0), 0, 180, " min")

@@ -18,21 +18,21 @@ class CoverageTests(unittest.TestCase):
         from gardeplan.coverage import merged_coverage, coverage_state, coverage_counts
         plan = covered_day()
         parts = merged_coverage(plan)
-        self.assertEqual([(p.start,p.end,p.actual,p.required) for p in parts], [(410,1055,2,2)])
+        self.assertEqual([(p.start,p.end,p.actual,p.required) for p in parts], [(410,420,2,1),(420,1040,2,2),(1040,1055,2,1)])
         plan.shifts[0].breaks = [Break(733,734,True)]
         parts = merged_coverage(plan)
-        self.assertEqual([(p.start,p.end) for p in parts], [(410,733),(733,734),(734,1055)])
-        self.assertEqual(coverage_state(parts[1]), ('shortage','Manque 1'))
-        self.assertEqual(coverage_counts(parts[1]), '1 présente / 2 requises')
+        self.assertEqual([(p.start,p.end) for p in parts], [(410,420),(420,733),(733,734),(734,1040),(1040,1055)])
+        self.assertEqual(coverage_state(parts[2]), ('shortage','Manque 1'))
+        self.assertEqual(coverage_counts(parts[2]), '1 présente / 2 requises')
         plan.educators.append(Educator('third','Troisième',seniority=3))
         plan.shifts.append(Shift('third','third','g',0,410,1055,10,5))
-        self.assertEqual(coverage_state(merged_coverage(plan)[0]), ('surplus','+1'))
+        self.assertEqual(coverage_state(merged_coverage(plan)[0]), ('surplus','+2'))
 
     def test_merged_ratio_ignores_child_count_changes_when_requirement_is_equal(self):
         from gardeplan.coverage import merged_coverage
         plan = covered_day()
         plan.groups[0].periods = [GroupPeriod(0,420,720,5),GroupPeriod(0,720,1050,10)]
-        self.assertEqual(len(merged_coverage(plan)), 1)
+        self.assertEqual([(p.start,p.end) for p in merged_coverage(plan)],[(410,420),(420,1040),(1040,1055)])
 
     @unittest.skipUnless(find_spec("ortools"), "OR-Tools vérifié par les suites natives")
     def test_generator_refuses_invalid_ratio_instead_of_normalizing_it(self):
@@ -94,7 +94,8 @@ class CoverageTests(unittest.TestCase):
         pieces = quarter_hour_coverage(plan)
         self.assertEqual((pieces[0].start, pieces[0].end), (410, 420))
         self.assertEqual((pieces[-1].start, pieces[-1].end), (1050, 1055))
-        self.assertTrue(all(p.complete and p.actual == p.required == 2 for p in pieces))
+        self.assertTrue(all(p.complete and p.actual == 2 for p in pieces))
+        self.assertEqual((pieces[0].required,pieces[-1].required),(1,1))
 
     def test_one_minute_break_is_not_hidden_by_quarter_average(self):
         plan = covered_day()

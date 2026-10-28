@@ -339,3 +339,13 @@ def test_dragging_a_shift_into_another_group_preserves_its_exact_hours(planner,q
     result = planner.week.shifts[0]
     assert result.group_id == 'second'
     assert (result.start,result.end,result.educator_id) == before
+
+
+def test_old_drafts_adopt_new_rules_but_historical_versions_stay_frozen(planner):
+    legacy=deepcopy(planner.week);legacy.settings.staffing_policy=1
+    planner._load(legacy)
+    assert planner.week.settings.staffing_policy==2 and planner.dirty
+    assert legacy.settings.staffing_policy==1
+    legacy.status='archived'
+    planner._load(legacy,version=123)
+    assert planner.week.settings.staffing_policy==1 and not planner.dirty

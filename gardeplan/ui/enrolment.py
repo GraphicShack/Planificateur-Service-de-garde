@@ -34,7 +34,7 @@ class EnrolmentPanel(QWidget):
         self.preview.setWordWrap(True)
         self.preview.setAccessibleName("Besoin calculé en direct")
         root.addWidget(self.preview)
-        explanation = QLabel("Dès que des enfants sont accueillis, au moins deux éducatrices doivent être présentes simultanément, même avec moins de vingt enfants. Le ratio peut exiger davantage de personnes. Avec zéro inscription, la journée est fermée.")
+        explanation = QLabel("Deux éducatrices minimum en journée. Une seule peut suffire avant l’ouverture aux enfants et pendant les quinze dernières minutes de présence. Le ratio configuré reste applicable pendant l’accueil et peut exiger davantage de personnes. Avec zéro inscription, la journée est fermée.")
         explanation.setWordWrap(True)
         root.addWidget(explanation)
         root.addStretch()

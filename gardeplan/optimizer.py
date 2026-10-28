@@ -15,6 +15,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any
 
+from .staffing import boundaries, minimum_presence, pupil_requirement, requirements as staffing_requirements
 from .models import (
     Break, Educator, Shift, Week, coverage_intervals, working_intervals,
     paid_minutes, required_educators, subtract_intervals, merge_intervals, new_id,
@@ -106,7 +107,7 @@ def _build_candidates(week: Week) -> tuple[list[_Candidate], list[str]]:
             # L'enveloppe permet aussi de maintenir le personnel sur place
             # entre deux périodes d'accueil du même groupe.
             opening, closing = min(p.start for p in periods), max(p.end for p in periods)
-            base_points = {opening, closing}
+            base_points = {opening, closing, *(p for p in boundaries(week) if opening <= p <= closing)}
             for period in periods:
                 base_points.update((period.start, period.end))
             base_points.update(range(opening, closing + 1, 60))
@@ -132,22 +133,30 @@ def _build_candidates(week: Week) -> tuple[list[_Candidate], list[str]]:
                     points = sorted(t for t in points if opening <= t <= closing)
                     for coverage_start in points:
                         before = settings.opening_buffer if coverage_start == settings.open_minute else settings.handover_minutes
-                        start = coverage_start - before
-                        if start < a:
-                            continue
-                        for coverage_end in points:
-                            if coverage_end - coverage_start < 30:
+                        before_values = {before}
+                        if week.planning_date and settings.staffing_policy >= 2 and coverage_start == settings.open_minute:
+                            before_values.add(0)
+                        for before in sorted(before_values):
+                            start = coverage_start - before
+                            if start < a:
                                 continue
-                            after = settings.closing_buffer if coverage_end == settings.close_minute else 0
-                            end = coverage_end + after
-                            if end > b:
-                                continue
-                            for breaks in _candidate_breaks(coverage_start, coverage_end, week):
-                                shift = Shift(new_id(), educator.id, group.id, day, start, end,
-                                              before, after, True, True, breaks)
-                                minutes = paid_minutes(shift)
-                                if minutes <= educator.max_minutes and (not settings.max_daily_minutes or minutes <= settings.max_daily_minutes):
-                                    add(shift)
+                            for coverage_end in points:
+                                if coverage_end - coverage_start < 30:
+                                    continue
+                                after = settings.closing_buffer if coverage_end == settings.close_minute else 0
+                                after_values = {after}
+                                if week.planning_date and settings.staffing_policy >= 2 and coverage_end == settings.close_minute:
+                                    after_values.add(0)
+                                for after in sorted(after_values):
+                                    end = coverage_end + after
+                                    if end > b:
+                                        continue
+                                    for breaks in _candidate_breaks(coverage_start, coverage_end, week):
+                                        shift = Shift(new_id(), educator.id, group.id, day, start, end,
+                                                      before, after, True, True, breaks)
+                                        minutes = paid_minutes(shift)
+                                        if minutes <= educator.max_minutes and (not settings.max_daily_minutes or minutes <= settings.max_daily_minutes):
+                                            add(shift)
                     if len(candidates) > 120000:
                         diagnostics.append("La recherche dépasse 120 000 quarts candidats. Réduisez le nombre de périodes ou réduisez les groupes simultanés.")
                         return candidates, diagnostics
@@ -166,18 +175,18 @@ def _requirements(week: Week) -> list[str]:
         periods = [(g, p) for g in week.groups for p in g.periods if p.day == day]
         if not periods:
             continue
-        points = sorted({t for _, p in periods for t in (p.start, p.end)} |
+        points = sorted(set(boundaries(week)) | {t for _, p in periods for t in (p.start, p.end)} |
                         {t for e in active for a, b in _windows(e, day) for t in (a, b)} |
                         {week.settings.open_minute - week.settings.opening_buffer,
                          week.settings.close_minute + week.settings.closing_buffer})
         for a, b in zip(points, points[1:]):
-            needed = sum(max(required_educators(g, p.students) for p in g.periods
+            needed = sum(max(pupil_requirement(week,a,p.students,g.ratio,g.min_educators) for p in g.periods
                              if p.day == day and p.start <= a < p.end)
                          for g in week.groups
                          if any(p.day == day and p.start <= a < p.end for p in g.periods))
             school_open = (week.settings.open_minute - week.settings.opening_buffer <= a <
                            week.settings.close_minute + week.settings.closing_buffer)
-            needed = max(needed, 2 if school_open else 0)
+            needed = max(needed, minimum_presence(week,a) if school_open else 0)
             available = sum(any(start <= a and b <= end for start, end in _windows(e, day)) for e in active)
             if available < needed:
                 result.append(f"Jour {day + 1}, {format_time(a)} à {format_time(b)} : {needed} éducatrices requises, seulement {available} disponibles.")
@@ -383,15 +392,15 @@ def generate(week: Week, time_limit: float = 20) -> GenerationResult:
         model.add_no_overlap(intervals)
     for group in snapshot.groups:
         for day in snapshot.active_days:
-            requirements = [(p.start, p.end, required_educators(group, p.students))
-                            for p in group.periods if p.day == day]
+            requirements = [segment for p in group.periods if p.day == day
+                            for segment in staffing_requirements(snapshot,p.start,p.end,p.students,group.ratio,group.min_educators)]
             if requirements:
                 _cover(model, candidates, day, requirements, group.id)
     for day in snapshot.active_days:
         if any(p.day == day for group in snapshot.groups for p in group.periods):
             _cover(model, candidates, day,
-                   [(settings.open_minute - settings.opening_buffer,
-                     settings.close_minute + settings.closing_buffer, 2)])
+                   staffing_requirements(snapshot,settings.open_minute-settings.opening_buffer,
+                                         settings.close_minute+settings.closing_buffer))
     for activity in (() if snapshot.planning_date else snapshot.activities):
         if not activity.responsible_ids:
             continue
@@ -445,6 +454,19 @@ def generate(week: Week, time_limit: float = 20) -> GenerationResult:
     proposal = copy.deepcopy(snapshot)
     proposal.status = "draft"
     proposal.shifts = [copy.deepcopy(c.shift) for c in candidates if solver.boolean_value(c.variable)]
+    if week.planning_date:
+        # The solve uses global staffing, but must never delete the user's groups
+        # or silently change the group of a locked assignment.
+        proposal.groups, proposal.rooms, proposal.activities, proposal.educators = copy.deepcopy((week.groups,week.rooms,week.activities,week.educators))
+        originals = {s.id:s for s in week.shifts if s.locked}
+        for index,shift in enumerate(proposal.shifts):
+            if shift.id in originals:
+                proposal.shifts[index] = copy.deepcopy(originals[shift.id])
+            else:
+                matches = [s for s in week.shifts if s.educator_id == shift.educator_id and s.day == shift.day]
+                if matches:
+                    best = max(matches,key=lambda s:max(0,min(s.end,shift.end)-max(s.start,shift.start)))
+                    shift.group_id = best.group_id
     proposal.shifts.sort(key=lambda s: (s.day, s.start, s.group_id, s.educator_id))
     issues = validate(proposal)
     blocking = [issue for issue in issues if issue.severity == "error"]

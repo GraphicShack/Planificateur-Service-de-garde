@@ -78,6 +78,8 @@ class GenerationThread(QThread):
     def __init__(self, week, parent=None):
         super().__init__(parent)
         self.snapshot = deepcopy(week)
+        if self.snapshot.planning_date:
+            self.snapshot.settings.staffing_policy = 2
 
     def run(self):
         try:
@@ -111,6 +113,7 @@ class MainWindow(QMainWindow):
         self._auto_hidden_sidebar = False
         self._sidebar_manual_hidden = False
         self._build_ui()
+        self._upgrade_working_rules()
         self.refresh()
         QTimer.singleShot(0, self.fit_day)
 
@@ -800,6 +803,8 @@ class MainWindow(QMainWindow):
             if isinstance(changed, Week):
                 candidate = changed
             candidate.status = "draft"
+            if candidate.planning_date:
+                candidate.settings.staffing_policy = 2
             # Round-trip asserts basic types; business-invalid drafts remain editable.
             candidate = Week.from_dict(candidate.to_dict())
         except Exception as error:
@@ -863,6 +868,16 @@ class MainWindow(QMainWindow):
                 self._save_error_shown = True
             return False
 
+    def _upgrade_working_rules(self):
+        if (self.week.planning_date and self._history_version is None
+                and self.week.status in {"draft", "validated"}
+                and self.week.settings.staffing_policy < 2):
+            self.week.settings.staffing_policy = 2
+            self.week.status = "draft"
+            self.dirty = True
+            self._set_save_state(False)
+            self.autosave.start()
+
     def _load(self, week, version=None):
         self.autosave.stop()
         self.week = deepcopy(week)
@@ -873,6 +888,7 @@ class MainWindow(QMainWindow):
         self._redo.clear()
         self.dirty = False
         self._set_save_state(True)
+        self._upgrade_working_rules()
         self.refresh()
 
     def _date_changed(self, selected):
