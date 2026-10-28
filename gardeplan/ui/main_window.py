@@ -396,6 +396,7 @@ class MainWindow(QMainWindow):
         redo = add(self.command_menu, "redo", "Rétablir", lambda: self.redo())
         redo.setShortcuts([QKeySequence("Ctrl+Shift+Z"), QKeySequence("Ctrl+Y")])
         self.addAction(redo)
+        add(self.command_menu, "pdf_preview", "Aperçu avant impression…", lambda: self._preview_pdf("general", None))
         self.command_menu.addSeparator()
         day_menu = self.command_menu.addMenu("Journée")
         add(day_menu, "name_day", "Nommer la journée…", lambda: self.name_day())
@@ -1261,49 +1262,12 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Importation impossible", str(error))
 
     def export_pdf(self):
-        dialog = QDialog(self)
-        dialog.setWindowTitle("Exporter les horaires en PDF")
-        dialog.resize(520, 280)
-        layout = QFormLayout(dialog)
-        kind = QComboBox()
-        for label, value in [("Horaire général", "general"), ("Tous les horaires dans un PDF regroupé", "combined"), ("Horaire d'une éducatrice", "individual"), ("Un PDF par éducatrice", "all")]:
-            kind.addItem(label, value)
-        educator = QComboBox()
-        for person in self.week.educators:
-            educator.addItem(person.name, person.id)
-        educator.setEnabled(False)
-        kind.currentIndexChanged.connect(lambda _: educator.setEnabled(kind.currentData() == "individual"))
-        layout.addRow("Contenu", kind)
-        layout.addRow("Éducatrice", educator)
-        layout.addRow(note("Les noms des journées, heures exactes, pauses, buffers, activités et lieux sont conservés. Les PDF se lisent aussi en noir et blanc."))
-        layout.addRow(self._button("Aperçu avant impression", lambda: self._preview_pdf(kind.currentData(), educator.currentData())))
-        buttons = QDialogButtonBox()
-        buttons.addButton("Annuler", QDialogButtonBox.ButtonRole.RejectRole)
-        buttons.addButton("Exporter", QDialogButtonBox.ButtonRole.AcceptRole)
-        buttons.accepted.connect(dialog.accept)
-        buttons.rejected.connect(dialog.reject)
-        layout.addRow(buttons)
-        if dialog.exec() != QDialog.DialogCode.Accepted:
-            return
-        selected, identifier = kind.currentData(), educator.currentData()
-        if selected == "individual" and not identifier:
-            QMessageBox.information(self, "Export PDF", "Ajoutez une éducatrice avant d'exporter son horaire.")
-            return
-        if selected == "all":
-            destination = QFileDialog.getExistingDirectory(self, "Dossier pour les horaires individuels")
-        else:
-            destination, _ = QFileDialog.getSaveFileName(self, "Exporter PDF", f"Horaire-{self.week.planning_date or self.week.monday}.pdf", "PDF (*.pdf)")
+        destination, _ = QFileDialog.getSaveFileName(
+            self, "Exporter l’horaire de la journée", f"Horaire-pedagogique-{self.week.planning_date or self.week.monday}.pdf", "PDF (*.pdf)")
         if not destination:
             return
         try:
-            if selected == "general":
-                export_general(self.week, destination)
-            elif selected == "individual":
-                export_individual(self.week, identifier, destination)
-            elif selected == "combined":
-                export_combined(self.week, destination)
-            else:
-                export_all_individual(self.week, destination)
+            export_general(self.week, destination)
             self.statusBar().showMessage(f"PDF exporté : {destination}", 10000)
         except Exception as error:
             QMessageBox.warning(self, "Export impossible", str(error))
@@ -1337,6 +1301,10 @@ class MainWindow(QMainWindow):
                 layout.addWidget(view, 1)
                 def print_preview():
                     printer = QPrinter(QPrinter.PrinterMode.HighResolution)
+                    if self.week.planning_date and kind == "general":
+                        from PySide6.QtGui import QPageLayout, QPageSize
+                        printer.setPageSize(QPageSize(QPageSize.PageSizeId.Letter))
+                        printer.setPageOrientation(QPageLayout.Orientation.Landscape)
                     preview = QPrintPreviewDialog(printer, dialog)
                     def paint(device):
                         painter = QPainter(device)

@@ -246,6 +246,23 @@ def _individual_story(week, educator_id, styles):
 
 
 def export_general(week: Week, path: str | Path) -> Path:
+    if week.planning_date:
+        from .pedagogical_pdf import draw_day
+        path = Path(path).expanduser().resolve()
+        temporary = None
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            fd, temporary = tempfile.mkstemp(prefix=".gardeplan-pdf-", suffix=".pdf", dir=path.parent)
+            os.close(fd)
+            draw_day(week, temporary)
+            os.replace(temporary, path)
+            temporary = None
+            return path
+        except Exception as exc:
+            raise PdfError(f"Le PDF n’a pas pu être créé : {exc}") from exc
+        finally:
+            if temporary and os.path.exists(temporary):
+                os.unlink(temporary)
     styles = _styles()
     return _write(path, _general_story(week, styles), landscape(A4))
 

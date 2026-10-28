@@ -120,3 +120,15 @@ def test_import_weekly_backup_opens_actual_planned_day_when_monday_is_empty(day_
     assert day_window.week.day_names[0] == "Mercredi pédagogique"
     assert day_window.week.shifts[0].start == 433
     assert day_window.repo.load_week("2026-10-26") == legacy
+
+
+def test_export_button_writes_one_pdf_without_format_selection(day_window, tmp_path, monkeypatch):
+    from pypdf import PdfReader
+    destination = tmp_path / "journee.pdf"
+    monkeypatch.setattr(QFileDialog, "getSaveFileName", lambda *args: (str(destination), ""))
+    day_window.export_button.click()
+    reader = PdfReader(destination)
+    assert len(reader.pages) == 1
+    assert tuple(float(v) for v in reader.pages[0].mediabox) == (0, 0, 792, 612)
+    assert "Nom de l’éducateur" in reader.pages[0].extract_text()
+    assert day_window.menu_actions["pdf_preview"].isEnabled()
