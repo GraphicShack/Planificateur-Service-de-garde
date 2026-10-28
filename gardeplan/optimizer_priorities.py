@@ -7,6 +7,40 @@ from time import monotonic
 from .staffing import daily_limit
 
 
+def cohort_hint(week,candidates,ranked):
+    """A verified starting schedule for two continuous teams per open group.
+
+    This is only a warm start. CP-SAT still verifies it and optimizes the full
+    model; other availability patterns and locked schedules use normal search.
+    """
+    from copy import deepcopy
+    from .validation import validate
+    s=week.settings
+    groups=[g for g in week.groups if g.periods]
+    if len(ranked)!=4*len(groups) or s.break_minutes or any(c.shift.locked for c in candidates):return set()
+    if any(len(g.periods)!=1 or g.periods[0].start!=s.open_minute or g.periods[0].end!=s.close_minute or
+           max(g.min_educators,(g.periods[0].students+g.ratio-1)//g.ratio)>2 for g in groups):return set()
+    limit=min([daily_limit(week)]+[e.max_minutes for e in ranked])
+    middle=s.open_minute-s.opening_buffer+limit
+    if not s.open_minute<middle<s.close_minute:return set()
+    index={}
+    for candidate in candidates:
+        shift=candidate.shift
+        if not shift.breaks:
+            index[(shift.educator_id,shift.group_id,shift.start,shift.end,shift.buffer_before,shift.buffer_after)]=candidate
+    chosen=[];opening_count=2*len(groups)
+    for i,person in enumerate(ranked):
+        group=groups[(i%opening_count)//2]
+        key=(person.id,group.id,s.open_minute-s.opening_buffer,middle,s.opening_buffer,0) if i<opening_count else (
+            person.id,group.id,middle-s.handover_minutes,s.close_minute+s.closing_buffer,s.handover_minutes,s.closing_buffer)
+        candidate=index.get(key)
+        if candidate is None:return set()
+        chosen.append(candidate)
+    proposal=deepcopy(week);proposal.status='draft';proposal.shifts=[c.shift for c in chosen]
+    if any(i.severity=='error' for i in validate(proposal)):return set()
+    return {c.shift.id for c in chosen}
+
+
 def solve_daily(model,candidates,by_person,totals,week,time_limit):
     from ortools.sat.python import cp_model
     ranked=sorted((e for e in week.educators if e.active),key=lambda e:(e.seniority,e.id))
@@ -37,6 +71,9 @@ def solve_daily(model,candidates,by_person,totals,week,time_limit):
             model.add(scores[equivalent[signature]]>=scores[person.id])
         equivalent[signature]=person.id
 
+    seed=cohort_hint(week,candidates,ranked)
+    if seed:
+        for candidate in candidates:model.add_hint(candidate.variable,int(candidate.shift.id in seed))
     deadline=monotonic()+max(.1,min(float(time_limit),120))
     best=None;best_status=cp_model.UNKNOWN;optimal=True;completed=0
     def run(expression,maximize,budget):
@@ -50,6 +87,11 @@ def solve_daily(model,candidates,by_person,totals,week,time_limit):
         solver=cp_model.CpSolver()
         solver.parameters.max_time_in_seconds=max(.02,min(remaining,budget))
         solver.parameters.num_search_workers=4;solver.parameters.random_seed=17
+        if best is None and seed:
+            # The verified cohort already employs every active person, so its
+            # participation is globally maximal. Fix only this initial check;
+            # subsequent solves optimize unrestricted candidate choices.
+            solver.parameters.fix_variables_to_their_hinted_value=True
         status=solver.solve(model)
         if status in (cp_model.OPTIMAL,cp_model.FEASIBLE):
             best,best_status=solver,status
@@ -70,6 +112,8 @@ def solve_daily(model,candidates,by_person,totals,week,time_limit):
     # Avoid creating unnecessary paid hours merely to satisfy preferences.
     cost=sum(totals.values())*(1440*len(ranked)+1)+sum(pieces.values())
     value=run(cost,False,max(.1,time_limit*.25))
+    if value is None and best_status in (cp_model.OPTIMAL,cp_model.FEASIBLE):
+        value=best.value(cost)
     if value is not None:model.add(cost<=value)
     for index,person in enumerate(ranked):
         remaining=deadline-monotonic()
