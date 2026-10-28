@@ -54,7 +54,7 @@ Cliquez sur « Générer ». Le moteur respecte les contraintes obligatoires qu'
 
 Sauvegardez régulièrement et utilisez l'export de sauvegarde locale avant un changement important. Les anciennes versions de chaque journée restent consultables dans **Menu → Journées et historique**. Une restauration crée une nouvelle version ; une duplication permet de réutiliser une journée. Une publication conserve sa photographie historique.
 
-L'export PDF offre un horaire général, un horaire individuel et un regroupement. Les horaires indiquent les heures exactes, activités, lieux et totaux. Pour une sauvegarde informatique complète, utilisez la sauvegarde locale SQLite ; un PDF sert à consulter ou imprimer et ne remplace pas la base.
+**Exporter PDF** enregistre directement un seul horaire général de la journée, sans choix de formats individuels. Le document reprend le modèle fourni : lettre paysage, titre à gauche, date à droite, colonne des noms puis grille 7 h–18 h avec repères de 30 minutes, huit éducateurs maximum par page. Les blocs indiquent leur groupe et leurs heures exactes ; un même groupe garde la même couleur sur toutes les pages. Les pauses, rémunérées ou non, et les interruptions restent simplement vides. Aucun compteur ni colonne d’activité n’est ajouté. **Menu → Aperçu avant impression** ouvre ce même document. Pour une sauvegarde informatique complète, utilisez la sauvegarde locale SQLite ; un PDF sert à consulter ou imprimer et ne remplace pas la base.
 
 ## Ouvrir la version portable, sans installation
 
@@ -85,3 +85,9 @@ La préparation du fichier à remettre est décrite dans les procédures [Window
 Les anciennes semaines ne sont pas supprimées. Le menu **Consulter une journée** affiche leurs dates planifiées. À l’ouverture d’une date, ses quarts, activités, inscriptions et son nom sont repris dans un horaire quotidien séparé. L’ancienne photographie hebdomadaire reste intacte.
 
 Les anciens objectifs hebdomadaires ne deviennent pas des obligations journalières : les cibles et garanties de la journée sont à définir dans les profils. Une copie de sécurité du fichier est créée avant la mise à niveau du format de données. La version 0.1.x ne peut pas ouvrir la base après cette mise à niveau ; conservez la sauvegarde si vous devez revenir en arrière.
+
+## Grille horaire du PDF
+
+Les points de départ et d’arrivée des blocs sont calculés à la minute, sans arrondi à la demi-heure. Les repères de 30 minutes servent uniquement à lire la grille. Un horaire coupé crée plusieurs blocs distincts sur une seule ligne. De 1 à 8 éducateurs, le document a une page ; de 9 à 16, deux pages ; le même en-tête, la date, la légende et l’échelle sont repris sur chacune.
+
+La grille demandée commence à 7 h. La présence de préparation dès 6 h 50 reste indiquée par son heure exacte dans le bloc et une mention au bas de la page ; elle n’est pas arrondie à 7 h ni perdue. Les plages entièrement hors de la grille sont indiquées au bas de la page. Le PDF d’exemple reprend les données fictives des pièces jointes.

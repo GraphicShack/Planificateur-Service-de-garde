@@ -2,7 +2,7 @@
 
 Application de bureau en français pour planifier **une journée pédagogique à la fois** dans un service de garde scolaire au Québec. Les données demeurent sur le poste, dans SQLite. Aucun compte, serveur ou abonnement ; aucun accès réseau dans l'application.
 
-## Version 0.2.0 en préparation — non publiée
+## Version 0.2.0 — planification d’une journée pédagogique
 
 ![Aperçu du tableau de planification](docs/apercu-interface.png)
 
@@ -15,18 +15,18 @@ Application de bureau en français pour planifier **une journée pédagogique à
 - Activités et locaux indépendants des quarts ; alertes de couverture et de conflits.
 - Validation continue, proposition automatique CP-SAT, quarts verrouillés et annulation.
 - Historique, statut, archives et duplication indépendants pour chaque date ; sauvegardes locales. Les anciennes semaines restent conservées et consultables par journée.
-- PDF général, individuel et regroupé, avec heures exactes et aperçu.
+- **Un seul PDF général**, lettre paysage, selon le modèle fourni : huit éducateurs par page, grille 7 h–18 h, couleurs par groupe, coupures et interruptions laissées vides.
 
 Les règles initiales sont : ouverture à 7 h avec deux éducatrices dès 6 h 50, fermeture à 17 h 30 avec deux jusqu'à 17 h 35, relève de quinze minutes, couverture continue et ratio de 1/20 avec au moins deux éducatrices par groupe actif. Le ratio et les paramètres restent configurables. Les buffers rémunérés n'assurent pas automatiquement la couverture des enfants.
 
-## Version publique précédente, sans installation
+## Version prête à utiliser, sans installation
 
-La version publique disponible est **0.1.2** et conserve le fonctionnement précédent. La version 0.2.0 décrite ci-dessus reste en préparation ; sa publication attend l’accord du responsable du projet.
+La version **0.2.0** regroupe la planification quotidienne, les couleurs automatiques, les rangs de 1 à 11 et le nouveau PDF unique. La publication de cette livraison a été autorisée explicitement par le responsable du projet.
 
 La livraison principale est un **ZIP portable**, disponible dans les [téléchargements publics du projet](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/latest). **Aucune connexion GitHub n'est nécessaire.**
 
-- [Télécharger pour Windows 64 bits](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.1.2/Planificateur-SDG-0.1.2-Windows-x64-Portable.zip).
-- [Télécharger pour Mac Apple Silicon, macOS 15+](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.1.2/Planificateur-SDG-0.1.2-macOS-arm64-Portable.zip).
+- [Télécharger pour Windows 64 bits](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.2.0/Planificateur-SDG-0.2.0-Windows-x64-Portable.zip).
+- [Télécharger pour Mac Apple Silicon, macOS 15+](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.2.0/Planificateur-SDG-0.2.0-macOS-arm64-Portable.zip).
 
 Décompressez le dossier complet dans un emplacement autorisé en écriture ou sur une clé USB, puis ouvrez **`Planificateur-SDG.exe`** sous Windows ou **`Planificateur-SDG.app`** sous macOS. Aucun programme d’installation, Python, compte ni connexion Internet n’est nécessaire sur le poste cible. Gardez le dossier complet : les horaires et sauvegardes restent dans son sous-dossier **`donnees`**. Les liens GitHub Actions servent aux diagnostics de compilation et peuvent exiger une connexion ; les utilisateurs téléchargent les ZIP de la section **Releases**.
 
@@ -56,7 +56,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\build-windows.ps1
 
 Le résultat principal est **`dist/Planificateur-SDG-Portable.zip`**. Le script par défaut ne dépend pas d’Inno Setup et n’exécute aucune installation ou désinstallation système. Il teste le binaire, le dossier portable et l’archive extraite. Le workflow **« Vérifier et construire Windows »** remet l’artefact **`Planificateur-SDG-Portable-Windows`** contenant le ZIP et ses comptes rendus. Voir la [procédure Windows](docs/DISTRIBUTION_WINDOWS.md).
 
-Les versions publiques **0.1.2** ont réussi **132 tests chacune**, ainsi que les contrôles natifs après extraction du ZIP. Les [résultats réellement vérifiés](docs/ETAT_VERIFICATION.md) donnent les exécutions et rapports correspondants. La publication automatique est désactivée à la demande du responsable du projet. Le workflow **Publier les téléchargements portables** se lance manuellement, avec confirmation explicite et uniquement après accord ; il exige les deux constructions réussies du même code et les rapports natifs. Chaque livraison contient les ZIP directement utilisables, les rapports et les sommes SHA-256. Augmentez la version avant de publier une nouvelle livraison ; une version publiée reste figée.
+Les versions **0.2.0** ont réussi **158 tests chacune**, ainsi que les contrôles natifs après extraction du ZIP. Les [résultats réellement vérifiés](docs/ETAT_VERIFICATION.md) donnent les exécutions et rapports correspondants. La publication exige l’accord du responsable pour un SHA précis, enregistré dans `.github/release-request.json`, ou une confirmation manuelle avec ce SHA. Les changements ordinaires du code ne sont pas publiés automatiquement. Le workflow **Publier les téléchargements portables** exige les deux constructions réussies du code approuvé et les rapports natifs. Chaque livraison contient les ZIP directement utilisables, les rapports et les sommes SHA-256. Augmentez la version avant de publier une nouvelle livraison ; une version publiée reste figée.
 
 ## Développement : lancer depuis les sources
 
@@ -92,7 +92,6 @@ Pour les tests graphiques sans écran, définir `QT_QPA_PLATFORM=offscreen`.
 - [Architecture et conventions](docs/ARCHITECTURE.md)
 - [Matrice des exigences et limites](docs/EXIGENCES.md)
 - [Résultats réellement vérifiés et contrôles restants](docs/ETAT_VERIFICATION.md)
-- [Exemple PDF général](docs/exemple-horaire-general.pdf)
-- [Exemple PDF individuel](docs/exemple-horaire-individuel.pdf)
+- [Exemple du PDF unique (deux pages)](docs/exemple-horaire-pedagogique.pdf)
 
 Le solveur choisit parmi des quarts candidats : un échec de cette recherche n'est pas une preuve universelle d'impossibilité. Les restrictions écrites en notes libres ne sont pas interprétées ; saisir les contraintes obligatoires dans les champs structurés. Toute proposition est validée avant acceptation et toute publication comportant une erreur est refusée.

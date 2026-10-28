@@ -16,7 +16,7 @@ La publication attend les deux constructions réussies du même code, contrôle 
 
 ## Construire avec GitHub Actions
 
-Lancez **Vérifier et construire Windows** depuis l’onglet **Actions** du dépôt. Après réussite, téléchargez l’artefact **Planificateur-SDG-Portable-Windows**. Il contient le ZIP portable à remettre et les comptes rendus JSON à conserver avec la version livrée. Le workflow fonctionne aussi sur les propositions de modification et les changements de `main` ; la publication dans les Releases se déclenche désormais manuellement après accord du responsable du projet.
+Lancez **Vérifier et construire Windows** depuis l’onglet **Actions** du dépôt. Après réussite, téléchargez l’artefact **Planificateur-SDG-Portable-Windows**. Il contient le ZIP portable à remettre et les comptes rendus JSON à conserver avec la version livrée. Le workflow fonctionne aussi sur les propositions de modification et les changements de `main` ; la publication dans les Releases exige un SHA explicitement approuvé par le responsable du projet.
 
 Le runner utilise Windows et Python 3.12 64 bits pour préparer le logiciel. La construction par défaut ne recherche pas Inno Setup, n’installe pas GardePlan sur le système et ne lance aucun désinstalleur. Ces outils de compilation ne sont pas nécessaires sur le poste d’utilisation.
 
@@ -63,4 +63,4 @@ L’ancienne construction Inno Setup reste accessible uniquement avec **`-BuildI
 
 Le [workflow portable du 24 octobre 2026](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40141657387) a réussi 118 tests et les contrôles du binaire, du dossier portable et du ZIP extrait. Le [paquet Windows vérifié](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40141657387/artifacts/12578819035) contient `Planificateur-SDG-Portable.zip` et ses rapports. Aucun installateur n’a été nécessaire pour cette livraison portable.
 
-La publication automatique est suspendue. Ne publiez pas de nouvelle release sans accord explicite du responsable du projet. Les tests et compilations peuvent continuer.
+La publication générale reste soumise à accord explicite : `.github/release-request.json` désigne le SHA approuvé, et seul ce code peut être publié après les deux constructions réussies. Une modification ordinaire de `main` ne publie pas automatiquement un autre SHA. La livraison 0.2.0 a reçu cet accord.

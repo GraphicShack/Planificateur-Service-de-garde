@@ -2,9 +2,28 @@
 
 Les constructions et les contrôles natifs s’exécutent sur GitHub Actions. Les fichiers à remettre sont les ZIP portables d’une exécution réussie correspondant au code voulu. Une sortie compilée dont le contrôle échoue n’est pas livrée.
 
-## Préparation quotidienne 0.2.0 — publication suspendue
+## Livraison 0.2.0 approuvée
 
-À la demande du responsable du projet, aucune release 0.2.0 n’est publiée. Le workflow de publication ne possède plus de déclencheur automatique : il est manuel, avec une confirmation booléenne à faux par défaut. Les versions publiques antérieures restent disponibles.
+Le code approuvé et publié est `46ab53061d9ed010f9f7f1a2b5cc32eedd458284`. Le code applicatif est identique au premier contrôle `407924c88a13385e598e46d7508a3bb420b5acee` ; le contexte de publication GitHub a été ajusté. Les deux constructions ont réussi **158 tests chacune**, puis les contrôles natifs des dossiers portables et des ZIP extraits :
+
+- [Windows — 158 tests et ZIP vérifié](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40617443118).
+- [Mac Apple Silicon — 158 tests et ZIP vérifié](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40617443092).
+
+La [release v0.2.0](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/tag/v0.2.0) a été [publiée avec succès](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40617772875). Les six fichiers sont publics : deux ZIP portables, deux rapports natifs, le PDF d’exemple et les sommes SHA-256. Le premier essai de création a été refusé par GitHub ; la publication du contexte vérifié a réussi sans modification du logiciel.
+
+Le nouveau PDF général a été testé avec le bouton réel de l’interface, les dimensions lettre paysage, la pagination, les heures exactes, les interruptions vides et les couleurs répétées. Les exemples joints ont été inspectés visuellement après rendu. Les polices et les modules de prévisualisation sont inclus dans les paquets ; aucune installation supplémentaire n’est nécessaire sur le poste final.
+
+## PDF unique selon les modèles joints
+
+Le nouveau rendu a été généré à partir des douze noms, des groupes, des heures et de la date de l’exemple joint : deux pages lettre paysage, huit lignes sur la première et quatre sur la seconde, avec quatre lignes vierges. Les deux pages ont été rendues et inspectées visuellement. Les libellés/blocs/légende de pauses du modèle ne sont pas repris, conformément à la demande explicite.
+
+Six contrôles PDF réels vérifient la pagination 0/1/8/9/16/17 noms, les dimensions 792 × 612 pt, les en-têtes et légendes répétés, les coupures/pauses, la géométrie exacte d’un quart de 102 minutes, la couleur d’un groupe sur deux pages, les heures hors grille et la conservation du fichier précédent en cas d’échec. Ils passent localement avec ReportLab et extraction pypdf. Un test Qt supplémentaire fait produire le PDF par le véritable bouton Exporter.
+
+La publication a ensuite été autorisée explicitement par le responsable du projet ; le PDF d’exemple est joint à la livraison. Le code de référence du rendu est `407924c88a13385e598e46d7508a3bb420b5acee`.
+
+## Historique de préparation quotidienne 0.2.0
+
+Une première demande du responsable du projet avait suspendu la publication 0.2.0. La publication a ensuite été autorisée dans la conversation ; le manifeste désigne explicitement le SHA approuvé. Les futures modifications de code ne sont pas publiées par cet accord.
 
 Les nouvelles fonctions sont présentes dans les sources : écran quotidien inspiré de la référence, dates indépendantes, objectifs journaliers, PDF et génération limités à une date, couleurs distinctes à la création et rangs 1 à 11 sans rang intermédiaire obligatoire. Le calendrier conserve ses mouvements, redimensionnements et calculs à la minute.
 

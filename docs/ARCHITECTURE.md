@@ -14,7 +14,8 @@ Le Planificateur — Service de garde est une application de bureau Python 3 / P
 | `optimizer.py` | Proposition par OR-Tools CP-SAT ; conservation des quarts verrouillés et validation finale. |
 | `storage.py` | SQLite, versions complètes, duplication, restauration, sauvegarde et import local. |
 | `data_paths.py` | Données du dossier portable ou emplacement historique ; déplacement du dossier sans reconfiguration. |
-| `pdf.py` | PDF général, individuel et regroupé avec ReportLab. |
+| `pdf.py` | Écriture atomique du PDF quotidien et compatibilité des anciennes fonctions d’export. |
+| `pedagogical_pdf.py` | Grille lettre paysage du modèle fourni, huit lignes par page, géométrie exacte et interruptions vides. |
 | `ui/calendar.py` | Calendrier quotidien, manipulation graphique et repères d'alertes. |
 | `ui/forms.py` | Formulaires simples et réglages détaillés. |
 | `ui/main_window.py` | Coordination de l'interface, annulation, sauvegarde et commandes. |
@@ -59,3 +60,9 @@ Les scripts `scripts/build-windows.ps1` et `scripts/build-macos.sh` compilent na
 La clé SQLite d’une journée est `day:AAAA-MM-JJ`, distincte de celle d’une ancienne semaine. Les versions, statuts, duplications et restaurations sont ainsi indépendants. Le schéma 2 conserve sans modification les contenus/checksums des anciennes versions. La migration crée une copie SQLite au format 1 avant de mettre à jour les métadonnées ; l’import accepte les deux formats et conserve sa copie de sécurité habituelle.
 
 Les profils d’une nouvelle journée reprennent leurs objectifs journaliers si le modèle était quotidien. Un objectif hebdomadaire historique n’est jamais divisé ou réinterprété implicitement : sa cible journalière reste à définir. Les rangs quotidiens sont limités à 1–11 ; aucune contiguïté ni présence de tous les rangs n’est requise. Les couleurs existantes ne sont pas réattribuées lors d’une édition ou d’un changement de date.
+
+## PDF unique selon la référence
+
+Le parcours utilisateur expose un export général unique. Les anciennes fonctions d’export restent lisibles par les tests de compatibilité et ne sont plus proposées dans l’interface. Le rendu quotidien utilise Canvas/ReportLab, des éléments vectoriels et des polices embarquées. Arial du système est utilisé s’il est disponible ; sinon une police libre compatible avec ses métriques est incluse, dérivée de Liberation Sans et renommée Planificateur Sans, avec sa licence SIL-OFL.
+
+Les coordonnées reprennent la référence : page 792 × 612 pt, marges de 30 pt, colonne des noms de 163 pt, grille de 569 pt et huit lignes. Les durées entières sont converties en positions PDF uniquement au dessin. `working_intervals` retire toutes les pauses, même rémunérées ; aucun objet de légende ni libellé de pause n’est dessiné. La palette du modèle identifie les groupes sur toutes les pages, indépendamment de la couleur personnelle des éducatrices.

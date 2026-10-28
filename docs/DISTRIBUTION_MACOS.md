@@ -36,7 +36,7 @@ La publication attend les deux constructions réussies du même code, contrôle 
 
 ## Construire avec GitHub Actions
 
-Lancez **Vérifier et construire macOS**. Après réussite, récupérez l’artefact **Planificateur-SDG-Portable-macOS-<architecture>**, remettez le ZIP portable qu’il contient et conservez les trois rapports JSON. Le runner est `macos-15` ; le suffixe d’architecture est mesuré sur le Python utilisé. Le workflow ne promet pas deux architectures simultanément. La publication dans les Releases se déclenche désormais manuellement après accord du responsable du projet.
+Lancez **Vérifier et construire macOS**. Après réussite, récupérez l’artefact **Planificateur-SDG-Portable-macOS-<architecture>**, remettez le ZIP portable qu’il contient et conservez les trois rapports JSON. Le runner est `macos-15` ; le suffixe d’architecture est mesuré sur le Python utilisé. Le workflow ne promet pas deux architectures simultanément. La publication dans les Releases exige un SHA explicitement approuvé par le responsable du projet.
 
 Depuis votre Mac, le workflow **Vérifier et construire Windows** produit séparément le ZIP Windows sur un runner Windows. Le poste cible n’a pas besoin d’installer les outils de compilation.
 
@@ -79,4 +79,4 @@ Les tests couvrent la récupération d’une base existante, le choix d’un dos
 
 La correction ne retire pas la quarantaine et ne modifie aucun réglage de sécurité. L’avertissement de Gatekeeper reste distinct : la livraison est signée localement, sans Developer ID ni notarisation Apple. Sur un Mac personnel, l’utilisateur peut autoriser l’ouverture dans Réglages Système → Confidentialité et sécurité. Les politiques d’un poste géré restent applicables.
 
-La publication automatique est suspendue. Ne publiez pas de nouvelle release sans accord explicite du responsable du projet. Les tests et compilations peuvent continuer.
+La publication générale reste soumise à accord explicite : `.github/release-request.json` désigne le SHA approuvé, et seul ce code peut être publié après les deux constructions réussies. Une modification ordinaire de `main` ne publie pas automatiquement un autre SHA. La livraison 0.2.0 a reçu cet accord.
