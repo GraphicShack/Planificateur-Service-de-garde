@@ -21,9 +21,16 @@ def pupil_requirement(plan, minute, students, ratio, minimum=2):
     return max(base, minimum if minimum > 2 else 0, (students+ratio-1)//ratio)
 
 
-def requirements(plan, start, end, students=None, ratio=20, minimum=2):
+def group_requirement(plan, minute, students, ratio, minimum=2):
+    if plan.planning_date and plan.settings.staffing_policy >= 3:
+        # Two is the service-wide floor; each separate group keeps its own ratio.
+        return max(1, minimum if minimum > 2 else 0, (students+ratio-1)//ratio)
+    return pupil_requirement(plan,minute,students,ratio,minimum)
+
+
+def requirements(plan, start, end, students=None, ratio=20, minimum=2, *, per_group=False):
     points = sorted({start,end}|{p for p in boundaries(plan) if start < p < end})
-    return [(a,b,minimum_presence(plan,a) if students is None else pupil_requirement(plan,a,students,ratio,minimum))
+    return [(a,b,minimum_presence(plan,a) if students is None else (group_requirement if per_group else pupil_requirement)(plan,a,students,ratio,minimum))
             for a,b in zip(points,points[1:])]
 
 

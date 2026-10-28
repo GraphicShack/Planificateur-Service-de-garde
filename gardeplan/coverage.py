@@ -1,6 +1,6 @@
 """Minute-exact coverage with merged intervals and legacy quarter-hour views."""
 from dataclasses import dataclass
-from .staffing import boundaries, minimum_presence, pupil_requirement
+from .staffing import boundaries, minimum_presence, pupil_requirement, group_requirement
 from .models import coverage_intervals, working_intervals, required_educators
 from .models import totals, format_duration
 
@@ -12,10 +12,11 @@ class Coverage:
     actual: int
     required: int
     students: int
+    missing: int = 0
 
     @property
     def complete(self):
-        return self.actual >= self.required
+        return self.actual >= self.required and not self.missing
 
 
 def coverage_timeline(week, day=0, group_id=""):
@@ -53,14 +54,26 @@ def coverage_timeline(week, day=0, group_id=""):
         else:
             required = pupil_requirement(week,a,students,ratio) if opened else 0
             if group_id and opened:
-                required = pupil_requirement(week,a,students,groups[0].ratio,groups[0].min_educators)
+                required = group_requirement(week,a,students,groups[0].ratio,groups[0].min_educators)
             intervals = covered
+        missing = 0
+        if week.planning_date and week.settings.staffing_policy >= 3 and not preparation and opened:
+            needs = []
+            for group in groups:
+                present = [p for owner,p in periods if owner.id == group.id and p.start <= a < p.end]
+                if not present:continue
+                need = group_requirement(week,a,max(p.students for p in present),group.ratio,group.min_educators)
+                actual_group = len({s.educator_id for s in shifts if s.group_id == group.id and s.educator_id in active
+                                    and any(x <= a and b <= y for x,y in covered[s.id])})
+                needs.append(need)
+                missing += max(0,need-actual_group)
+            required = sum(needs) if group_id else max(minimum_presence(week,a),sum(needs))
         actual = len({s.educator_id for s in shifts if s.educator_id in active
                       and any(x <= a and b <= y for x, y in intervals[s.id])})
-        item = Coverage(a, b, actual, required, students)
-        if result and (result[-1].actual, result[-1].required, result[-1].students) == (actual, required, students):
+        item = Coverage(a, b, actual, required, students, missing)
+        if result and (result[-1].actual, result[-1].required, result[-1].students,result[-1].missing) == (actual, required, students,missing):
             previous = result.pop()
-            item = Coverage(previous.start, b, actual, required, students)
+            item = Coverage(previous.start, b, actual, required, students,missing)
         result.append(item)
     return result
 
@@ -74,9 +87,9 @@ def quarter_hour_coverage(week, day=0):
     while start < end:
         stop = min(end, (start//15+1)*15)
         candidates = [p for p in timeline if p.start < stop and start < p.end]
-        worst = min(candidates, key=lambda p: (p.actual-p.required, -p.required))
+        worst = min(candidates, key=lambda p: (-max(p.required-p.actual,p.missing), -p.required))
         result.append(Coverage(start, stop, worst.actual, worst.required,
-                               max(p.students for p in candidates)))
+                               max(p.students for p in candidates),worst.missing))
         start = stop
     return result
 
@@ -85,17 +98,17 @@ def merged_coverage(week, day=0):
     """Merge adjacent equal actual/required values at their exact boundaries."""
     result = []
     for part in coverage_timeline(week, day):
-        if result and result[-1].end == part.start and (result[-1].actual, result[-1].required) == (part.actual, part.required):
+        if result and result[-1].end == part.start and (result[-1].actual, result[-1].required,result[-1].missing) == (part.actual, part.required,part.missing):
             previous = result.pop()
             part = Coverage(previous.start, part.end, part.actual, part.required,
-                            max(previous.students, part.students))
+                            max(previous.students, part.students), part.missing)
         result.append(part)
     return result
 
 
 def coverage_state(part):
-    if part.actual < part.required:
-        return "shortage", f"Manque {part.required-part.actual}"
+    if part.actual < part.required or part.missing:
+        return "shortage", f"Manque {max(part.required-part.actual,part.missing)}"
     if part.actual > part.required:
         return "surplus", f"+{part.actual-part.required}"
     return ("exact", "OK") if part.required else ("closed", "Fermé")

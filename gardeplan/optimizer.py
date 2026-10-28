@@ -15,7 +15,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any
 
-from .staffing import daily_limit, boundaries, minimum_presence, pupil_requirement, requirements as staffing_requirements
+from .staffing import group_requirement, daily_limit, boundaries, minimum_presence, pupil_requirement, requirements as staffing_requirements
 from .models import (
     Break, Educator, Shift, Week, coverage_intervals, working_intervals,
     paid_minutes, required_educators, subtract_intervals, merge_intervals, new_id,
@@ -126,6 +126,11 @@ def _build_candidates(week: Week) -> tuple[list[_Candidate], list[str]]:
                     points.add(min(closing, b - settings.closing_buffer))
                     # Ajouter des fins liées à l'objectif quotidien évite de
                     # limiter artificiellement les cibles à des heures rondes.
+                    limit = min(educator.max_minutes, daily_limit(week) or 1440)
+                    if week.planning_date and settings.staffing_policy >= 3:
+                        for buffer in (0,settings.opening_buffer,settings.handover_minutes):
+                            points.add(opening + limit - buffer)
+                            points.add(closing - limit + settings.closing_buffer + buffer)
                     daily_target = educator.target_minutes // len(week.active_days)
                     if daily_target > 0:
                         points.add(opening + daily_target - settings.opening_buffer)
@@ -180,7 +185,7 @@ def _requirements(week: Week) -> list[str]:
                         {week.settings.open_minute - week.settings.opening_buffer,
                          week.settings.close_minute + week.settings.closing_buffer})
         for a, b in zip(points, points[1:]):
-            needed = sum(max(pupil_requirement(week,a,p.students,g.ratio,g.min_educators) for p in g.periods
+            needed = sum(max(group_requirement(week,a,p.students,g.ratio,g.min_educators) for p in g.periods
                              if p.day == day and p.start <= a < p.end)
                          for g in week.groups
                          if any(p.day == day and p.start <= a < p.end for p in g.periods))
@@ -342,7 +347,10 @@ def generate(week: Week, time_limit: float = 20) -> GenerationResult:
             if structural:
                 return GenerationResult(False, None, "Corrigez les données avant de générer l’horaire.", "invalid_data", structural)
             from .planning import service_view
-            snapshot = service_view(snapshot)
+            if snapshot.settings.staffing_policy < 3:
+                snapshot = service_view(snapshot)
+            else:
+                snapshot.activities, snapshot.rooms = [], []
     except (TypeError, ValueError) as exc:
         return GenerationResult(False, None, str(exc), "invalid_data")
     settings = snapshot.settings
@@ -393,7 +401,7 @@ def generate(week: Week, time_limit: float = 20) -> GenerationResult:
     for group in snapshot.groups:
         for day in snapshot.active_days:
             requirements = [segment for p in group.periods if p.day == day
-                            for segment in staffing_requirements(snapshot,p.start,p.end,p.students,group.ratio,group.min_educators)]
+                            for segment in staffing_requirements(snapshot,p.start,p.end,p.students,group.ratio,group.min_educators,per_group=True)]
             if requirements:
                 _cover(model, candidates, day, requirements, group.id)
     for day in snapshot.active_days:
@@ -454,8 +462,8 @@ def generate(week: Week, time_limit: float = 20) -> GenerationResult:
     proposal = copy.deepcopy(snapshot)
     proposal.status = "draft"
     proposal.shifts = [copy.deepcopy(c.shift) for c in candidates if solver.boolean_value(c.variable)]
-    if week.planning_date:
-        # The solve uses global staffing, but must never delete the user's groups
+    if week.planning_date and snapshot.settings.staffing_policy < 3:
+        # Historical version-2 solves use global staffing, but must never delete the user's groups
         # or silently change the group of a locked assignment.
         proposal.groups, proposal.rooms, proposal.activities, proposal.educators = copy.deepcopy((week.groups,week.rooms,week.activities,week.educators))
         originals = {s.id:s for s in week.shifts if s.locked}
@@ -467,6 +475,8 @@ def generate(week: Week, time_limit: float = 20) -> GenerationResult:
                 if matches:
                     best = max(matches,key=lambda s:max(0,min(s.end,shift.end)-max(s.start,shift.start)))
                     shift.group_id = best.group_id
+    if week.planning_date:
+        proposal.rooms, proposal.activities = copy.deepcopy((week.rooms,week.activities))
     proposal.shifts.sort(key=lambda s: (s.day, s.start, s.group_id, s.educator_id))
     issues = validate(proposal)
     blocking = [issue for issue in issues if issue.severity == "error"]

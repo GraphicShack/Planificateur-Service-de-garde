@@ -4,7 +4,7 @@ La vérification balaye les minutes exactes puis regroupe les erreurs identiques
 adjacentes en intervalles lisibles. Aucun arrondi ni approximation par tranche.
 """
 from __future__ import annotations
-from .staffing import minimum_presence, pupil_requirement, daily_limit
+from .staffing import minimum_presence, pupil_requirement, group_requirement, daily_limit
 
 from dataclasses import dataclass, field
 from collections import defaultdict
@@ -74,7 +74,7 @@ def validate(week: Week, *, _service=False) -> list[Issue]:
                    and all(a.day != b.day or max(a.start, b.start) >= min(a.end, b.end)
                            for i, a in enumerate(g.periods) for b in g.periods[i+1:])
                    for g in week.groups)
-        schedule = service_view(week) if safe else deepcopy(week)
+        schedule = service_view(week) if safe and week.settings.staffing_policy < 3 else deepcopy(week)
         schedule.activities, schedule.rooms = [], []
         return validate(schedule, _service=True)
     issues: list[Issue] = []
@@ -234,9 +234,9 @@ def validate(week: Week, *, _service=False) -> list[Issue]:
             if not present_periods:
                 values.append((minute, None)); continue
             students = max(p.students for p in present_periods)
-            required = pupil_requirement(week,minute,students,g.ratio,g.min_educators)
+            required = group_requirement(week,minute,students,g.ratio,g.min_educators)
             actual = len({s.educator_id for s in staff if any(a <= minute < b for a, b in coverage[s.id])})
-            code = "coverage" if actual < max(minimum_presence(week,minute),g.min_educators if g.min_educators > 2 else 0) else "ratio"
+            code = "coverage" if actual < (1 if week.planning_date and week.settings.staffing_policy >= 3 else minimum_presence(week,minute)) else "ratio"
             values.append((minute, (code, required, actual) if actual < required else None))
         for a, b, (code, required, actual) in _minute_runs(values):
             affected = [s.id for s in staff if _overlap(s.start, s.end, a, b)]
