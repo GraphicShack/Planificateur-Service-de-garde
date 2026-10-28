@@ -1,5 +1,15 @@
 # Guide d'utilisation
 
+## Un écran simple
+
+L’équipe reste à gauche et le calendrier occupe le reste de l’écran. Les commandes courantes sont **Générer**, **Exporter PDF**, **Inscriptions**, **Ajouter** et **Vérifier**. La sauvegarde est automatique ; le bas de l’écran confirme son état.
+
+- **Ajouter** propose un quart ou une activité.
+- **Vérifier** ouvre le détail des alertes ; **Fermer** redonne toute la place au calendrier. La validation continue même lorsque ce panneau est fermé.
+- **Menu → Organisation** contient les groupes, locaux, profils et règles.
+- **Menu → Affichage** permet de régler le zoom, le magnétisme et la visibilité du panneau de l’équipe.
+- **Menu** regroupe aussi l’annulation, la sauvegarde manuelle, le statut, l’historique et les sauvegardes locales.
+
 ## Préparer une semaine
 
 1. Sélectionnez la semaine à planifier. Chaque journée conserve sa date et peut recevoir un nom, par exemple « Journée pédagogique — Halloween ».
@@ -13,7 +23,7 @@ Les durées sont toujours calculées à la minute. Saisir 7 h 13 à 8 h 55 produ
 
 Glissez une éducatrice du panneau de gauche vers la colonne du groupe et l'heure souhaitée. Déplacez le bloc pour changer son horaire ou son groupe. Ajustez son bord supérieur ou inférieur pour changer le début ou la fin. Un double-clic ouvre la saisie exacte des heures, buffers et pauses.
 
-Le magnétisme propose 1, 5 ou 15 minutes et peut être désactivé. Le zoom agrandit l'axe du temps. La vue Semaine sert à consulter les cinq journées et à ouvrir une journée pour l'édition détaillée.
+Dans **Menu → Affichage**, le magnétisme propose 1, 5 ou 15 minutes et peut être désactivé. Le zoom agrandit l'axe du temps. La vue Semaine sert à consulter les cinq journées et à ouvrir une journée pour l'édition détaillée.
 
 Un quart verrouillé est conservé lors de la génération automatique. Déverrouillez-le dans son formulaire pour le modifier.
 
@@ -31,7 +41,7 @@ Une activité se planifie séparément des quarts. Changer « Jeux extérieurs �
 
 Les erreurs empêchent la publication, mais permettent de sauvegarder un brouillon. Elles concernent notamment un manque de personnel, un chevauchement de groupes pour une même éducatrice, une indisponibilité ou un conflit de local. Les avertissements signalent les écarts d'heures ou préférences.
 
-Après une modification, consultez le compteur et la liste des alertes. Les messages indiquent la journée, l'intervalle et le groupe concernés, avec une piste de correction lorsqu'elle est disponible.
+Après une modification, consultez le compteur **Vérifier** et cliquez dessus pour ouvrir la liste des alertes. Les messages indiquent la journée, l'intervalle et le groupe concernés, avec une piste de correction lorsqu'elle est disponible.
 
 ## Générer une proposition
 
@@ -44,6 +54,8 @@ Sauvegardez régulièrement et utilisez l'export de sauvegarde locale avant un c
 L'export PDF offre un horaire général, un horaire individuel et un regroupement. Les horaires indiquent les heures exactes, activités, lieux et totaux. Pour une sauvegarde informatique complète, utilisez la sauvegarde locale SQLite ; un PDF sert à consulter ou imprimer et ne remplace pas la base.
 
 ## Ouvrir la version portable, sans installation
+
+Téléchargez le ZIP correspondant à votre ordinateur dans les [Releases du projet](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/latest). Ces fichiers sont publics et ne demandent pas de compte GitHub. Les fichiers « Source code » sont destinés au développement ; choisissez le ZIP **Windows-x64-Portable** ou **macOS-arm64-Portable**.
 
 1. Décompressez le ZIP reçu dans un dossier ou sur une clé USB où vous pouvez enregistrer des fichiers.
 2. Ouvrez le dossier **Planificateur-SDG** extrait.

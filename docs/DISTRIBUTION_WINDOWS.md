@@ -8,9 +8,15 @@ Conservez tout le dossier **Planificateur-SDG**, avec ses bibliothèques, son fi
 
 Fermez l’application avant de déplacer son dossier ou de retirer la clé USB. Une mise à jour doit conserver le sous-dossier **donnees** ; effectuez aussi une sauvegarde locale avant de remplacer les fichiers du logiciel. Pour changer de plateforme, utilisez l’export puis l’import de sauvegarde locale.
 
+## Télécharger le logiciel prêt à remettre
+
+Utilisez les ZIP de la [dernière release publique](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/latest). Ils sont téléchargeables sans compte GitHub, sans enveloppe ZIP de diagnostic et sans expiration liée à la conservation des artefacts Actions. Choisissez le fichier de votre plateforme ; les archives « Source code » ne contiennent pas le programme compilé.
+
+La publication attend les deux constructions réussies du même code, contrôle les rapports après extraction et fournit les sommes SHA-256. Les artefacts Actions restent des fichiers de diagnostic pour le développement.
+
 ## Construire avec GitHub Actions
 
-Lancez **Vérifier et construire Windows** depuis l’onglet **Actions** du dépôt. Après réussite, téléchargez l’artefact **Planificateur-SDG-Portable-Windows**. Il contient le ZIP portable à remettre et les comptes rendus JSON à conserver avec la version livrée. Le workflow fonctionne aussi sur les propositions de modification et les changements de `main` ; il ne publie aucune release automatiquement.
+Lancez **Vérifier et construire Windows** depuis l’onglet **Actions** du dépôt. Après réussite, téléchargez l’artefact **Planificateur-SDG-Portable-Windows**. Il contient le ZIP portable à remettre et les comptes rendus JSON à conserver avec la version livrée. Le workflow fonctionne aussi sur les propositions de modification et les changements de `main` ; les constructions réussies de `main` alimentent ensuite le workflow de publication des [Releases publiques](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/latest).
 
 Le runner utilise Windows et Python 3.12 64 bits pour préparer le logiciel. La construction par défaut ne recherche pas Inno Setup, n’installe pas GardePlan sur le système et ne lance aucun désinstalleur. Ces outils de compilation ne sont pas nécessaires sur le poste d’utilisation.
 

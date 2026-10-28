@@ -2,6 +2,19 @@
 
 Les constructions et les contrôles natifs s’exécutent sur GitHub Actions. Les fichiers à remettre sont les ZIP portables d’une exécution réussie correspondant au code voulu. Une sortie compilée dont le contrôle échoue n’est pas livrée.
 
+## Interface simplifiée — version 0.1.1
+
+Les deux constructions de l’interface simplifiée ont réussi **122 tests chacune**, avec PySide6/Qt6 et OR-Tools réels :
+
+- [Windows — 122 tests et ZIP portable vérifié](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40150886874).
+- [macOS 15 Apple Silicon — 122 tests et ZIP portable vérifié](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40150886862).
+
+Ces résultats correspondent au code `3d727674dc1de9558d5388a96a1e3124b8022b00`. Quatre nouveaux tests vérifient le panneau d’alertes fermé par défaut, les commandes fonctionnelles du Menu, la réouverture des réglages d’affichage et les restrictions d’édition. Le calendrier dispose de plus de hauteur et les fiches de l’équipe sont compactes. Aucun changement du format des données n’est nécessaire.
+
+Les téléchargements destinés aux utilisateurs sont les ZIP des [Releases publiques](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/latest), téléchargeables sans compte. Les liens d’artefacts Actions ci-dessous sont conservés pour la traçabilité des contrôles historiques ; ils peuvent exiger une connexion et expirer.
+
+Le contrôle de publication possède sept tests indépendants : il refuse les rapports incomplets, les versions/plateformes incorrectes, les ZIP corrompus, les marqueurs manquants et l’absence d’une plateforme. Il valide les deux plateformes avant de préparer les fichiers et leurs sommes SHA-256.
+
 ## Application et interface modernisée
 
 La version modernisée a réussi **110 tests sur Windows et 110 tests sur macOS 15 Apple Silicon**, avec Qt6/PySide6 et OR-Tools réellement installés. Le calendrier Jour/Semaine, le déplacement et redimensionnement à la minute, les formulaires, la recherche, l’annulation, les relèves, l’ouverture/fermeture, SQLite, les archives, les PDF et le solveur font partie des tests.

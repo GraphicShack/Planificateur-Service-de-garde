@@ -28,9 +28,15 @@ Le téléchargement initial des bibliothèques nécessite Internet. Les outils m
 
 La version provient de `pyproject.toml`. Les ressources visuelles de l’application sont incluses ; aucune icône `.icns` distincte n’est présumée. Le marqueur `PlanificateurPortable` est placé dans Info.plist avant la signature : une application déplacée par macOS vers un volume temporaire ne doit pas retomber silencieusement vers un profil système pour ses données. Si l’emplacement n’autorise pas l’écriture, l’application doit demander un dossier complet accessible.
 
+## Télécharger le logiciel prêt à remettre
+
+Utilisez les ZIP de la [dernière release publique](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/latest). Ils sont téléchargeables sans compte GitHub, sans enveloppe ZIP de diagnostic et sans expiration liée à la conservation des artefacts Actions. Choisissez le fichier de votre plateforme ; les archives « Source code » ne contiennent pas le programme compilé.
+
+La publication attend les deux constructions réussies du même code, contrôle les rapports après extraction et fournit les sommes SHA-256. Les artefacts Actions restent des fichiers de diagnostic pour le développement.
+
 ## Construire avec GitHub Actions
 
-Lancez **Vérifier et construire macOS**. Après réussite, récupérez l’artefact **Planificateur-SDG-Portable-macOS-<architecture>**, remettez le ZIP portable qu’il contient et conservez les trois rapports JSON. Le runner est `macos-15` ; le suffixe d’architecture est mesuré sur le Python utilisé. Le workflow ne promet pas deux architectures simultanément et ne publie aucune release automatiquement.
+Lancez **Vérifier et construire macOS**. Après réussite, récupérez l’artefact **Planificateur-SDG-Portable-macOS-<architecture>**, remettez le ZIP portable qu’il contient et conservez les trois rapports JSON. Le runner est `macos-15` ; le suffixe d’architecture est mesuré sur le Python utilisé. Le workflow ne promet pas deux architectures simultanément. Les constructions réussies de `main` alimentent ensuite le workflow de publication des [Releases publiques](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/latest).
 
 Depuis votre Mac, le workflow **Vérifier et construire Windows** produit séparément le ZIP Windows sur un runner Windows. Le poste cible n’a pas besoin d’installer les outils de compilation.
 
