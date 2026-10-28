@@ -1,6 +1,7 @@
 """Minute-exact coverage, presented in quarter-hour slices without averaging."""
 from dataclasses import dataclass
 from .models import coverage_intervals, working_intervals, required_educators
+from .models import totals, format_duration
 
 
 @dataclass(frozen=True)
@@ -77,3 +78,14 @@ def quarter_hour_coverage(week, day=0):
                                max(p.students for p in candidates)))
         start = stop
     return result
+
+
+def day_summary(week, day=0):
+    parts = coverage_timeline(week, day)
+    children = max((p.students for p in parts), default=0)
+    required = max((p.required for p in parts), default=0)
+    complete = all(p.complete for p in parts)
+    paid = sum(totals(week).values())
+    label = (f"{children} enfants · {required} éducatrices minimum · "
+             f"{format_duration(paid)} planifiées · Couverture {'complète' if complete else 'incomplète'}")
+    return label, complete

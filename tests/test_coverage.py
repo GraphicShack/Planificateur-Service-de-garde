@@ -23,6 +23,16 @@ class CoverageTests(unittest.TestCase):
         self.assertEqual(result.shifts, plan.shifts)
         self.assertEqual(plan.groups[0].periods[0].students, 5)
 
+    def test_summary_counts_paid_minutes_and_reports_incomplete_coverage(self):
+        from gardeplan.coverage import day_summary
+        plan = covered_day()
+        self.assertEqual(day_summary(plan), ("5 enfants · 2 éducatrices minimum · 21 h 30 planifiées · Couverture complète", True))
+        plan.shifts[0].breaks = [Break(720, 735)]
+        label, complete = day_summary(plan)
+        self.assertFalse(complete)
+        self.assertIn("21 h 15 planifiées", label)
+        self.assertIn("Couverture incomplète", label)
+
     def test_complete_day_and_partial_boundary_slices(self):
         plan = covered_day()
         pieces = quarter_hour_coverage(plan)

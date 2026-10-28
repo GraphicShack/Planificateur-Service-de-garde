@@ -25,6 +25,7 @@ from ..models import (
 from ..daily import day_plan
 from ..validation import validate
 from ..alerts import alert_text
+from ..coverage import day_summary
 from ..optimizer import generate
 from ..pdf import export_general, export_individual, export_combined, export_all_individual
 from .calendar import CalendarWidget, EDUCATOR_MIME
@@ -319,7 +320,8 @@ class MainWindow(QMainWindow):
         day_row.addWidget(self.day_title)
         self.calendar_summary = QLabel()
         self.calendar_summary.setObjectName("muted")
-        day_row.addWidget(self.calendar_summary)
+        self.calendar_summary.setWordWrap(True)
+        self.calendar_summary.setContentsMargins(14, 2, 14, 10)
         self.enrolment_button = self._button("Inscriptions", self.enrolment, "Répartir les inscriptions d'une journée pédagogique", icon_name="users")
         segmented = QFrame()
         segmented.setObjectName("segmentedControl")
@@ -351,6 +353,7 @@ class MainWindow(QMainWindow):
             day_row.addWidget(button)
             button.show()
         surface.addWidget(day_controls)
+        surface.addWidget(self.calendar_summary)
         self.version_banner = QLabel()
         self.version_banner.setObjectName("versionBanner")
         self.version_banner.setWordWrap(True)
@@ -539,7 +542,9 @@ class MainWindow(QMainWindow):
         self.day_title.setText(self.week.day_names.get(self.day, ""))
         self.day_title.setEnabled(not self.read_only)
         self.day_title.setToolTip(full_title)
-        self.calendar_summary.setText("6 h 50 – 17 h 35")
+        summary, complete = day_summary(self.week, self.day)
+        self.calendar_summary.setText(summary)
+        self.calendar_summary.setStyleSheet(f"font-size:14px;color:{'#214F40' if complete else '#952E28'};")
         self.day_combo.setCurrentIndex(self.day)
         self.snap_combo.setCurrentIndex(max(0, self.snap_combo.findData(self.week.settings.snap_minutes)))
         self.calendar.set_snap(self.week.settings.snap_minutes)
