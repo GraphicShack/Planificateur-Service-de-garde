@@ -4,7 +4,7 @@
 
 <h1 align="center">Planificateur — Service de garde</h1>
 
-<p align="center"><strong>Version 0.3.1 · Portable, sans installation</strong></p>
+<p align="center"><strong>Version 0.3.2 · Portable, sans installation</strong></p>
 
 <p align="center">
   <strong>Des horaires clairs pour chaque journée pédagogique.</strong><br>
@@ -12,18 +12,18 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.3.1/Planificateur-SDG-0.3.1-Windows-x64-Portable.zip">Télécharger pour Windows</a>
+  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.3.2/Planificateur-SDG-0.3.2-Windows-x64-Portable.zip">Télécharger pour Windows</a>
   &nbsp;·&nbsp;
-  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.3.1/Planificateur-SDG-0.3.1-macOS-arm64-Portable.zip">Télécharger pour Mac</a>
+  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.3.2/Planificateur-SDG-0.3.2-macOS-arm64-Portable.zip">Télécharger pour Mac</a>
   &nbsp;·&nbsp;
   <a href="docs/GUIDE.md">Guide d’utilisation</a>
 </p>
 
 ![Aperçu du planificateur avec des données fictives](docs/apercu-interface.png)
 
-La **version 0.3.1** s’ouvre sur un accueil réunissant les journées récentes, le résumé d’aujourd’hui et l’équipe. La création d’une journée mène directement aux inscriptions. La grille reste organisée par groupes et sous-colonnes d’éducatrices. Les icônes Équipe, Inscriptions et Vérification partagent le panneau gauche ; le ratio est masquable et les alertes sont comptées dans un badge. Annuler et Rétablir sont alignés avec le nom de la journée. Les dîners restent calculés, sans être affichés dans les blocs.
+La **version 0.3.2** s’ouvre sur un accueil réunissant les journées récentes, le résumé d’aujourd’hui et l’équipe. La création d’une journée mène directement aux inscriptions. La grille reste organisée par groupes et sous-colonnes d’éducatrices. Les icônes Équipe, Inscriptions et Vérification partagent le panneau gauche ; le ratio est masquable et les alertes sont comptées dans un badge. Annuler et Rétablir sont alignés avec le nom de la journée. Les dîners restent calculés, sans être affichés dans les blocs.
 
-Une éducatrice peut suffire de **6 h 50 à 7 h** et de **17 h 20 à 17 h 35**. Le minimum reste de deux entre ces plages ; le ratio configuré (initialement 1/20) reste obligatoire pendant l’accueil. Les anciennes versions publiées et archivées conservent leurs règles. [Détails de la livraison](docs/LIVRAISON_0_3_1.md) · [Notes de version](CHANGELOG.md).
+Chaque groupe ouvert exige **au moins deux éducateurs présents en tout temps**, de la préparation à la fermeture, avec remplacement pendant les pauses et chevauchement des relèves. Le ratio configuré (initialement 1/20) peut en exiger davantage. La génération attribue des heures au plus grand nombre de personnes possible, puis privilégie le rang 1 et les suivants : quarts continus, davantage d’heures et fin plus tôt, en limitant les heures inutiles. Le plafond quotidien est de **8 h rémunérées**, buffers compris et pauses non rémunérées déduites. Les anciennes versions publiées et archivées conservent leurs règles. [Détails de la livraison](docs/LIVRAISON_0_3_2.md) · [Notes de version](CHANGELOG.md).
 
 [Voir la couverture et les alertes](docs/couverture-journee.png)
 
@@ -39,7 +39,7 @@ Aujourd’hui, le planificateur se concentre sur une journée pédagogique à la
 
 - **Choisir une journée** dans un champ de date lisible, utilisable au clavier, avec des flèches précédent/suivant.
 - **Organiser l’équipe** : une couleur attribuée à chaque nouvelle éducatrice, des heures journalières et un rang de 1 à 11. Les rangs intermédiaires peuvent rester libres.
-- **Saisir les inscriptions** et lire immédiatement le minimum global d’éducatrices nécessaire.
+- **Saisir les inscriptions** et lire immédiatement le besoin total, avec deux éducateurs minimum par groupe.
 - **Ajuster les quarts à la minute** par glisser-déposer, redimensionnement ou saisie exacte, avec pauses et temps de préparation.
 - **Vérifier la couverture** et demander une proposition automatique respectant les contraintes et les quarts verrouillés.
 - **Enregistrer et retrouver les horaires** depuis l’icône Dossier de la barre latérale : ouverture, duplication, historique et sauvegardes locales.

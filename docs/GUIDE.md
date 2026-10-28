@@ -15,7 +15,7 @@ L’équipe reste à gauche et le calendrier occupe le reste de l’écran. Les 
 1. Choisissez la **date exacte** avec les flèches ou le champ de date. Chaque date possède son propre horaire, même si deux journées tombent dans la même semaine.
 2. Cliquez sur le **+ de L’équipe**. Une couleur encore inutilisée est proposée automatiquement ; vous pouvez la changer dans le profil. Choisissez le **rang de 1 à 11** : le rang 1 est le plus ancien, et des rangs peuvent rester libres (1, 4, 9, par exemple). Aucun profil n’est renuméroté automatiquement.
 3. Saisissez les heures cibles, garanties et maximales **pour cette journée**. Un objectif vide signifie « Aucun objectif défini ». Précisez les disponibilités et absences si nécessaire.
-4. Cliquez sur **Inscriptions** et indiquez le nombre d’enfants. Le besoin est calculé pour le service entier. Le nom se modifie directement dans l’en-tête de la grille. Le minimum de deux éducatrices et le ratio configuré restent contrôlés.
+4. Cliquez sur **Inscriptions** et indiquez le nombre d’enfants. Le besoin additionne les minimums et ratios de chaque groupe. Le nom se modifie directement dans l’en-tête de la grille. Le minimum de deux éducatrices et le ratio configuré restent contrôlés.
 5. Ajoutez les quarts ou demandez une proposition automatique. L’interface gère uniquement les horaires.
 
 Une nouvelle date reprend les profils et paramètres utiles. Ses inscriptions et quarts restent vides ; les absences de l’ancienne date ne sont pas recopiées. Pour reprendre aussi un horaire complet, utilisez **Dossier → Dupliquer cette journée** et choisissez une date vide.
@@ -32,7 +32,7 @@ Un quart verrouillé est conservé pendant la génération ; déverrouillez-le d
 
 ## Ouverture, fermeture et relève
 
-Pour une journée ouverte de 7 h à 17 h 30, une éducatrice peut suffire de 6 h 50 à 7 h et de 17 h 20 à 17 h 35. Entre ces plages, prévoyez au moins deux éducatrices. Le ratio reste applicable jusqu’au départ des enfants : avec plus de vingt enfants présents, une seule éducatrice ne suffit pas. Les dix minutes de préparation avant l'ouverture et les cinq minutes après la fermeture sont des temps de présence rémunérés. Ils ne constituent pas de la couverture d'enfants.
+Pour une journée ouverte de 7 h à 17 h 30, chaque groupe exige au moins deux éducateurs de 6 h 50 à 17 h 35. Les dix minutes de préparation avant l’ouverture et les cinq minutes de fermeture sont des temps de présence rémunérés, distincts de la couverture des enfants. Pendant l’accueil, le besoin d’un groupe est le maximum de deux et du nombre d’enfants divisé par son ratio, arrondi au supérieur. Les pauses doivent être remplacées et les relèves comporter quinze minutes communes.
 
 Pour une relève à 12 h 30, l'éducatrice entrante peut commencer sa présence à 12 h 15 avec quinze minutes de préparation avant sa couverture de 12 h 30. L'éducatrice sortante reste présente pendant ces quinze minutes. Le besoin de couverture du groupe doit rester satisfait, même pendant les pauses et les relèves.
 
@@ -101,7 +101,7 @@ Toutes les éducatrices actives disposent d’une colonne, sans défilement hori
 
 **Vérifier (N)** ouvre les alertes. Cliquer sur une alerte ou l’activer au clavier sélectionne sa plage et fait défiler la grille et la bande de ratio. La validation continue même lorsque le panneau est fermé. Avec une journée valide, le panneau indique **Aucune alerte**.
 
-Les deux poignées de chaque quart sont visibles. Les pauses et le dîner indiquent leurs heures, leur durée et leur rémunération. Une pause payée compte dans le total rémunéré mais n’assure jamais la couverture des enfants. Un dépassement d’objectif est orange ; celui d’un maximum obligatoire est rouge. Un libellé précise toujours la situation.
+Les deux poignées de chaque quart sont visibles. Les pauses indiquent leurs heures, leur durée et leur rémunération. Les dîners restent masqués dans les blocs ; leur incidence sur la couverture et la paie est conservée. Une pause payée compte dans le total rémunéré mais n’assure jamais la couverture des enfants. Un dépassement d’objectif est orange ; celui d’un maximum obligatoire est rouge. Un libellé précise toujours la situation.
 
 ## Annuler et rétablir
 
@@ -150,28 +150,16 @@ Les inscriptions réutilisent la préparation par groupes de vingt enfants,
 en conservant les identifiants et les affectations existantes. Les périodes des
 groupes devenus inutiles sont fermées ; aucun quart n’est supprimé. La taille de
 préparation des groupes ne constitue pas un ratio réglementaire. Les règles de
-couverture globales, les heures d’ouverture et de fermeture ne sont pas changées
-par cette révision de la grille.
+couverture sont désormais appliquées à chaque groupe ; les heures d’ouverture et de fermeture sont conservées.
 
 
-## Règles de la version 0.3.1
+## Règles de la version 0.3.2
 
-Le minimum de présence est de **1** de 6 h 50 à 7 h, de **2** de 7 h à
-17 h 20, puis de **1** de 17 h 20 à 17 h 35. Pendant l’accueil, le besoin est
-le maximum de ce minimum et du nombre d’enfants divisé par le ratio, arrondi
-au supérieur. Avec 21 enfants encore présents à 17 h 20, deux éducatrices
-restent nécessaires. Les effectifs variables se règlent dans les périodes des
-groupes (Réglages → Organisation → Groupes des affectations).
+Chaque groupe conserve au moins deux éducateurs présents pendant toute son ouverture, avec deux personnes également pendant la préparation et la fermeture de ses locaux. Un ratio exigeant plus de personnel ou un minimum configuré plus élevé reste obligatoire. Aucune pause, même payée, ne couvre les enfants. Chaque relève conserve quinze minutes communes.
 
-Les dix minutes de préparation et les cinq minutes de fermeture restent
-rémunérées et distinctes de la couverture. Les pauses, même payées, ne couvrent
-jamais les enfants. Les relèves conservent leurs quinze minutes communes.
-Si les heures d’ouverture/fermeture changent, les plages allégées suivent
-l’ouverture aux enfants et les quinze dernières minutes de présence.
+Deux groupes ouverts toute la plage exigent au moins quatre personnes simultanées. Avec une limite individuelle de huit heures, quatre personnes ne suffisent pas pour couvrir la journée entière : prévoyez une équipe plus grande ou corrigez les périodes réellement ouvertes. Le logiciel signale cette impossibilité au lieu de générer un horaire invalide.
 
-Les anciens brouillons passent aux nouvelles règles et sont enregistrés comme
-une nouvelle version. Les anciens horaires publiés/archivés restent inchangés ;
-une modification ou une duplication crée un brouillon aux règles actuelles.
+Les anciennes versions publiées/archivées conservent les règles historiques ; les versions de travail, nouvelles journées et duplications adoptent les règles actuelles.
 
 La barre latérale présente Planning, Équipe, Inscriptions, Ratio et Vérification.
 Dossier et Réglages sont placés en bas. Annuler/Rétablir sont sur la ligne du
@@ -208,3 +196,14 @@ avant le retour à l’accueil.
 Les cartes s’empilent sur les petites fenêtres ; la page défile verticalement.
 Les notes de chaque version sont conservées dans [CHANGELOG.md](../CHANGELOG.md)
 et reprises dans les Releases GitHub.
+
+
+## Attribution des quarts et suppression — version 0.3.2
+
+Le générateur traite tous les groupes sans les fusionner. Chaque groupe doit respecter son ratio (initialement 1/20). Deux éducateurs minimum sont requis dans chaque groupe pendant toute sa plage, préparation et fermeture incluses ; un minimum de groupe supérieur reste applicable. Si des groupes demeurent ouverts avec des enfants à la fin de la journée, leur couverture reste nécessaire.
+
+La recherche attribue d’abord des heures au plus grand nombre de personnes possible, sans modifier les contraintes obligatoires. Elle limite ensuite les heures inutiles, puis privilégie le rang 1, suivi des rangs suivants : quarts continus, plus d’heures, fin plus tôt. Les rangs n’ont pas besoin d’être consécutifs. Les horaires verrouillés et les disponibilités peuvent empêcher l’ordre idéal ; les personnes sans heures sont nommées dans la proposition. Une recherche interrompue signale que les préférences ne sont pas toutes prouvées optimales.
+
+Le maximum quotidien est de 8 h rémunérées, tous les quarts cumulés. Les buffers payés et les pauses payées comptent ; les pauses non payées sont déduites. Un maximum individuel plus bas reste obligatoire. Un dépassement manuel est une erreur rouge et empêche de valider/publier ; le brouillon demeure sauvegardable pour correction.
+
+Sur l’accueil, **Supprimer** demande confirmation puis retire la journée de la liste. Ses anciennes versions et les profils restent conservés. La suppression survit aux sauvegardes et à leur import. Pour reprendre cette date, créez une nouvelle journée à cette date, ou restaurez une version dans l’historique du dossier. La migration au format SQLite 3 crée une copie de sécurité avant toute modification du format ; ne remplacez pas le dossier `donnees` lors d’une mise à jour.

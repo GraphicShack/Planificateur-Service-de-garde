@@ -4,6 +4,24 @@ Chaque release reprend la section correspondant à sa version. Une section doit
 être ajoutée ici avant de publier ; le contrôle de publication refuse une
 version sans notes. Les téléchargements sont dans les [Releases GitHub](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases).
 
+## [0.3.2] — 2026-10-28
+
+### Génération et règles
+
+- Tous les groupes sont conservés pendant la recherche et couverts selon leur propre ratio de 1 pour 20, configurable. Minimum strict de deux éducateurs dans chaque groupe ouvert, préparation et fermeture comprises, sans plage allégée dans les nouvelles journées. Un surplus dans un groupe ne masque plus un groupe sans personnel.
+- Attribution d’heures au plus grand nombre de profils actifs possible, puis priorité aux rangs 1, 2, etc., même avec des rangs intermédiaires libres : quarts continus, davantage d’heures et fin plus tôt, en limitant les heures inutiles.
+- Maximum obligatoire de 8 h rémunérées par personne et par jour, tous quarts cumulés et buffers compris ; les pauses non payées sont déduites. Les limites individuelles plus basses sont conservées.
+- Les personnes sans heures sont nommées dans la proposition. Les contraintes incompatibles avec le plafond sont expliquées ; aucun résultat invalide n’est appliqué.
+- Les affectations verrouillées, les disponibilités, les pauses et les quinze minutes de relève restent obligatoires. Le logiciel précise quand le délai empêche de prouver l’optimalité des préférences.
+
+### Interface et données
+
+- Bouton Supprimer sur chaque journée de l’accueil, avec confirmation. Les versions sont conservées ; la date reste supprimée après réouverture et import/export de sauvegarde. Une restauration ou une création explicite permet de réutiliser la date.
+- Les profils restent accessibles après suppression de la dernière journée. Modifier un profil ne fait pas réapparaître la journée supprimée.
+- Retrait des annotations « Votre calendrier commence ici » et du texte superposé à la grille vide.
+- Format SQLite 3 avec copie de sécurité avant migration ; les anciennes versions publiées/archivées gardent leurs règles et leur contenu.
+- Contrôle du logiciel portable étendu aux groupes, à l’attribution à toute l’équipe, à l’ordre des rangs et au plafond de huit heures.
+
 ## [0.3.1] — 2026-10-28
 
 ### Ajouts
