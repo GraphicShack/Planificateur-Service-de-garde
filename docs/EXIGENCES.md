@@ -7,8 +7,9 @@ Ce document distingue les contrôles automatisables du contrôle de prise en mai
 | Application locale sans compte ni serveur | Application Qt et base SQLite ; test d'opérations avec sockets bloqués. |
 | Architecture modulaire et maintenable | Modèles, validation, optimisation, stockage, PDF et interface séparés ; `ARCHITECTURE.md`. |
 | Interface entièrement en français | Fenêtre principale, calendrier, formulaires et messages ; prise en main à contrôler sous Windows. |
-| Barre supérieure et statuts | Sélection de semaine, Jour/Semaine et commandes dans la fenêtre principale. |
+| Barre supérieure et statuts | Date précise, navigation quotidienne et commandes dans la fenêtre principale. |
 | Panneau permanent des éducatrices | Profils, heures et progression dans la fenêtre principale ; panneau réductible. |
+| Couleur initiale et rangs libres | Palette non utilisée à la création, choix manuel conservé, rangs 1–11 sans obligation de continuité ; tests de création/persistance. |
 | Profil complet | Ancienneté, heures cibles/garanties/maximales, disponibilité/absence, préférences, notes, couleur, activité. |
 | Calendrier quotidien continu | Groupes en colonnes, axe horaire et blocs proportionnels dans `ui/calendar.py`. |
 | Plusieurs éducatrices dans un groupe | Couloirs parallèles dans le calendrier ; contrôle de couverture avec deux éducatrices. |
@@ -18,8 +19,8 @@ Ce document distingue les contrôles automatisables du contrôle de prise en mai
 | Redimensionnement haut/bas | Poignées du bloc ; test Qt du bord supérieur d'une minute. |
 | Double-clic précis et infobulles | Formulaire du bloc et infobulle horaire ; contrôle de prise en main. |
 | Magnétisme 1/5/15/sans et zoom | Options du calendrier ; durées entières même sans magnétisme. |
-| Vue des cinq jours | Vue Semaine et sélection d'un jour ; test Qt de sélection. |
-| Nom personnalisé d'une journée | Stocké dans la semaine ; affiché dans les vues/PDF ; tests de persistance et extraction PDF. |
+| Journée pédagogique unique (nouvelle priorité) | Vue hebdomadaire retirée du parcours ; dates indépendantes dans SQLite, solveur et PDF. |
+| Nom personnalisé d'une journée | Stocké par date ; affiché dans les vues/PDF ; tests de persistance et extraction PDF. |
 | Groupes et effectifs variables | Périodes quotidiennes avec effectif ; ratio et minimum configurables. |
 | Ratio 1/20, minimum deux | `max(2, plafond(effectif/ratio))` ; test 40/41 enfants et groupe fermé. |
 | Nombre de groupes selon les inscriptions | Préparation automatique selon les inscriptions et la taille souhaitée, puis modification manuelle ; tests `test_planning.py`.  |
@@ -35,7 +36,7 @@ Ce document distingue les contrôles automatisables du contrôle de prise en mai
 | Erreurs et avertissements lisibles | Issues avec journée/intervalle/groupe et conseil ; bandes et bordures d'erreur dans le calendrier. |
 | Publication refusée en cas d'erreur | Vérification à l'enregistrement de l'état publié ; brouillon invalide autorisé. |
 | Génération réelle sous contraintes | CP-SAT, candidats, quarts verrouillés et validation finale ; tests faisable/impossible/verrouillage. |
-| Proposition avant remplacement | Acceptation dans l'interface ; aucune mutation de la semaine par `generate`. |
+| Proposition avant remplacement | Acceptation dans l'interface ; aucune mutation de la journée par `generate`. |
 | Ancienneté et préférences | Pondérations configurables et avertissements ; politique locale à préciser dans les paramètres. |
 | Sauvegarde et réouverture | SQLite, test de photographie exacte et nom de journée. |
 | Versions et publication figée | Photographies complètes, déclencheurs empêchant UPDATE/DELETE ; tests de conservation. |
@@ -55,19 +56,19 @@ Ce document distingue les contrôles automatisables du contrôle de prise en mai
 - Le moteur automatique choisit parmi des candidats. Un échec de cette recherche ne prouve pas l'impossibilité de tout horaire théorique ; les diagnostics le distinguent.
 - Une règle inscrite uniquement comme note libre dans les « restrictions particulières » n'est pas interprétée automatiquement. Les contraintes que le moteur applique doivent être saisies dans les champs structurés de disponibilité, absence, limites, buffers et pauses.
 - La politique de pause n'est pas présumée conventionnelle ou réglementaire. La durée requise et son seuil sont configurables ; une durée à zéro désactive cette règle.
-- La version conserve les profils et paramètres de la semaine. Pour une ancienne semaine, les profils archivés sont ceux de cette photographie.
+- La version conserve les profils et paramètres de la journée. Pour une ancienne date, les profils archivés sont ceux de cette photographie.
 - Les premières versions natives Windows et Mac ont été compilées et vérifiées sur GitHub Actions. Les ZIP portables doivent provenir de leur propre exécution réussie ; les résultats sont détaillés dans `ETAT_VERIFICATION.md`. La prise en main sur le poste de l’école reste nécessaire.
 
 ## Contrôle de prise en main sur Windows
 
-1. Ouvrir une nouvelle semaine, nommer une journée et créer un groupe avec ses effectifs.
+1. Ouvrir une nouvelle journée, nommer une journée et créer un groupe avec ses effectifs.
 2. Ajouter deux éducatrices, puis les glisser dans le même groupe ; vérifier leurs deux blocs visibles.
 3. Régler un quart à 7 h 13–8 h 55, déplacer son début d'une minute et vérifier son total.
 4. Changer le groupe par glissement et annuler l'action.
 5. Créer une relève insuffisante, lire l'alerte et corriger le chevauchement à quinze minutes.
 6. Ajouter une pause et vérifier l'apparition d'un manque de couverture.
 7. Déplacer une activité entre deux locaux sans changement des heures de travail.
-8. Consulter la vue Semaine, choisir une journée et agrandir le calendrier.
+8. Changer de date, revenir à la première journée et vérifier que les heures restent indépendantes.
 9. Générer une proposition, la refuser, puis en accepter une autre ; vérifier les quarts verrouillés.
 10. Sauvegarder, fermer, rouvrir, consulter une archive et restaurer une ancienne version.
 11. Exporter et imprimer un horaire général et individuel en noir et blanc.

@@ -10,22 +10,25 @@ L’équipe reste à gauche et le calendrier occupe le reste de l’écran. Les 
 - **Menu → Affichage** permet de régler le zoom, le magnétisme et la visibilité du panneau de l’équipe.
 - **Menu** regroupe aussi l’annulation, la sauvegarde manuelle, le statut, l’historique et les sauvegardes locales.
 
-## Préparer une semaine
+## Préparer une journée pédagogique
 
-1. Sélectionnez la semaine à planifier. Chaque journée conserve sa date et peut recevoir un nom, par exemple « Journée pédagogique — Halloween ».
-2. Ajoutez les éducatrices. Indiquez leurs heures cibles, leur ancienneté, leurs disponibilités et leurs absences. Les détails facultatifs sont regroupés dans les réglages du profil.
-3. Utilisez la préparation d’une journée pour saisir le nombre d’inscriptions et la taille de groupe souhaitée. Les groupes et effectifs sont répartis automatiquement ; vous pouvez ensuite modifier leurs périodes et effectifs. Le logiciel calcule le besoin de personnel selon le ratio configuré et le minimum de deux éducatrices par groupe actif.
-4. Ajoutez les locaux et leurs capacités si vous souhaitez planifier les activités.
+1. Choisissez la **date exacte** avec les flèches, le calendrier ou Aujourd’hui. Chaque date possède son propre horaire, même si deux journées tombent dans la même semaine.
+2. Cliquez sur le **+ de L’équipe**. Une couleur encore inutilisée est proposée automatiquement ; vous pouvez la changer dans le profil. Choisissez le **rang de 1 à 11** : le rang 1 est le plus ancien, et des rangs peuvent rester libres (1, 4, 9, par exemple). Aucun profil n’est renuméroté automatiquement.
+3. Saisissez les heures cibles, garanties et maximales **pour cette journée**. Une cible de zéro signifie « à définir ». Précisez les disponibilités et absences si nécessaire.
+4. Cliquez sur **Inscriptions** : indiquez le nombre d’enfants, la taille souhaitée des groupes et le nom facultatif de la journée. Les groupes sont préparés pour cette seule date. Le minimum de deux éducatrices et le ratio configuré restent contrôlés.
+5. Ajoutez les locaux depuis l’icône de lieu à gauche si vous prévoyez des activités.
 
-Les durées sont toujours calculées à la minute. Saisir 7 h 13 à 8 h 55 produit 1 h 42, sans arrondi automatique.
+Une nouvelle date reprend les profils et paramètres utiles. Ses inscriptions, quarts et activités restent vides ; les absences de l’ancienne date ne sont pas recopiées. Pour reprendre aussi un horaire complet, utilisez **Menu → Journées et historique → Dupliquer cette journée** et choisissez une date vide.
 
-## Planifier dans le calendrier Jour
+## Planifier dans le calendrier
 
-Glissez une éducatrice du panneau de gauche vers la colonne du groupe et l'heure souhaitée. Déplacez le bloc pour changer son horaire ou son groupe. Ajustez son bord supérieur ou inférieur pour changer le début ou la fin. Un double-clic ouvre la saisie exacte des heures, buffers et pauses.
+Glissez une éducatrice depuis l’équipe vers un groupe et l’heure souhaitée. Déplacez son bloc pour changer l’heure ou le groupe ; tirez son bord supérieur ou inférieur pour régler sa durée. Le double-clic ouvre les heures exactes, les buffers et les pauses. Saisir 7 h 13 à 8 h 55 produit 1 h 42, sans arrondi automatique.
 
-Dans **Menu → Affichage**, le magnétisme propose 1, 5 ou 15 minutes et peut être désactivé. Le zoom agrandit l'axe du temps. La vue Semaine sert à consulter les cinq journées et à ouvrir une journée pour l'édition détaillée.
+Les couleurs pastel des blocs identifient les groupes ; les initiales colorées identifient les éducatrices. Le rang est visible dans chaque fiche de l’équipe et reste modifiable dans le profil.
 
-Un quart verrouillé est conservé lors de la génération automatique. Déverrouillez-le dans son formulaire pour le modifier.
+**Menu → Affichage** propose le zoom, la journée entière et le magnétisme de 1, 5 ou 15 minutes, ou libre. Le calendrier affiche uniquement la journée choisie. Les objectifs et les totaux d’heures concernent cette journée.
+
+Un quart verrouillé est conservé pendant la génération ; déverrouillez-le dans son formulaire pour le modifier.
 
 ## Ouverture, fermeture et relève
 
@@ -49,7 +52,7 @@ Cliquez sur « Générer ». Le moteur respecte les contraintes obligatoires qu'
 
 ## Sauvegarder, revenir en arrière et exporter
 
-Sauvegardez régulièrement et utilisez l'export de sauvegarde locale avant un changement important. Les anciennes versions restent consultables. Une restauration crée une nouvelle version ; une duplication permet de réutiliser une semaine. Une publication conserve sa photographie historique.
+Sauvegardez régulièrement et utilisez l'export de sauvegarde locale avant un changement important. Les anciennes versions de chaque journée restent consultables dans **Menu → Journées et historique**. Une restauration crée une nouvelle version ; une duplication permet de réutiliser une journée. Une publication conserve sa photographie historique.
 
 L'export PDF offre un horaire général, un horaire individuel et un regroupement. Les horaires indiquent les heures exactes, activités, lieux et totaux. Pour une sauvegarde informatique complète, utilisez la sauvegarde locale SQLite ; un PDF sert à consulter ou imprimer et ne remplace pas la base.
 
@@ -76,3 +79,9 @@ Si ce chemin n’est pas disponible, une fenêtre demande de choisir le dossier 
 Si vous utilisez encore la version 0.1.1 et voyez une erreur contenant « AppTranslocation » ou « Read-only file system », téléchargez la nouvelle version, extrayez le dossier complet dans Documents et ouvrez cette nouvelle application. Conservez votre ancien sous-dossier **donnees** si vous aviez déjà des horaires.
 
 La préparation du fichier à remettre est décrite dans les procédures [Windows](DISTRIBUTION_WINDOWS.md) et [macOS](DISTRIBUTION_MACOS.md). Elle concerne la personne qui construit le logiciel.
+
+## Retrouver les anciens horaires
+
+Les anciennes semaines ne sont pas supprimées. Le menu **Consulter une journée** affiche leurs dates planifiées. À l’ouverture d’une date, ses quarts, activités, inscriptions et son nom sont repris dans un horaire quotidien séparé. L’ancienne photographie hebdomadaire reste intacte.
+
+Les anciens objectifs hebdomadaires ne deviennent pas des obligations journalières : les cibles et garanties de la journée sont à définir dans les profils. Une copie de sécurité du fichier est créée avant la mise à niveau du format de données. La version 0.1.x ne peut pas ouvrir la base après cette mise à niveau ; conservez la sauvegarde si vous devez revenir en arrière.

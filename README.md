@@ -1,23 +1,27 @@
 # Planificateur — Service de garde
 
-Application de bureau en français pour planifier un service de garde scolaire au Québec. Les données demeurent sur le poste, dans SQLite. Aucun compte, serveur ou abonnement ; aucun accès réseau dans l'application.
+Application de bureau en français pour planifier **une journée pédagogique à la fois** dans un service de garde scolaire au Québec. Les données demeurent sur le poste, dans SQLite. Aucun compte, serveur ou abonnement ; aucun accès réseau dans l'application.
 
-## Première version
+## Version 0.2.0 en préparation — non publiée
 
 ![Aperçu du tableau de planification](docs/apercu-interface.png)
 
-- Écran épuré : calendrier agrandi, fiches compactes, réglages dans **Menu**, alertes ouvertes avec **Vérifier**.
-- Calendrier Jour/Semaine, groupes en colonnes, quarts à la minute, glisser-déposer et redimensionnement.
-- Profils des éducatrices, heures, ancienneté, disponibilités, absences et préférences.
+- Écran inspiré de la référence fournie : navigation vert foncé, calendrier blanc et blocs pastel, fiches avec initiales.
+- Une date et un nom facultatif par journée ; aucune vue hebdomadaire dans le parcours de planification.
+- Calendrier quotidien, groupes en colonnes, quarts à la minute, glisser-déposer et redimensionnement.
+- Couleur distincte attribuée à chaque création d’éducatrice, modifiable ; rang choisi de **1 à 11**, avec rangs intermédiaires libres.
+- Heures cibles/garanties/maximales, disponibilités, absences et préférences **pour la journée**.
 - Journées nommées et répartition des inscriptions en groupes de taille configurable.
 - Activités et locaux indépendants des quarts ; alertes de couverture et de conflits.
 - Validation continue, proposition automatique CP-SAT, quarts verrouillés et annulation.
-- Historique immuable, archives, duplication, restauration et sauvegardes locales.
+- Historique, statut, archives et duplication indépendants pour chaque date ; sauvegardes locales. Les anciennes semaines restent conservées et consultables par journée.
 - PDF général, individuel et regroupé, avec heures exactes et aperçu.
 
 Les règles initiales sont : ouverture à 7 h avec deux éducatrices dès 6 h 50, fermeture à 17 h 30 avec deux jusqu'à 17 h 35, relève de quinze minutes, couverture continue et ratio de 1/20 avec au moins deux éducatrices par groupe actif. Le ratio et les paramètres restent configurables. Les buffers rémunérés n'assurent pas automatiquement la couverture des enfants.
 
-## Version prête à utiliser, sans installation
+## Version publique précédente, sans installation
+
+La version publique disponible est **0.1.2** et conserve le fonctionnement précédent. La version 0.2.0 décrite ci-dessus reste en préparation ; sa publication attend l’accord du responsable du projet.
 
 La livraison principale est un **ZIP portable**, disponible dans les [téléchargements publics du projet](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/latest). **Aucune connexion GitHub n'est nécessaire.**
 
@@ -52,7 +56,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\build-windows.ps1
 
 Le résultat principal est **`dist/Planificateur-SDG-Portable.zip`**. Le script par défaut ne dépend pas d’Inno Setup et n’exécute aucune installation ou désinstallation système. Il teste le binaire, le dossier portable et l’archive extraite. Le workflow **« Vérifier et construire Windows »** remet l’artefact **`Planificateur-SDG-Portable-Windows`** contenant le ZIP et ses comptes rendus. Voir la [procédure Windows](docs/DISTRIBUTION_WINDOWS.md).
 
-Les deux versions portables ont réussi **132 tests chacune**, ainsi que les contrôles natifs après extraction du ZIP. Les [résultats réellement vérifiés](docs/ETAT_VERIFICATION.md) donnent les exécutions et rapports correspondants. Le workflow **Publier les téléchargements portables** publie une version seulement après réussite des deux constructions du même code et vérification des rapports natifs. Chaque livraison contient les ZIP directement utilisables, les rapports et les sommes SHA-256. Augmentez la version avant de publier une nouvelle livraison ; une version publiée reste figée.
+Les versions publiques **0.1.2** ont réussi **132 tests chacune**, ainsi que les contrôles natifs après extraction du ZIP. Les [résultats réellement vérifiés](docs/ETAT_VERIFICATION.md) donnent les exécutions et rapports correspondants. La publication automatique est désactivée à la demande du responsable du projet. Le workflow **Publier les téléchargements portables** se lance manuellement, avec confirmation explicite et uniquement après accord ; il exige les deux constructions réussies du même code et les rapports natifs. Chaque livraison contient les ZIP directement utilisables, les rapports et les sommes SHA-256. Augmentez la version avant de publier une nouvelle livraison ; une version publiée reste figée.
 
 ## Développement : lancer depuis les sources
 
@@ -74,7 +78,7 @@ python3 -m venv .venv
 .venv/bin/python -m gardeplan
 ```
 
-`python -m gardeplan --example` ouvre une base d'exemple distincte, contenant des noms fictifs. Sans cet argument, l'application démarre avec vos données ou une semaine vide. `--database chemin.sqlite` permet de choisir un autre emplacement. Les fichiers SQLite personnels sont exclus de Git.
+`python -m gardeplan --example` ouvre une base d'exemple distincte, contenant des noms fictifs. Sans cet argument, l'application démarre avec la dernière journée sauvegardée ou une journée vide. `--database chemin.sqlite` permet de choisir un autre emplacement. Les fichiers SQLite personnels sont exclus de Git.
 
 ## Tests et documentation
 

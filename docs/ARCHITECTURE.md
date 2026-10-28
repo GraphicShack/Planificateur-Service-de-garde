@@ -6,14 +6,16 @@ Le Planificateur — Service de garde est une application de bureau Python 3 / P
 
 | Module | Responsabilité |
 | --- | --- |
-| `models.py` | Éducatrices, groupes, effectifs, locaux, quarts, activités, paramètres et semaines ; conversion JSON contrôlée. |
+| `models.py` | Éducatrices, groupes, effectifs, locaux, quarts, activités, paramètres et journées ; compatibilité des semaines historiques ; conversion JSON contrôlée. |
+| `daily.py` | Création et duplication des journées ; extraction conservatrice des semaines historiques. |
+| `identity.py` | Palette distincte pour chaque nouvelle éducatrice, étendue au-delà de onze profils. |
 | `planning.py` | Préparation d’une journée selon les inscriptions et la taille souhaitée des groupes. |
 | `validation.py` | Contraintes obligatoires, avertissements et intervalles de couverture. |
 | `optimizer.py` | Proposition par OR-Tools CP-SAT ; conservation des quarts verrouillés et validation finale. |
 | `storage.py` | SQLite, versions complètes, duplication, restauration, sauvegarde et import local. |
 | `data_paths.py` | Données du dossier portable ou emplacement historique ; déplacement du dossier sans reconfiguration. |
 | `pdf.py` | PDF général, individuel et regroupé avec ReportLab. |
-| `ui/calendar.py` | Calendriers Jour/Semaine, manipulation graphique et repères d'alertes. |
+| `ui/calendar.py` | Calendrier quotidien, manipulation graphique et repères d'alertes. |
 | `ui/forms.py` | Formulaires simples et réglages détaillés. |
 | `ui/main_window.py` | Coordination de l'interface, annulation, sauvegarde et commandes. |
 | `ui/visuals.py` | Logo et pictogrammes SVG locaux, rendus pour les écrans à haute densité. |
@@ -32,13 +34,13 @@ Les contraintes sont évaluées à chaque changement d'état de la journée, don
 
 Le service ouvre à 7 h et ferme à 17 h 30. Deux éducatrices doivent être présentes de 6 h 50 à 7 h pour préparer l'ouverture, et de 17 h 30 à 17 h 35 pour la fermeture. Une relève dans un groupe exige au moins quinze minutes de présence commune. Aucun trou de couverture du service ouvert n'est autorisé. Chaque groupe actif exige `max(2, plafond(effectif / 20))` éducatrices, selon les règles demandées ; le ratio reste configurable et n'est pas présenté comme une disposition réglementaire.
 
-Les effectifs et périodes d'ouverture sont définis par groupe et journée. L’outil de préparation répartit les inscriptions selon une taille de groupe souhaitée, réglable et indépendante du ratio d’encadrement. Les groupes restent ensuite modifiables manuellement ; cette taille souhaitée ne représente pas une limite réglementaire. Le nom personnalisé d'une journée est stocké avec la semaine.
+Les effectifs et périodes d'ouverture sont définis par groupe et journée. L’outil de préparation répartit les inscriptions selon une taille de groupe souhaitée, réglable et indépendante du ratio d’encadrement. Les groupes restent ensuite modifiables manuellement ; cette taille souhaitée ne représente pas une limite réglementaire. Le nom personnalisé est stocké dans la photographie de la journée.
 
 ## Versions et fichiers
 
 La distribution principale est un dossier portable avec son exécutable, ses bibliothèques, un marqueur `portable.mode` et un sous-dossier `donnees`. Le lancement détecte automatiquement ce mode ; il conserve SQLite, l'historique et les sauvegardes dans `donnees`, sans installation ni enregistrement système par l'application. Sur macOS, le bundle déclare aussi son intention portable dans `Info.plist` ; les données restent à côté du `.app`, jamais à l'intérieur du bundle signé. Les anciens chemins de profil sont conservés pour les installations historiques qui n'utilisent pas le mode portable.
 
-Chaque sauvegarde conserve une photographie complète de la semaine, incluant les profils et paramètres. Une publication reste consultable dans l'historique même lorsque de nouveaux brouillons sont enregistrés. Une restauration produit une nouvelle version. La sauvegarde de sécurité utilise l'API de sauvegarde SQLite ; l'import vérifie la base avant remplacement et conserve une copie de sécurité de l'ancienne base.
+Chaque sauvegarde conserve une photographie complète de la journée, incluant les profils et paramètres. Une publication reste consultable dans l'historique même lorsque de nouveaux brouillons sont enregistrés. Une restauration produit une nouvelle version. La sauvegarde de sécurité utilise l'API de sauvegarde SQLite ; l'import vérifie la base avant remplacement et conserve une copie de sécurité de l'ancienne base.
 
 ## Limites d'optimisation
 
@@ -49,3 +51,11 @@ La génération cherche une solution dans un ensemble de quarts candidats. Elle 
 Les tests contrôlent les minutes, les contraintes de couverture, les lieux, les sauvegardes, les versions et les PDF. Les opérations locales sont également exécutées avec l'accès aux sockets désactivé. Les tests d'interface utilisent le moteur Qt hors écran. Une exécution hors écran ne remplace pas un essai avec souris et imprimante sur un poste Windows.
 
 Les scripts `scripts/build-windows.ps1` et `scripts/build-macos.sh` compilent nativement avec PyInstaller. Ils contrôlent l'exécutable préparé puis le même logiciel après extraction du ZIP, avec le moteur Qt natif, SQLite, PDF et CP-SAT. Ils exigent une écriture réelle des données à côté du programme. Le dossier portable doit rester complet.
+
+## Dates et compatibilité (0.2)
+
+`Week` reste le nom interne de l’enveloppe pour lire les anciennes sauvegardes. Un horaire quotidien possède `planning_date` et utilise exclusivement l’indice local 0 pour tous ses blocs, périodes et absences ; la date peut être n’importe quel jour civil. `active_days` limite validation, génération et PDF à cette seule journée. La date affichée vient de `planning_date`, jamais du nom historique du champ `monday`.
+
+La clé SQLite d’une journée est `day:AAAA-MM-JJ`, distincte de celle d’une ancienne semaine. Les versions, statuts, duplications et restaurations sont ainsi indépendants. Le schéma 2 conserve sans modification les contenus/checksums des anciennes versions. La migration crée une copie SQLite au format 1 avant de mettre à jour les métadonnées ; l’import accepte les deux formats et conserve sa copie de sécurité habituelle.
+
+Les profils d’une nouvelle journée reprennent leurs objectifs journaliers si le modèle était quotidien. Un objectif hebdomadaire historique n’est jamais divisé ou réinterprété implicitement : sa cible journalière reste à définir. Les rangs quotidiens sont limités à 1–11 ; aucune contiguïté ni présence de tous les rangs n’est requise. Les couleurs existantes ne sont pas réattribuées lors d’une édition ou d’un changement de date.

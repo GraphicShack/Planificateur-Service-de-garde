@@ -2,6 +2,18 @@
 
 Les constructions et les contrôles natifs s’exécutent sur GitHub Actions. Les fichiers à remettre sont les ZIP portables d’une exécution réussie correspondant au code voulu. Une sortie compilée dont le contrôle échoue n’est pas livrée.
 
+## Préparation quotidienne 0.2.0 — publication suspendue
+
+À la demande du responsable du projet, aucune release 0.2.0 n’est publiée. Le workflow de publication ne possède plus de déclencheur automatique : il est manuel, avec une confirmation booléenne à faux par défaut. Les versions publiques antérieures restent disponibles.
+
+Les nouvelles fonctions sont présentes dans les sources : écran quotidien inspiré de la référence, dates indépendantes, objectifs journaliers, PDF et génération limités à une date, couleurs distinctes à la création et rangs 1 à 11 sans rang intermédiaire obligatoire. Le calendrier conserve ses mouvements, redimensionnements et calculs à la minute.
+
+Le format SQLite 2 garde les photographies historiques sans modification de leur contenu/checksum. Une copie au format 1 est créée avant migration. Les journées extraites d’anciennes semaines possèdent leurs propres versions ; les objectifs hebdomadaires ne sont pas convertis implicitement en objectifs journaliers.
+
+Les nouveaux tests vérifient notamment deux dates de la même semaine, la duplication sans écrasement, la restauration, la copie de sécurité et l’import, les PDF de la seule date choisie, le solveur quotidien, les couleurs au-delà de onze profils et les rangs avec écarts. Le premier contrôle Windows a relevé une connexion SQLite laissée ouverte par le test de migration ; ce nettoyage a été corrigé. Le diagnostic du binaire a aussi été adapté pour relire une clé quotidienne.
+
+Localement, 64 contrôles cœur ont passé ; 12 contrôles quotidiens passent avec un contrôle OR-Tools réservé aux runners natifs. Les 11 contrôles de chemins portables et les 7 contrôles de préparation des fichiers passent. Les 24 diagnostics d’interface exécutés avec l’adaptateur Qt5 temporaire passent ; cet adaptateur n’est pas livré. Les résultats des contrôles Qt6 et des ZIP natifs sont consignés ci-dessous après achèvement.
+
 ## Correctif AppTranslocation — version 0.1.2
 
 La capture de l’utilisateur montrait une erreur `EROFS` dans `AppTranslocation/.../d/donnees`. Les contrôles précédents lançaient directement le binaire extrait et ne reproduisaient pas cette copie temporaire créée par Gatekeeper.

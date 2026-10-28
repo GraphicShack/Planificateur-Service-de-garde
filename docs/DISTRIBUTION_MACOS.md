@@ -36,7 +36,7 @@ La publication attend les deux constructions réussies du même code, contrôle 
 
 ## Construire avec GitHub Actions
 
-Lancez **Vérifier et construire macOS**. Après réussite, récupérez l’artefact **Planificateur-SDG-Portable-macOS-<architecture>**, remettez le ZIP portable qu’il contient et conservez les trois rapports JSON. Le runner est `macos-15` ; le suffixe d’architecture est mesuré sur le Python utilisé. Le workflow ne promet pas deux architectures simultanément. Les constructions réussies de `main` alimentent ensuite le workflow de publication des [Releases publiques](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/latest).
+Lancez **Vérifier et construire macOS**. Après réussite, récupérez l’artefact **Planificateur-SDG-Portable-macOS-<architecture>**, remettez le ZIP portable qu’il contient et conservez les trois rapports JSON. Le runner est `macos-15` ; le suffixe d’architecture est mesuré sur le Python utilisé. Le workflow ne promet pas deux architectures simultanément. La publication dans les Releases se déclenche désormais manuellement après accord du responsable du projet.
 
 Depuis votre Mac, le workflow **Vérifier et construire Windows** produit séparément le ZIP Windows sur un runner Windows. Le poste cible n’a pas besoin d’installer les outils de compilation.
 
@@ -78,3 +78,5 @@ Cette API est facultative. Si la correspondance n’est pas disponible, l’util
 Les tests couvrent la récupération d’une base existante, le choix d’un dossier, les refus et l’annulation. Un contrôle source charge aussi les véritables API natives sur le runner Mac. Le lancement sous Gatekeeper après téléchargement n’est pas reproduit par les tests de compilation ; les contrôles du ZIP lancent directement son exécutable.
 
 La correction ne retire pas la quarantaine et ne modifie aucun réglage de sécurité. L’avertissement de Gatekeeper reste distinct : la livraison est signée localement, sans Developer ID ni notarisation Apple. Sur un Mac personnel, l’utilisateur peut autoriser l’ouverture dans Réglages Système → Confidentialité et sécurité. Les politiques d’un poste géré restent applicables.
+
+La publication automatique est suspendue. Ne publiez pas de nouvelle release sans accord explicite du responsable du projet. Les tests et compilations peuvent continuer.
