@@ -71,6 +71,9 @@ def test_startup_reopens_chosen_database_instead_of_translocated_copy(qapp, tmp_
     from gardeplan.models import Week
     from gardeplan.storage import Repository
     from gardeplan.ui import portable_startup, main_window
+    def unexpected_message(parent, title, message, *args):
+        raise AssertionError(f"{title}: {message}")
+    monkeypatch.setattr(app.QMessageBox, "critical", unexpected_message)
     chosen = tmp_path / "Documents" / "Planificateur-SDG"
     database = chosen / "donnees" / "gardeplan.sqlite"
     Repository(database).save(Week("2026-10-26", day_names={0: "À conserver"}))
@@ -84,7 +87,7 @@ def test_startup_reopens_chosen_database_instead_of_translocated_copy(qapp, tmp_
         return Repository(path)
     monkeypatch.setattr(app, "Repository", repository)
     class Window:
-        save_label = type("Label", (), {"setText": lambda self, text: None})()
+        save_label = type("Label", (), {"setToolTip": lambda self, text: None})()
         def __init__(self, repo, week):
             assert repo.load_week("2026-10-26").day_names[0] == "À conserver"
         def setWindowTitle(self, title):
