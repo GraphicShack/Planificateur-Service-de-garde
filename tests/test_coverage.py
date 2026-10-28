@@ -7,6 +7,8 @@ from gardeplan.coverage import coverage_timeline, quarter_hour_coverage
 
 def covered_day():
     plan = day_plan("2026-10-28")
+    plan.settings.staffing_policy = 2  # Historical 0.3.1 snapshot.
+    plan.settings.max_daily_minutes = 720
     plan.groups = [Group("g", "Service", periods=[GroupPeriod(0, 420, 1050, 5)])]
     plan.educators = [Educator(str(i), f"Personne {i}", seniority=i+1) for i in range(2)]
     plan.shifts = [Shift(str(i), str(i), "g", 0, 410, 1055, 10, 5) for i in range(2)]

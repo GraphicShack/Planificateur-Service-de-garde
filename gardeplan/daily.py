@@ -3,6 +3,7 @@ from copy import deepcopy
 from datetime import date, timedelta
 
 from .models import Week
+from .staffing import CURRENT_POLICY, DAILY_MAXIMUM
 
 
 def day_plan(selected: str, template: Week | None = None, *, extract=False) -> Week:
@@ -10,10 +11,12 @@ def day_plan(selected: str, template: Week | None = None, *, extract=False) -> W
     monday = current - timedelta(days=current.weekday())
     result = Week(monday.isoformat(), planning_date=selected)
     if template is None:
+        result.settings.max_daily_minutes = DAILY_MAXIMUM
         return result
     result.educators, result.rooms, result.settings = deepcopy((template.educators, template.rooms, template.settings))
     if not extract:
-        result.settings.staffing_policy = 2
+        result.settings.staffing_policy = CURRENT_POLICY
+        result.settings.max_daily_minutes = min(result.settings.max_daily_minutes or DAILY_MAXIMUM, DAILY_MAXIMUM)
     source_day = 0 if template.planning_date else current.weekday()
     def periods(values):
         chosen = [deepcopy(p) for p in values if p.day == source_day]
@@ -59,5 +62,6 @@ def duplicate_day(source: Week, selected: str) -> Week:
     result.planning_date = selected
     result.monday = (current - timedelta(days=current.weekday())).isoformat()
     result.status = "draft"
-    result.settings.staffing_policy = 2
+    result.settings.staffing_policy = CURRENT_POLICY
+    result.settings.max_daily_minutes = min(result.settings.max_daily_minutes or DAILY_MAXIMUM, DAILY_MAXIMUM)
     return result

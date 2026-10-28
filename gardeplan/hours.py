@@ -1,6 +1,7 @@
 """Differentiate an optional target from a mandatory maximum in paid minutes."""
 from dataclasses import dataclass
 from .models import format_duration, totals
+from .staffing import daily_limit
 
 
 @dataclass(frozen=True)
@@ -24,4 +25,4 @@ def hour_state(person, minutes, daily_limit=None):
 
 def educator_hour_state(week, person):
     return hour_state(person, totals(week).get(person.id, 0),
-                      week.settings.max_daily_minutes if week.planning_date else None)
+                      daily_limit(week) if week.planning_date else None)

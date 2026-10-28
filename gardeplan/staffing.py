@@ -27,10 +27,24 @@ def requirements(plan, start, end, students=None, ratio=20, minimum=2):
             for a,b in zip(points,points[1:])]
 
 
+DAILY_MAXIMUM = 8 * 60
+CURRENT_POLICY = 3
+
+
+def daily_limit(plan):
+    configured = plan.settings.max_daily_minutes
+    if plan.planning_date and plan.settings.staffing_policy >= 3:
+        return min(configured or DAILY_MAXIMUM, DAILY_MAXIMUM)
+    return configured
+
+
 def adopt_current_draft_rules(plan):
     """Upgrade only working copies, never published or historical snapshots."""
-    if plan.planning_date and plan.status in {'draft','validated'} and plan.settings.staffing_policy < 2:
-        plan.settings.staffing_policy = 2
-        plan.status = 'draft'
-        return True
+    if plan.planning_date and plan.status in {'draft','validated'}:
+        limit = min(plan.settings.max_daily_minutes or DAILY_MAXIMUM, DAILY_MAXIMUM)
+        if plan.settings.staffing_policy < CURRENT_POLICY or plan.settings.max_daily_minutes != limit:
+            plan.settings.staffing_policy = CURRENT_POLICY
+            plan.settings.max_daily_minutes = limit
+            plan.status = 'draft'
+            return True
     return False

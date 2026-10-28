@@ -80,7 +80,9 @@ class GenerationThread(QThread):
         super().__init__(parent)
         self.snapshot = deepcopy(week)
         if self.snapshot.planning_date:
-            self.snapshot.settings.staffing_policy = 2
+            from ..staffing import adopt_current_draft_rules
+            self.snapshot.status = "draft"
+            adopt_current_draft_rules(self.snapshot)
 
     def run(self):
         try:
@@ -930,7 +932,8 @@ class MainWindow(QMainWindow):
                 candidate = changed
             candidate.status = "draft"
             if candidate.planning_date:
-                candidate.settings.staffing_policy = 2
+                from ..staffing import adopt_current_draft_rules
+                adopt_current_draft_rules(candidate)
             # Round-trip asserts basic types; business-invalid drafts remain editable.
             candidate = Week.from_dict(candidate.to_dict())
         except Exception as error:

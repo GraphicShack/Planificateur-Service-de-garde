@@ -15,7 +15,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any
 
-from .staffing import boundaries, minimum_presence, pupil_requirement, requirements as staffing_requirements
+from .staffing import daily_limit, boundaries, minimum_presence, pupil_requirement, requirements as staffing_requirements
 from .models import (
     Break, Educator, Shift, Week, coverage_intervals, working_intervals,
     paid_minutes, required_educators, subtract_intervals, merge_intervals, new_id,
@@ -155,7 +155,7 @@ def _build_candidates(week: Week) -> tuple[list[_Candidate], list[str]]:
                                         shift = Shift(new_id(), educator.id, group.id, day, start, end,
                                                       before, after, True, True, breaks)
                                         minutes = paid_minutes(shift)
-                                        if minutes <= educator.max_minutes and (not settings.max_daily_minutes or minutes <= settings.max_daily_minutes):
+                                        if minutes <= educator.max_minutes and (not daily_limit(week) or minutes <= daily_limit(week)):
                                             add(shift)
                     if len(candidates) > 120000:
                         diagnostics.append("La recherche dépasse 120 000 quarts candidats. Réduisez le nombre de périodes ou réduisez les groupes simultanés.")
@@ -428,9 +428,9 @@ def generate(week: Week, time_limit: float = 20) -> GenerationResult:
         priority = priorities.get(educator.id, 0)
         objective.append(under * (max(0, settings.target_weight) + max(0, settings.seniority_weight) * priority))
         objective.append(over * max(1, settings.target_weight))
-        if settings.max_daily_minutes:
+        if daily_limit(snapshot):
             for day in snapshot.active_days:
-                model.add(sum(c.paid * c.variable for c in choices if c.shift.day == day) <= settings.max_daily_minutes)
+                model.add(sum(c.paid * c.variable for c in choices if c.shift.day == day) <= daily_limit(snapshot))
         for candidate in choices:
             if educator.preferred_groups and candidate.shift.group_id not in educator.preferred_groups:
                 objective.append(candidate.variable * candidate.paid * max(0, settings.preference_weight))

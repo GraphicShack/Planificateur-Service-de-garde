@@ -4,7 +4,7 @@ La vérification balaye les minutes exactes puis regroupe les erreurs identiques
 adjacentes en intervalles lisibles. Aucun arrondi ni approximation par tranche.
 """
 from __future__ import annotations
-from .staffing import minimum_presence, pupil_requirement
+from .staffing import minimum_presence, pupil_requirement, daily_limit
 
 from dataclasses import dataclass, field
 from collections import defaultdict
@@ -217,8 +217,8 @@ def validate(week: Week, *, _service=False) -> list[Issue]:
                     break
                 add("overlap", _prefix(day, other.start, min(s.end, other.end)) + f"{educators[educator_id].name} est affectée à deux quarts simultanément.", day, other.start, min(s.end, other.end), s.group_id, [s.id, other.id], "Déplacer ou raccourcir un des deux quarts.")
         minutes = sum(paid_minutes(s) for s in daily)
-        if valid_settings and settings.max_daily_minutes and minutes > settings.max_daily_minutes:
-            add("max_daily", f"{DAYS[day]} : {educators[educator_id].name} dépasse la limite quotidienne de {format_duration(settings.max_daily_minutes)}.", day, shift_ids=[s.id for s in daily])
+        if valid_settings and daily_limit(week) and minutes > daily_limit(week):
+            add("max_daily", f"{DAYS[day]} : {educators[educator_id].name} dépasse la limite quotidienne de {format_duration(daily_limit(week))}.", day, shift_ids=[s.id for s in daily])
 
     # Les présences de chaque éducatrice sont comptées une seule fois.
     for (group_id, day), periods in valid_periods.items():

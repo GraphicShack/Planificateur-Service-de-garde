@@ -17,6 +17,8 @@ from gardeplan.validation import validate
 
 def prepared_day(selected="2026-10-28"):
     plan = day_plan(selected)
+    plan.settings.staffing_policy = 2  # Historical 0.3.1 snapshot.
+    plan.settings.max_daily_minutes = 720
     plan.educators = [Educator(str(i), name, seniority=i+1, target_minutes=645, max_minutes=720)
                       for i, name in enumerate(("Camille Roy", "Sophie Martin"))]
     plan.groups = [Group("g1", "Groupe A", periods=[GroupPeriod(0, 420, 1050, 20)])]

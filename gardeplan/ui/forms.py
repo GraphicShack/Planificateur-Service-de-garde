@@ -534,7 +534,8 @@ class EducatorDialog(EditorDialog):
         self.target = MinuteEdit(ed.target_minutes, duration=True, empty_zero=True)
         self.guaranteed = MinuteEdit(ed.guaranteed_minutes, duration=True, empty_zero=True)
         self.guaranteed.setToolTip("Le générateur utilise cette durée comme minimum obligatoire d’heures rémunérées. Une proposition qui ne l’atteint pas est refusée.")
-        self.maximum = MinuteEdit(ed.max_minutes, duration=True)
+        self.maximum = MinuteEdit(min(ed.max_minutes,480) if week.planning_date else ed.max_minutes, duration=True)
+        self.maximum.setToolTip("Maximum de 8 h rémunérées par jour, buffers compris ; les pauses non rémunérées sont déduites." if week.planning_date else "Maximum hebdomadaire obligatoire.")
         for field in (self.name, self.color, self.seniority, self.seniority_date,
                       self.target, self.guaranteed, self.maximum):
             field.setFixedHeight(44)
@@ -622,6 +623,8 @@ class EducatorDialog(EditorDialog):
         ed.target_minutes = self.target.value()
         ed.guaranteed_minutes = self.guaranteed.value()
         ed.max_minutes = self.maximum.value()
+        if self.week.planning_date and ed.max_minutes > 480:
+            raise ValueError("Le maximum quotidien ne peut pas dépasser 8 h 00.")
         if max(ed.guaranteed_minutes, ed.target_minutes) > ed.max_minutes:
             raise ValueError("Les heures garanties et l'objectif ne peuvent pas dépasser le maximum configuré.")
         ed.active = self.active.isChecked()
@@ -853,6 +856,7 @@ class ActivityDialog(EditorDialog):
 class SettingsDialog(EditorDialog):
     def __init__(self, week, parent=None):
         super().__init__("Paramètres de planification", parent=parent)
+        self.daily = bool(week.planning_date)
         self.source = deepcopy(week.settings)
         settings = self.source
         form = self.add_page("Ouverture et relèves")
@@ -882,7 +886,7 @@ class SettingsDialog(EditorDialog):
         self.seniority_weight = integer(settings.seniority_weight, 0, 1000)
         self.preference_weight = integer(settings.preference_weight, 0, 1000)
         self.target_weight = integer(settings.target_weight, 0, 1000)
-        self.max_daily = MinuteEdit(getattr(settings, "max_daily_minutes", 720), duration=True)
+        self.max_daily = MinuteEdit(min(settings.max_daily_minutes or 480,480) if self.daily else settings.max_daily_minutes, duration=True)
         self.snap = QComboBox()
         for label, value in [("Sans magnétisme (précision à la minute)", 0), ("1 minute", 1), ("5 minutes", 5), ("15 minutes", 15)]:
             self.snap.addItem(label, value)
@@ -894,7 +898,9 @@ class SettingsDialog(EditorDialog):
             self.preference_weight.setParent(self)
             self.preference_weight.hide()
         form.addRow("Poids des objectifs d'heures", self.target_weight)
-        form.addRow("Présence quotidienne maximale", self.max_daily)
+        form.addRow("Heures rémunérées quotidiennes maximales", self.max_daily)
+        if self.daily:
+            form.addRow(note("Plafond obligatoire : 8 h 00 par jour, buffers rémunérés compris, pauses non rémunérées déduites."))
         form.addRow("Magnétisme du calendrier", self.snap)
         form.addRow(note("Ces poids règlent les préférences de génération. Une valeur plus élevée donne davantage de priorité. Les contraintes obligatoires restent prioritaires dans tous les cas."))
 
@@ -915,6 +921,8 @@ class SettingsDialog(EditorDialog):
         settings.preference_weight = self.preference_weight.value()
         settings.target_weight = self.target_weight.value()
         settings.max_daily_minutes = self.max_daily.value()
+        if self.daily and settings.max_daily_minutes > 480:
+            raise ValueError("Le maximum quotidien ne peut pas dépasser 8 h 00.")
         if settings.max_daily_minutes <= 0:
             raise ValueError("La présence quotidienne maximale doit être supérieure à zéro.")
         settings.snap_minutes = self.snap.currentData()
