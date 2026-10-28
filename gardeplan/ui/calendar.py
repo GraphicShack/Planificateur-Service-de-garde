@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
 
 from ..models import format_time, format_duration
 from .coverage_band import CoverageBand
+from .theme import TEXT
 
 DAYS = ("Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi")
 EDUCATOR_MIME = "application/x-gardeplan-educator"
@@ -38,6 +39,18 @@ def _font(size: float, weight=QFont.Weight.Normal) -> QFont:
     font.setPointSizeF(size)
     font.setWeight(weight)
     return font
+
+
+def _pixel_font(size=12, weight=QFont.Weight.Normal):
+    font = QFont("Segoe UI")
+    font.setPixelSize(max(12, size))
+    font.setWeight(weight)
+    return font
+
+
+def shift_palette(educator):
+    accent = _color(educator.color if educator else "#476FD0")
+    return _light(accent, .12), accent, QColor(TEXT)
 
 
 def _day_name(week: Any, day: int) -> str:
@@ -300,8 +313,8 @@ class _Canvas(QWidget):
             value = block.value
             educator = educators.get(getattr(value, "educator_id", ""))
             group = groups.get(value.group_id)
-            color = _color(group.color if group else (educator.color if educator else "#667b9d"))
             is_activity = block.kind == "activity"
+            color = _color(group.color if is_activity and group else (educator.color if educator else "#667b9d"))
             border = QColor("#c56a60") if value.id in error_ids else _light(color, .28)
             selected = self.selection == (block.kind, value.id)
             hovered = self.hover == (block.kind, value.id)
@@ -351,15 +364,17 @@ class _Canvas(QWidget):
                 identity_color = _color(educator.color) if educator else color
                 p.setBrush(_light(identity_color, .16))
                 p.drawEllipse(avatar)
-                p.setPen(identity_color.darker(120))
-                p.setFont(_font(7.5, QFont.Weight.DemiBold))
+                p.setPen(QColor(TEXT))
+                p.setFont(_pixel_font(12, QFont.Weight.DemiBold))
                 initials = "".join(word[0].upper() for word in educator.name.split()[:2]) if educator else "?"
                 p.drawText(avatar, Qt.AlignmentFlag.AlignCenter, initials)
-            p.setPen(color.darker(150))
+            p.setPen(QColor(TEXT))
             compact = rect.width() < 70
             padding = 4 if compact else 10
             p.setFont(_font(7.5 if compact else 9 if rect.width() >= 120 else 8.5,
                             QFont.Weight.DemiBold))
+            if c.mode == "Jour":
+                p.setFont(_pixel_font(13, QFont.Weight.DemiBold))
             title = value.name if is_activity else (educator.name if educator else "Éducatrice manquante")
             if compact:
                 title="".join(word[:1].upper() for word in title.replace("—"," ").split()[:3])
@@ -371,7 +386,9 @@ class _Canvas(QWidget):
                        Qt.AlignmentFlag.AlignVCenter,title)
             if rect.height() >= 44:
                 p.setFont(_font(6.5 if compact else 8))
-                p.setPen(color.darker(125))
+                p.setPen(QColor(TEXT))
+                if c.mode == "Jour":
+                    p.setFont(_pixel_font(12))
                 start = self.drag["start"] if self.drag and self.drag["block"] is block else value.start
                 end = self.drag["end"] if self.drag and self.drag["block"] is block else value.end
                 time_range=f"{format_time(start)} – {format_time(end)}"
@@ -402,6 +419,8 @@ class _Canvas(QWidget):
                 p.drawText(QRectF(rect.left()+padding,rect.top()+32+content_offset,text_width,min(rect.height()-36-content_offset,line_count*18)),
                            Qt.AlignmentFlag.AlignTop,subtitle)
             p.restore()
+            if not is_activity:
+                p.fillRect(QRectF(rect.left()+1, rect.top()+1, 4, max(1, rect.height()-2)), color)
             if (not getattr(value,"locked",False) and not c.read_only and c.mode=="Jour"
                     and rect.height()>17 and (hovered or selected or moving)):
                 p.setPen(QPen(_light(color,.52),1.5))
@@ -752,6 +771,15 @@ class CalendarWidget(QWidget):
     def _layout_calendar(self):
         n=max(1,len(self.columns()))
         minimum=220 if self.mode=="Semaine" else 225
+        if self.week and self.mode == "Jour":
+            for group in self.week.groups:
+                points = sorted([(s.start, 1) for s in self.week.shifts if s.day == self.day and s.group_id == group.id]
+                                + [(s.end, -1) for s in self.week.shifts if s.day == self.day and s.group_id == group.id])
+                count = maximum = 0
+                for _, change in points:
+                    count += change
+                    maximum = max(maximum, count)
+                minimum = max(minimum, maximum*156+16)
         self.column_width=max(minimum,self.scroll.viewport().width()/n)
         self.canvas.resize(self.canvas.sizeHint())
         # The header has no vertical scrollbar. Its trailing blank area makes

@@ -60,3 +60,16 @@ def test_opening_shift_is_visible_from_the_first_hour(planner, qapp):
     planner.calendar.scroll_to(900)
     planner.navigate_day(1)
     assert planner.calendar.scroll.verticalScrollBar().value() == 0
+
+
+def test_shift_colours_have_readable_text_for_arbitrary_educator_colours(planner):
+    from gardeplan.ui.calendar import shift_palette, _pixel_font
+    from gardeplan.ui.theme import contrast
+    person = deepcopy(planner.week.educators[0])
+    for color in ("#000000", "#FFFFFF", "#FF0000", "#214F40", "#FFEE00"):
+        person.color = color
+        fill, edge, text = shift_palette(person)
+        assert edge.name() == color.lower()
+        assert contrast(text.name(), fill.name()) >= 4.5
+    assert _pixel_font(12).pixelSize() >= 12
+    assert all(block.rect.width() >= 140 for block in planner.calendar.canvas.blocks)
