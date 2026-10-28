@@ -1,6 +1,6 @@
 {
-  "version": "0.2.1",
-  "commit": "61aeb0f4664ac55e880857ac90362e811bb4c5b4",
+  "version": "0.2.2",
+  "commit": "2319f51fb39dd6358a20a8b802650f71bae89e07",
   "approved": true,
-  "authorization": "Le responsable du projet demande explicitement la publication en version 0.2.1 après modernisation du sélecteur, simplification des horaires et réécriture du README."
+  "authorization": "Autorisation de publication déjà accordée dans cette conversation (release now), maintenue pour cette mise à jour du planificateur et du formulaire des profils."
 }
