@@ -360,7 +360,6 @@ class MainWindow(QMainWindow):
         self.top_alert_button = self._button("Vérifier l'horaire", self.verify, "Vérifier la couverture, les relèves et les heures", icon_name="check")
         self.top_alert_button.setObjectName("subtleButton")
         self.verify_button = self.top_alert_button
-        day_row.addWidget(self.top_alert_button)
         self.coverage_toggle = self._button("− Ratio", lambda: None,
             "Masquer la bande de ratio. Elle n’est jamais incluse dans le PDF.")
         self.coverage_toggle.setObjectName("subtleButton")
@@ -369,8 +368,22 @@ class MainWindow(QMainWindow):
         self.coverage_toggle.setCheckable(True)
         self.coverage_toggle.setChecked(True)
         self.coverage_toggle.setAccessibleName("Masquer la bande de ratio")
+        self.coverage_toggle.setProperty("active", True)
         self.coverage_toggle.toggled.connect(self.toggle_coverage)
-        day_row.addWidget(self.coverage_toggle)
+        for control, symbol in ((self.coverage_toggle, "panel"), (self.top_alert_button, "check")):
+            control.setText("")
+            control.setObjectName("railButton")
+            control.setStyleSheet("")
+            control.setIcon(icon(symbol, color="#D5E3DD"))
+            control.setIconSize(QSize(22,22))
+            control.setFixedSize(50,50)
+            rail_layout.insertWidget(rail_layout.count()-2,control)
+        self.alert_badge = QLabel("0", self.top_alert_button)
+        self.alert_badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.alert_badge.setFixedSize(24,20)
+        self.alert_badge.move(26,0)
+        self.alert_badge.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        self.alert_badge.setStyleSheet("background:#982D24;color:white;border-radius:9px;font-size:12px;font-weight:700;")
         for button, name in ((self.undo_button, "undo"), (self.redo_button, "redo")):
             button.setObjectName("subtleButton")
             button.setIcon(icon(name))
@@ -728,9 +741,9 @@ class MainWindow(QMainWindow):
         errors = sum(issue.severity == "error" for issue in displayed)
         warnings = len(displayed) - errors
         self.alert_toggle.setText(f"{errors} erreur{'s' if errors != 1 else ''} · {warnings} avertissement{'s' if warnings != 1 else ''}")
-        self.top_alert_button.setText(f"Vérifier ({len(displayed)})")
-        self.top_alert_button.setAccessibleName(self.top_alert_button.text())
-        self.top_alert_button.setIcon(icon("alert" if self.issues else "check", size=16, color="#a26828" if self.issues else "#49765c"))
+        self.alert_badge.setText(str(len(displayed)))
+        self.top_alert_button.setAccessibleName(f"Vérifier ({len(displayed)})")
+        self.top_alert_button.setIcon(icon("alert" if self.issues else "check", size=16, color="#D5E3DD"))
         self.top_alert_button.setToolTip(f"{errors} erreur(s) bloquante(s) · {warnings} avertissement(s). Cliquer pour voir les détails.")
         ready = bool(self.week.educators and any(group.periods for group in self.week.groups))
         self.alert_heading_label.setText("Points à vérifier" if self.issues else "Aucune alerte")
@@ -947,7 +960,9 @@ class MainWindow(QMainWindow):
     def toggle_coverage(self, visible):
         self.calendar.set_coverage_visible(visible)
         action = "Masquer" if visible else "Afficher"
-        self.coverage_toggle.setText("− Ratio" if visible else "+ Ratio")
+        self.coverage_toggle.setProperty("active", visible)
+        self.coverage_toggle.style().unpolish(self.coverage_toggle)
+        self.coverage_toggle.style().polish(self.coverage_toggle)
         self.coverage_toggle.setAccessibleName(action+" la bande de ratio")
         self.coverage_toggle.setToolTip(action+" la bande de ratio. Elle n’est jamais incluse dans le PDF.")
 

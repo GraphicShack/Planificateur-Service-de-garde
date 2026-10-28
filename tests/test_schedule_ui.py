@@ -39,12 +39,14 @@ def test_verification_opens_alert_and_selects_exact_gap(planner, qapp):
     planner.alert_list.itemActivated.emit(matches[0])
     assert planner.calendar.highlighted_interval == (0, 720, 795)
     assert planner.calendar.scroll.verticalScrollBar().value() >= 0
-    assert planner.top_alert_button.text().startswith("Vérifier (")
+    assert planner.top_alert_button.accessibleName().startswith("Vérifier (")
+    assert planner.alert_badge.text() == str(planner.alert_list.count())
 
 
 def test_valid_day_explicitly_reports_no_alert(planner):
     planner.top_alert_button.click()
-    assert planner.top_alert_button.text() == "Vérifier (0)"
+    assert planner.top_alert_button.accessibleName() == "Vérifier (0)"
+    assert planner.alert_badge.text() == "0"
     assert planner.alert_heading_label.text() == "Aucune alerte"
     assert planner.alert_list.item(0).text() == "Aucune alerte"
 
