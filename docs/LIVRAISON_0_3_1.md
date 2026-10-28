@@ -7,7 +7,7 @@ La grille affiche un groupe au-dessus des sous-colonnes de ses éducatrices.
 reste une bande masquable ; ses données et les alertes ne sont pas imprimées.
 Les dîners restent calculés, sans être affichés dans les blocs.
 Annuler/Rétablir partagent la ligne du nom de la journée. La navigation présente
-Planning, Équipe, Inscriptions, Ratio et Vérification en haut ; Dossier et
+Accueil, Planning, Équipe, Inscriptions, Ratio et Vérification en haut ; Dossier et
 Réglages sont regroupés en bas.
 
 ## Règles retenues
@@ -25,7 +25,7 @@ Réglages sont regroupés en bas.
 
 Les tests ciblés vérifient les bornes 6 h 50, 7 h et 17 h 20, un déficit d’une minute juste avant 17 h 20, le maintien du ratio avec 21 enfants, les pauses, les snapshots historiques, la génération avec une seule personne aux extrémités et les groupes/verrous conservés.
 Les contrôles d’interface vérifient la position des commandes et l’adoption des règles uniquement dans les versions de travail. Les résultats natifs et les sources exactes approuvées sont consignés dans [État des vérifications](ETAT_VERIFICATION.md).
-Les aperçus sont des rendus du code réel avec données fictives et un adaptateur Qt5 local non livré ; la certification des distributions repose sur les suites Qt6 et OR-Tools natives.
+Les aperçus du dépôt sont des rendus du code réel avec données fictives et un adaptateur Qt5 local non livré. Un aperçu supplémentaire a été inspecté sous Qt6 réel, en grand et petit formats. Les distributions passent les suites Qt6 et OR-Tools natives : 238 tests et six sous-cas de pagination par plateforme, puis les contrôles du ZIP extrait.
 
 ## Hypothèses propres à l’accueil
 

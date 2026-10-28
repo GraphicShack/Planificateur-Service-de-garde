@@ -2,6 +2,25 @@
 
 Les constructions et les contrôles natifs s’exécutent sur GitHub Actions. Les fichiers à remettre sont les ZIP portables d’une exécution réussie correspondant au code voulu. Une sortie compilée dont le contrôle échoue n’est pas livrée.
 
+## Livraison 0.3.1 — accueil, groupes et navigation latérale
+
+Le code exact testé est `a7456ec72d6705f8d9643f2216a5894460278c8b`. Les deux constructions natives ont réussi **238 tests chacune**, plus les **six sous-cas de pagination**, sans test ignoré :
+
+- [Windows — tests, compilation et ZIP extrait vérifiés](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40759375757).
+- [Mac Apple Silicon — tests, compilation et ZIP extrait vérifiés](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40759375694).
+
+Les contrôles du programme gelé ouvrent aussi l’accueil réel avant la grille. Ils confirment SQLite, les sauvegardes, les PDF, le solveur CP-SAT et les opérations hors ligne après extraction. Les sept contrôles de préparation de release et les trois contrôles de génération des notes passent également.
+
+L’accueil utilise les calculs du planificateur pour ses alertes, heures et besoins. Les tests couvrent le tri des journées, l’état vide, la création et sa sauvegarde, le refus d’écrasement, la navigation clavier, les profils et l’empilement des cartes en petite fenêtre. Les règles de présence aux extrémités, les pauses, les archives et la conservation des groupes et des quarts verrouillés dans la génération sont vérifiées.
+
+Un premier passage avait révélé un ratio invalide mal intercepté ; le garde-fou a été ajouté. Le test de démarrage portable utilisait ensuite un faux contrôle obsolète, ce qui ouvrait un dialogue sans réponse. Il utilise maintenant l’interface actuelle et échoue explicitement au lieu de bloquer sur un dialogue inattendu. Les suites natives complètes ci-dessus passent après ces corrections.
+
+Les captures du dépôt montrent le code réel avec un adaptateur Qt5 local non livré. Un aperçu supplémentaire a été rendu et inspecté sous Qt6 réel, en grand format et à 720 × 600, sans défilement horizontal. La suite complète locale sous Qt6 et OR-Tools passe aussi (238 tests et six sous-cas). Les aperçus utilisent uniquement des données fictives.
+
+La publication prend ses notes dans la section 0.3.1 du [CHANGELOG](../CHANGELOG.md) et refuse une version sans notes. Le manifeste autorise uniquement le SHA testé ci-dessus, après présentation de l’aperçu et demande explicite de publication. [Fichiers modifiés, hypothèses et limites](LIVRAISON_0_3_1.md).
+
+Les essais sur le poste de l’école, avec un lecteur d’écran et une imprimante physique restent à réaliser. Aucune mise à jour automatique ni notarisation DeveloperID Mac n’est ajoutée. Conservez une sauvegarde du dossier `donnees` lors de la mise à jour.
+
 ## Livraison 0.3.0 — grille lisible et ratio escamotable
 
 Le code exact vérifié et approuvé est `8c1863d5396106b97be42877ffe1fe121b81579c`. Les deux constructions natives ont réussi **208 tests chacune**, plus les **six sous-cas de pagination** et les contrôles du programme compilé et du ZIP extrait :
