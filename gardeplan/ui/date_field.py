@@ -13,10 +13,14 @@ class DateField(QDateEdit):
         self.setLocale(QLocale(QLocale.Language.French, QLocale.Country.Canada))
         self.setDisplayFormat("dddd d MMMM yyyy")
         self.setCalendarPopup(False)
-        self.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        # Qt 6.12 collapses the styled edit field to one pixel with NoButtons.
+        # Keep the native edit geometry and hide its arrows through the style.
+        self.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.UpDownArrows)
         self.setMinimumHeight(48)
         self.setAccessibleName("Date de la journée. Modifier le jour, le mois ou l’année au clavier.")
         self.setStyleSheet(DATE_STYLE+"QDateEdit#dateSelector{font-size:16px;color:#203D32;background:white;border:1px solid #64786D;border-radius:8px;padding:8px 12px;} QDateEdit#dateSelector:focus{border:2px solid #173F32;padding:7px 11px;}")
+        self.setStyleSheet(self.styleSheet()+"QDateEdit#dateSelector::up-button,QDateEdit#dateSelector::down-button{width:0;height:0;} QDateEdit#dateSelector::up-arrow,QDateEdit#dateSelector::down-arrow{image:none;}")
+        self.lineEdit().setTextMargins(12,0,12,0)
         self.dateChanged.connect(self._check_date)
         self.ensurePolished()
         self._fit_text()
