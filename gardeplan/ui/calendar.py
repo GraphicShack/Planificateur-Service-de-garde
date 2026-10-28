@@ -401,6 +401,8 @@ class _Canvas(QWidget):
                     p.drawLine(QPointF(rect.left(),y),QPointF(rect.right(),y))
                 delta = start - value.start
                 for pause in value.breaks:
+                    if pause.kind == "dinner":
+                        continue
                     pause_rect = QRectF(rect.left(),c.y(pause.start+delta),rect.width(),
                                         (pause.end-pause.start)*c.scale)
                     p.fillRect(pause_rect, QColor("#e7ebe4"))
@@ -493,7 +495,7 @@ class _Canvas(QWidget):
             if not is_activity and (value.breaks or status_lines):
                 p.setFont(_pixel_font(13))
                 p.setPen(QColor(TEXT))
-                notes = "\n".join(status_lines+[break_label(pause, start-value.start) for pause in value.breaks])
+                notes = "\n".join(status_lines+[break_label(pause, start-value.start) for pause in value.breaks if pause.kind != "dinner"])
                 if status_lines:
                     p.setPen(QColor(hour_status.color))
                 top = metadata_top
@@ -546,7 +548,7 @@ class _Canvas(QWidget):
                 f"Couverture : {format_time(value.start+value.buffer_before)} à "
                 f"{format_time(value.end-value.buffer_after)} (hors pauses)\n"
                 f"Préparation : {value.buffer_before} min · Fermeture : {value.buffer_after} min\n"
-                + "\n".join(break_label(pause) for pause in value.breaks)
+                + "\n".join(break_label(pause) for pause in value.breaks if pause.kind != "dinner")
                 + "\n" + state
                 + ("\nQuart verrouillé" if value.locked else "\nDouble-clic : modifier les heures"))
 
