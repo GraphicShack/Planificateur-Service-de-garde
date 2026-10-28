@@ -148,3 +148,17 @@ def test_day_name_enter_escape_blur_and_pdf(planner, qapp, tmp_path):
     target = tmp_path / "nom.pdf"
     export_general(planner.week, target)
     assert "Journée sportive" in PdfReader(target).pages[0].extract_text()
+
+
+def test_registration_preview_is_live_and_has_no_day_name_field(planner):
+    from gardeplan.ui.enrolment import EnrolmentDialog
+    from PySide6.QtWidgets import QLineEdit
+    dialog = EnrolmentDialog(planner.week)
+    dialog.count.setValue(5)
+    assert dialog.preview.text() == "5 enfants → ratio 1/20 → minimum 2 éducatrices simultanées"
+    dialog.count.setValue(41)
+    assert "minimum 3" in dialog.preview.text()
+    dialog.count.setValue(0)
+    assert "fermée" in dialog.preview.text()
+    assert not any(field.accessibleName() == "Nom de la journée" for field in dialog.findChildren(QLineEdit))
+    dialog.deleteLater()

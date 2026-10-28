@@ -9,6 +9,31 @@ from __future__ import annotations
 from copy import deepcopy
 from .models import Group, GroupPeriod, Week, new_id
 
+
+def service_ratio(week):
+    return min((g.ratio for g in week.groups if g.ratio > 0), default=20)
+
+
+def plan_service_day(week, registrations):
+    """One daily pupil pool; keep exact shifts and immutable older versions."""
+    if not week.planning_date:
+        raise ValueError("Choisissez une date précise pour préparer cette journée.")
+    if type(registrations) is not int or registrations < 0:
+        raise ValueError("Le nombre d'enfants doit être un entier positif ou nul.")
+    result = deepcopy(week)
+    result.status = "draft"
+    known = {g.id for g in result.groups}
+    service = Group(result.groups[0].id if result.groups else new_id(),
+                    "Service de garde", color="#214F40", ratio=service_ratio(week))
+    if registrations:
+        service.periods = [GroupPeriod(0, result.settings.open_minute,
+                                      result.settings.close_minute, registrations)]
+    result.groups = [service]
+    for shift in result.shifts:
+        if shift.group_id in known:
+            shift.group_id = service.id
+    return result
+
 _COLORS = ("#8EA985", "#AB9BCB", "#D5A57D", "#87A6C9", "#BF93A7", "#9DA475")
 
 

@@ -32,6 +32,7 @@ from .day_selector import DaySelector, full_date
 from .flow_layout import FlowLayout
 from .theme import DATE_STYLE
 from .inline_name import InlineDayName
+from .enrolment import EnrolmentDialog
 from .visuals import icon, logo_icon, logo_pixmap
 from .forms import EducatorDialog, GroupDialog, RoomDialog, ShiftDialog, ActivityDialog, SettingsDialog, integer, note
 
@@ -939,37 +940,10 @@ class MainWindow(QMainWindow):
     def enrolment(self):
         if not self._can_edit():
             return
-        dialog = QDialog(self)
-        dialog.setWindowTitle("Inscriptions de la journée pédagogique")
-        layout = QFormLayout(dialog)
-        count = integer(0, 0, 10000, " enfants")
-        for group in self.week.groups:
-            count.setValue(count.value() + max([p.students for p in group.periods if p.day == self.day] or [0]))
-        size = integer(20, 1, 1000, " enfants / groupe")
-        preview = QLabel()
-        preview.setWordWrap(True)
-        def update():
-            groups = (count.value() + size.value() - 1) // size.value()
-            full, remainder = divmod(count.value(), size.value())
-            needed = full * max(2, (size.value() + 19) // 20) + (max(2, (remainder + 19) // 20) if remainder else 0)
-            preview.setText(f"{groups} groupe(s), au moins {needed} éducatrices simultanément au ratio initial 1/20.\nLes groupes existants gardent leur ratio configuré ; les besoins exacts seront vérifiés après application.")
-        count.valueChanged.connect(update)
-        size.valueChanged.connect(update)
-        update()
-        layout.addRow(note(self.week.day_label(self.day)))
-        layout.addRow("Nombre d'inscriptions", count)
-        layout.addRow("Taille souhaitée d'un groupe", size)
-        layout.addRow(preview)
-        layout.addRow(note("Cette action répartit les enfants entre les groupes et ouvre ceux-ci sur toute la journée. Les quarts existants sont conservés ; vérifiez les alertes ou générez une proposition ensuite."))
-        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
-        buttons.button(QDialogButtonBox.StandardButton.Ok).setText("Appliquer les inscriptions")
-        buttons.button(QDialogButtonBox.StandardButton.Cancel).setText("Annuler")
-        buttons.accepted.connect(dialog.accept)
-        buttons.rejected.connect(dialog.reject)
-        layout.addRow(buttons)
+        dialog = EnrolmentDialog(self.week, self)
         if dialog.exec() == QDialog.DialogCode.Accepted:
-            from ..planning import plan_pedagogical_day
-            self.commit(lambda week: plan_pedagogical_day(week, self.day, count.value(), size.value()))
+            from ..planning import plan_service_day
+            self.commit(lambda week: plan_service_day(week, dialog.count.value()))
 
     def edit_educator(self, identifier=None):
         if not self._can_edit():

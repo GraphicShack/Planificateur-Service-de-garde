@@ -13,6 +13,16 @@ def covered_day():
 
 
 class CoverageTests(unittest.TestCase):
+    def test_daily_registration_is_one_global_pool(self):
+        from gardeplan.planning import plan_service_day
+        plan = covered_day()
+        result = plan_service_day(plan, 41)
+        self.assertEqual(len(result.groups), 1)
+        self.assertEqual(result.groups[0].periods[0].students, 41)
+        self.assertEqual(next(p for p in coverage_timeline(result) if p.start == 420).required, 3)
+        self.assertEqual(result.shifts, plan.shifts)
+        self.assertEqual(plan.groups[0].periods[0].students, 5)
+
     def test_complete_day_and_partial_boundary_slices(self):
         plan = covered_day()
         pieces = quarter_hour_coverage(plan)
