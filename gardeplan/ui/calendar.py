@@ -584,15 +584,6 @@ class _Canvas(QWidget):
                 for handle in resize_handles(_Block(block.kind, value, rect, block.column)):
                     p.drawRoundedRect(handle, 3, 3)
                     p.drawLine(QPointF(handle.left()+7, handle.center().y()), QPointF(handle.right()-7, handle.center().y()))
-        if not n or (c.single_service and not self.blocks):
-            p.setPen(QColor("#324a37"))
-            p.setFont(_font(12,QFont.Weight.DemiBold))
-            p.drawText(QRectF(30,55,self.width()-60,50),Qt.TextFlag.TextWordWrap,
-                       "Votre calendrier commence ici")
-            p.setFont(_font(9.5))
-            p.setPen(QColor("#83907e"))
-            p.drawText(QRectF(30,108,self.width()-60,90),Qt.TextFlag.TextWordWrap,
-                       "Saisissez les inscriptions, puis glissez une éducatrice dans le calendrier ou double-cliquez sur une plage vide.")
         if c.highlighted_interval and c.highlighted_interval[0] == c.day:
             _, start, end = c.highlighted_interval
             area = QRectF(2, c.y(start), self.width()-4, max(3, (end-start)*c.scale))
