@@ -118,6 +118,9 @@ jobs:
               handle.write(hashlib.sha256(sample.read_bytes()).hexdigest() + '  ' + sample.name + '\n')
           Path('release-notes.md').write_text(
               'Planification d’une journée pédagogique à la fois, avec une interface épurée.\n\n'
+              '- Dossier déplacé dans la barre latérale ; commandes et présentation simplifiées.\n'
+              '- Ajout et modification des profils dans une seule fenêtre claire, sans onglets, avec textes lisibles et sections adaptées aux petits écrans.\n'
+              '- Boutons Aujourd’hui retirés de la barre principale et du sélecteur de date.\n'
               '- Couleur distincte par éducatrice ; rangs de 1 à 11, avec rangs intermédiaires libres.\n'
               '- Un seul PDF lettre paysage selon le modèle fourni : huit éducateurs par page, grille 6 h 50–17 h 35 et interruptions vides.\n'
               '- Journées, heures, statuts et archives indépendants ; anciennes données préservées avec copie de sécurité.\n\n'
