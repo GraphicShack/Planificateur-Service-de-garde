@@ -118,7 +118,9 @@ def test_profile_stays_light_with_a_dark_parent(valid_week, track_dialog, qapp):
 
 
 def test_profile_sections_share_one_window_and_stack_on_small_screens(valid_week, track_dialog, qapp):
-    dialog = track_dialog(EducatorDialog(valid_week))
+    from gardeplan.daily import day_plan
+    plan = day_plan("2026-10-26", valid_week, extract=True)
+    dialog = track_dialog(EducatorDialog(plan))
     dialog.show()
     dialog.resize(1120, 960)
     for _ in range(3):

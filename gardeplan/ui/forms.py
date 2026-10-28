@@ -20,6 +20,7 @@ from gardeplan.models import (
 )
 from gardeplan.identity import next_educator_color
 from .theme import EDITOR_STYLE, light_palette
+from .flow_layout import FlowLayout
 
 DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"]
 
@@ -125,7 +126,7 @@ class IntervalsEditor(QWidget):
         if compact:
             self.table.setMaximumHeight(112)
         layout.addWidget(self.table)
-        row = QHBoxLayout()
+        row = FlowLayout(spacing=8) if compact else QHBoxLayout()
         add = QPushButton("+ Ajouter" if compact else "+ Ajouter une période")
         remove = QPushButton("Retirer" if compact else "Retirer la sélection")
         add.setAccessibleName("Ajouter une période")

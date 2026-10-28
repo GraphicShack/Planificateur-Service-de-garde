@@ -209,7 +209,7 @@ class MainWindow(QMainWindow):
             arrow.setFixedSize(48, 48)
             arrow.setStyleSheet(DATE_STYLE)
         date_row.addWidget(week_navigation)
-        self.generate_button = self._button("Générer le planning", self.start_generation, "Générer automatiquement une proposition d'horaire", primary=True, icon_name="sparkles")
+        self.generate_button = self._button("Générer l’horaire", self.start_generation, "Générer automatiquement une proposition d'horaire", primary=True, icon_name="sparkles")
         self.export_button = self._button("Exporter PDF", self.export_pdf, "Exporter ou imprimer les horaires en PDF", icon_name="download")
         for action_button in (self.export_button, self.generate_button):
             action_button.setStyleSheet("font-size:16px;min-height:30px;padding:8px 14px;")
@@ -515,7 +515,7 @@ class MainWindow(QMainWindow):
         full_title = self.week.day_names.get(self.day) or "Journée pédagogique"
         self.day_title.setText(self.day_title.fontMetrics().elidedText(full_title, Qt.TextElideMode.ElideRight, 310))
         self.day_title.setToolTip(full_title)
-        self.calendar_summary.setText(self.week.day_label(self.day).split(" — ", 1)[0] + " · 6 h 50–17 h 35")
+        self.calendar_summary.setText("6 h 50 – 17 h 35")
         self.day_combo.setCurrentIndex(self.day)
         self.snap_combo.setCurrentIndex(max(0, self.snap_combo.findData(self.week.settings.snap_minutes)))
         self.calendar.set_snap(self.week.settings.snap_minutes)
