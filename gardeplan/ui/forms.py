@@ -722,13 +722,10 @@ class ShiftDialog(EditorDialog):
         self.summary.setWordWrap(True)
         self.summary.setStyleSheet("background: #eef7f2; color: #245b46; border-radius: 7px; padding: 10px;")
         form.addRow("Éducatrice", self.educator)
-        if week.planning_date:
-            if not self.group.currentData() and week.groups:
-                self.group.setCurrentIndex(1)
-            self.group.setParent(self)
-            self.group.hide()
-        else:
-            form.addRow("Groupe", self.group)
+        if not self.group.currentData() and len(week.groups) == 1:
+            self.group.setCurrentIndex(1)
+        self.group.setAccessibleName("Groupe de l’affectation")
+        form.addRow("Groupe", self.group)
         form.addRow("Journée", self.day)
         form.addRow("Début de présence", self.start)
         form.addRow("Fin de présence", self.end)
@@ -776,7 +773,7 @@ class ShiftDialog(EditorDialog):
         shift.educator_id = self.educator.currentData()
         shift.group_id = self.group.currentData()
         if not shift.educator_id or not shift.group_id:
-            raise ValueError("Choisissez une éducatrice pour ce quart." if self.week.planning_date else "Choisissez une éducatrice et un groupe.")
+            raise ValueError("Choisissez une éducatrice et un groupe.")
         shift.day = self.day.currentIndex()
         shift.start, shift.end = self.start.value(), self.end.value()
         shift.buffer_before, shift.buffer_after = self.before.value(), self.after.value()

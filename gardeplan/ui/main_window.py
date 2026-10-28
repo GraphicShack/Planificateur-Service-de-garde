@@ -495,6 +495,7 @@ class MainWindow(QMainWindow):
         inactive = add(organisation, "inactive", "Afficher les profils inactifs", lambda: self.show_inactive.setChecked(not self.show_inactive.isChecked()))
         inactive.setCheckable(True)
         organisation.addSeparator()
+        add(organisation, "groups", "Groupes des affectations…", lambda: self.manage_entities("groups"))
         add(organisation, "settings", "Règles de planification…", lambda: self.edit_settings())
         status_menu = self.command_menu.addMenu("Statut de la journée")
         status_commands = {"draft": "Conserver en brouillon", "validated": "Valider l'horaire", "published": "Publier l'horaire", "archived": "Archiver la journée"}

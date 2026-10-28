@@ -171,7 +171,7 @@ def test_single_service_screen_has_no_groups_preferences_or_monthly_popup(planne
     from gardeplan.ui.date_field import DateField
     assert len(planner.calendar.columns()) == 1
     assert "Groupe" not in planner.calendar.columns()[0][0]
-    assert "groups" not in planner.menu_actions
+    assert "groups" in planner.menu_actions
     assert isinstance(planner.week_date, DateField)
     assert not planner.week_date.calendarPopup()
     dialog = EducatorDialog(planner.week)

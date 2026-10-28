@@ -470,6 +470,9 @@ class _Canvas(QWidget):
                 else:
                     subtitle=f"{format_time(start)}\n{format_time(end)}"
                     line_count=2
+                if c.mode == "Jour" and not is_activity and group:
+                    subtitle += "\n" + p.fontMetrics().elidedText(group.name,Qt.TextElideMode.ElideRight,text_width)
+                    line_count+=1
                 if c.mode == "Semaine" and group and not compact:
                     subtitle += "\n" + p.fontMetrics().elidedText(group.name,Qt.TextElideMode.ElideRight,text_width)
                     line_count+=1
