@@ -97,7 +97,9 @@ class ColorButton(QPushButton):
         self.refresh()
 
     def refresh(self):
-        self.setText(f"Choisir la couleur  {self.color}")
+        self.setText("Modifier la couleur")
+        self.setAccessibleName("Couleur d'identification")
+        self.setToolTip(self.color)
         self.setStyleSheet(f"border-left: 16px solid {self.color}; text-align: left; padding: 8px;")
 
     def pick(self):
@@ -365,6 +367,9 @@ class ProfileColumns(QWidget):
         stacked = self.width() < 920
         if stacked != self.stacked:
             self.stacked = stacked
+            for form in self.left.findChildren(QFormLayout):
+                form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapAllRows if stacked
+                                      else QFormLayout.RowWrapPolicy.DontWrapRows)
             self.columns.removeWidget(self.right)
             self.columns.addWidget(self.right, 1 if stacked else 0, 0 if stacked else 1)
             self.columns.setColumnStretch(1, 0 if stacked else 1)
@@ -404,7 +409,7 @@ class EducatorDialog(EditorDialog):
         form = QFormLayout()
         form.setSpacing(8)
         form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
-        form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.DontWrapRows)
         identity_layout.addLayout(form)
         self.profile_columns.left_layout.addWidget(identity)
         self.name = QLineEdit(ed.name)
@@ -433,7 +438,7 @@ class EducatorDialog(EditorDialog):
         form = QFormLayout()
         form.setSpacing(8)
         form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
-        form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.DontWrapRows)
         hours_layout.addLayout(form)
         form.addRow("Objectif (h:min)", self.target)
         form.addRow("Heures garanties (h:min)", self.guaranteed)
