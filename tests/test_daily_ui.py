@@ -18,7 +18,7 @@ def day_window(tmp_path, qapp, monkeypatch):
     repo = Repository(tmp_path / "journees.sqlite")
     plan = prepared_day()
     repo.save(plan)
-    window = MainWindow(repo, plan)
+    window = MainWindow(repo, plan, start_home=False)
     yield window
     window.autosave.stop()
     window.hide()

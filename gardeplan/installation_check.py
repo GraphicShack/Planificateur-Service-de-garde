@@ -118,6 +118,10 @@ def check_installation(destination: str | Path) -> int:
                 window = MainWindow(repository, restored)
                 window.show()
                 application.processEvents()
+                if window.content_stack.currentWidget() is not window.home_page or window.home_page.grab().isNull():
+                    raise RuntimeError("La page d’accueil ne peut pas être dessinée.")
+                report["checks"]["home_dashboard"] = True
+                window.show_planner()
                 window.set_mode("Jour")
                 window.fit_day()
                 application.processEvents()

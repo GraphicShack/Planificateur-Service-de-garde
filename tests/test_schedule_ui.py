@@ -18,7 +18,7 @@ def planner(tmp_path, qapp, monkeypatch):
         person.target_minutes = 645
     repo = Repository(tmp_path / "journee.sqlite3")
     repo.save(plan)
-    window = MainWindow(repo, plan)
+    window = MainWindow(repo, plan, start_home=False)
     window.show()
     qapp.processEvents()
     yield window
@@ -362,7 +362,7 @@ def test_sidebar_groups_planning_tools_above_file_and_settings(planner):
     from PySide6.QtWidgets import QPushButton
     row = planner.rail_layout
     buttons = [row.itemAt(i).widget() for i in range(row.count()) if isinstance(row.itemAt(i).widget(),QPushButton)]
-    assert buttons == [planner.rail_buttons['calendar'],planner.rail_buttons['users'],
+    assert buttons == [planner.home_button,planner.rail_buttons['calendar'],planner.rail_buttons['users'],
                        planner.enrolment_button,planner.coverage_toggle,planner.top_alert_button,
                        planner.folder_button,planner.more_button]
     assert all(button.width()>=44 and button.height()>=44 for button in buttons)

@@ -198,12 +198,13 @@ def main(argv=None):
                 week = day_plan(today.isoformat(), example_week(monday), extract=True)
             else:
                 week = day_plan(selected, latest)
-            repo.save(week)
+            if args.example:
+                repo.save(week)
         from gardeplan.ui.main_window import MainWindow
         window = MainWindow(repo, week)
         if portable:
             window.setWindowTitle(f"{DISPLAY_NAME} — Portable")
-            window.save_label.setText("Mode portable · les données restent dans le dossier du logiciel.")
+            window.save_label.setToolTip("Mode portable : les données restent dans le dossier du logiciel.")
     except Exception as exc:
         QMessageBox.critical(None, "Ouverture impossible", f"Vos données sont conservées.\n\n{exc}")
         lock.unlock()

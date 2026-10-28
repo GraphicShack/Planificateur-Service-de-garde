@@ -23,7 +23,7 @@ def dashboard(valid_week, tmp_path, qapp, monkeypatch):
     monkeypatch.setattr(QMessageBox, "question", lambda *args: QMessageBox.StandardButton.Yes)
     repository = Repository(tmp_path / "gardeplan.sqlite3")
     repository.save(valid_week)
-    window = MainWindow(repository, valid_week)
+    window = MainWindow(repository, valid_week, start_home=False)
     window._test_messages = messages
     yield window
     window.autosave.stop()

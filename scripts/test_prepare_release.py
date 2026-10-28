@@ -23,7 +23,7 @@ class ReleaseGateTests(unittest.TestCase):
             path.mkdir(parents=True)
             report = dict(success=True, frozen=True, portable_mode=True, version="0.1.1", qt_platform=platform,
                           checks={key: True for key in (
-                              "qt_application", "coverage_and_exact_minutes", "sqlite_save_reopen_backup",
+                              "qt_application", "home_dashboard", "coverage_and_exact_minutes", "sqlite_save_reopen_backup",
                               "dashboard_day", "pdf_export_preview_print_modules",
                               "ortools_cp_sat_generation", "offline_operations", "portable_data_write")})
             (path / report_name).write_text(json.dumps(report), encoding="utf-8-sig")

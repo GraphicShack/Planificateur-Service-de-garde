@@ -36,6 +36,7 @@ from .flow_layout import FlowLayout
 from .theme import DATE_STYLE
 from .inline_name import InlineDayName
 from .enrolment import EnrolmentPanel
+from .home import HomePage
 from .visuals import icon, logo_icon, logo_pixmap
 from .forms import EducatorDialog, GroupDialog, RoomDialog, ShiftDialog, ActivityDialog, SettingsDialog, integer, note
 
@@ -89,7 +90,7 @@ class GenerationThread(QThread):
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, repo, week, parent=None):
+    def __init__(self, repo, week, parent=None, *, start_home=True):
         super().__init__(parent)
         self.repo, self.week = repo, deepcopy(week)
         self.day = 0
@@ -115,6 +116,8 @@ class MainWindow(QMainWindow):
         self._build_ui()
         self._upgrade_working_rules()
         self.refresh()
+        if start_home:
+            self.show_home()
         QTimer.singleShot(0, self.fit_day)
 
     @property
@@ -158,9 +161,15 @@ class MainWindow(QMainWindow):
         mark.setAlignment(Qt.AlignmentFlag.AlignCenter)
         rail_layout.addWidget(mark)
         rail_layout.addSpacing(12)
+        self.home_button = self._button("",self.show_home,"Accueil",icon_name="home")
+        self.home_button.setObjectName("railButton")
+        self.home_button.setIcon(icon("home",color="#D5E3DD"))
+        self.home_button.setIconSize(QSize(22,22))
+        self.home_button.setFixedSize(50,50)
+        rail_layout.addWidget(self.home_button)
         self.rail_buttons = {}
         for name, tip, callback in (
-                ("calendar", "Planification de la journée", lambda: self.calendar.setFocus()),
+                ("calendar", "Planification de la journée", self.show_planner),
                 ("users", "Afficher l’équipe", lambda: self.show_management("team"))):
             button = self._button("", callback, tip)
             button.setObjectName("railButton")
@@ -180,7 +189,10 @@ class MainWindow(QMainWindow):
         rail_layout.addStretch()
         shell.addWidget(rail)
         content = QWidget()
-        shell.addWidget(content, 1)
+        self.content_stack = QStackedWidget()
+        self.planner_page = content
+        self.content_stack.addWidget(content)
+        shell.addWidget(self.content_stack,1)
         root = QVBoxLayout(content)
         self.workspace_layout = root
         root.setContentsMargins(28, 20, 28, 10)
@@ -493,6 +505,111 @@ class MainWindow(QMainWindow):
         rail_layout.removeWidget(self.folder_button)
         rail_layout.insertWidget(rail_layout.indexOf(self.more_button),self.folder_button)
         self._build_command_menus()
+        self.home_page = HomePage()
+        self.content_stack.addWidget(self.home_page)
+        self.home_page.open_day.connect(self.open_home_day)
+        self.home_page.new_day.connect(self.new_home_day)
+        self.home_page.create_today.connect(lambda: self.create_home_day(date.today().isoformat()))
+        self.home_page.previous_day.connect(self.choose_week)
+        self.home_page.add_educator.connect(lambda: self.edit_home_educator())
+        self.home_page.edit_educator.connect(self.edit_home_educator)
+
+    def _home_roster(self):
+        return self.repo.latest_week() or self.week
+
+    def show_home(self):
+        if self._worker is not None or (self.dirty and not self.save_week(manual=False)):
+            return False
+        try:
+            self.home_page.refresh_data(self.repo,self._home_roster())
+            self.home_page.error.hide()
+        except Exception as error:
+            self.home_page.error.setText(f"Les journées ne peuvent pas être chargées : {error}")
+            self.home_page.error.show()
+        self.content_stack.setCurrentWidget(self.home_page)
+        self.home_button.setProperty("active",True)
+        self.home_button.style().unpolish(self.home_button)
+        self.home_button.style().polish(self.home_button)
+        self.home_page.new_button.setFocus()
+        return True
+
+    def show_planner(self):
+        if hasattr(self,"content_stack"):
+            self.content_stack.setCurrentWidget(self.planner_page)
+        self.home_button.setProperty("active",False)
+        self.home_button.style().unpolish(self.home_button)
+        self.home_button.style().polish(self.home_button)
+
+    def open_home_day(self, selected):
+        if self._worker is not None or (self.dirty and not self.save_week(manual=False)):
+            return
+        try:
+            plan=self.repo.load_day(selected)
+            if plan is None:
+                QMessageBox.information(self,"Journée introuvable","Cette journée n’est pas enregistrée.")
+                return
+            self._load(plan)
+            self.show_planner()
+            self.calendar.scroll.verticalScrollBar().setValue(0)
+        except Exception as error:
+            QMessageBox.warning(self,"Ouverture impossible",str(error))
+
+    def create_home_day(self, selected):
+        if self._worker is not None or (self.dirty and not self.save_week(manual=False)):
+            return False
+        try:
+            existing=self.repo.load_day(selected)
+            if existing is not None:
+                self.open_home_day(selected)
+                self.enrolment()
+                return False
+            plan=day_plan(selected,self._home_roster())
+            self.repo.save(plan)
+            self._load(plan)
+            self.show_planner()
+            self.enrolment()
+            self.enrolment_panel.count.setFocus()
+            return True
+        except Exception as error:
+            QMessageBox.warning(self,"Création impossible",str(error))
+            return False
+
+    def new_home_day(self):
+        today=date.today().isoformat()
+        try:
+            if self.repo.load_day(today) is None:
+                self.create_home_day(today)
+                return
+        except Exception as error:
+            QMessageBox.warning(self,"Création impossible",str(error))
+            return
+        dialog=QDialog(self);dialog.setWindowTitle("Nouvelle journée pédagogique")
+        layout=QFormLayout(dialog);layout.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapAllRows)
+        layout.addRow(note("Aujourd’hui possède déjà un horaire. Choisissez une autre date ; une journée existante ne sera jamais remplacée."))
+        selected=DateField();selected.setDate(QDate.currentDate().addDays(1))
+        layout.addRow("Date de la nouvelle journée",selected)
+        buttons=QDialogButtonBox(QDialogButtonBox.StandardButton.Ok|QDialogButtonBox.StandardButton.Cancel)
+        buttons.button(QDialogButtonBox.StandardButton.Ok).setText("Créer ou ouvrir")
+        buttons.button(QDialogButtonBox.StandardButton.Cancel).setText("Annuler")
+        buttons.accepted.connect(dialog.accept);buttons.rejected.connect(dialog.reject);layout.addRow(buttons)
+        if dialog.exec()==QDialog.DialogCode.Accepted:
+            self.create_home_day(selected.date().toString("yyyy-MM-dd"))
+
+    def edit_home_educator(self, identifier=None):
+        if self.dirty and not self.save_week(manual=False):return
+        try:
+            base=deepcopy(self._home_roster())
+            if not base.planning_date:base=day_plan(date.today().isoformat(),base)
+            person=next((e for e in base.educators if e.id==identifier),None)
+            dialog=EducatorDialog(base,person,self)
+            if dialog.exec()!=QDialog.DialogCode.Accepted:return
+            # A fresh working version preserves every published/archived snapshot.
+            base.status="draft"
+            self._load(base)
+            self._entity_dialog(dialog,"educators",person,accepted=True)
+            self.show_home()
+        except Exception as error:
+            QMessageBox.warning(self,"Profil non enregistré",str(error))
 
     def _add_menu_action(self, menu, key, text, callback, shortcut=None):
         action = menu.addAction(text)
@@ -983,7 +1100,11 @@ class MainWindow(QMainWindow):
                 self._auto_hidden_sidebar = False
         if hasattr(self,"workspace_layout") and hasattr(self,"day_controls_layout"):
             compact = self.height() < 800
-            self.rail_layout.setSpacing(8 if compact else 18)
+            self.rail_layout.setSpacing(6 if self.height()<680 else 8 if compact else 18)
+            rail_size=44 if self.height()<680 else 50
+            for control in [self.home_button,*self.rail_buttons.values(),self.enrolment_button,self.coverage_toggle,self.top_alert_button,self.folder_button,self.more_button]:
+                control.setFixedSize(rail_size,rail_size)
+            self.alert_badge.move(rail_size-24,0)
             self.rail_layout.setContentsMargins(10,12 if compact else 28,10,12 if compact else 20)
             narrow = self.width() < 1000
             self.workspace_layout.setSpacing(6 if compact else 14)
@@ -1006,6 +1127,7 @@ class MainWindow(QMainWindow):
 
 
     def toggle_coverage(self, visible):
+        self.show_planner()
         self.calendar.set_coverage_visible(visible)
         action = "Masquer" if visible else "Afficher"
         self.coverage_toggle.setProperty("active", visible)
@@ -1015,6 +1137,7 @@ class MainWindow(QMainWindow):
         self.coverage_toggle.setToolTip(action+" la bande de ratio. Elle n’est jamais incluse dans le PDF.")
 
     def show_management(self, page):
+        self.show_planner()
         target = {"team": self.team_page, "enrolment": self.enrolment_page,
                   "alerts": self.alert_panel}[page]
         self.management_stack.setCurrentWidget(target)
@@ -1125,8 +1248,8 @@ class MainWindow(QMainWindow):
         dialog = EducatorDialog(self.week, educator, self)
         self._entity_dialog(dialog, "educators", educator)
 
-    def _entity_dialog(self, dialog, collection, original):
-        if dialog.exec() != QDialog.DialogCode.Accepted:
+    def _entity_dialog(self, dialog, collection, original, *, accepted=False):
+        if not accepted and dialog.exec() != QDialog.DialogCode.Accepted:
             return
         if dialog.delete_requested:
             if collection in {"educators", "groups", "rooms"}:
@@ -1362,17 +1485,33 @@ class MainWindow(QMainWindow):
 
     def choose_week(self):
         try:
-            weeks = self.repo.list_days()
+            from ..home_data import recent_days
+            days=recent_days(self.repo)
         except Exception as error:
-            QMessageBox.warning(self, "Journées", str(error))
-            return
-        if not weeks:
-            QMessageBox.information(self, "Journées", "Aucune autre journée sauvegardée.")
-            return
-        labels = [f"{full_date(QDate.fromString(row['date'], 'yyyy-MM-dd'))} — {STATUS_LABELS.get(row['status'], row['status'])}" for row in weeks]
-        choice, accepted = QInputDialog.getItem(self, "Consulter une journée", "Journées sauvegardées", labels, 0, False)
-        if accepted:
-            self.switch_day(date.fromisoformat(weeks[labels.index(choice)]["date"]))
+            QMessageBox.warning(self,"Journées",str(error));return
+        if not days:
+            QMessageBox.information(self,"Journées","Aucune journée enregistrée.");return
+        dialog=QDialog(self);dialog.setWindowTitle("Ouvrir une journée précédente")
+        layout=QFormLayout(dialog);layout.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapAllRows)
+        listing=QComboBox()
+        listing.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        listing.setMinimumContentsLength(12)
+        for day in days:listing.addItem(full_date(QDate.fromString(day.date,"yyyy-MM-dd"))+" — "+day.name,day.date)
+        selected=DateField();selected.setDate(QDate.fromString(days[0].date,"yyyy-MM-dd"))
+        layout.addRow("Journées enregistrées",listing);layout.addRow("Ou saisir la date",selected)
+        message=note("");layout.addRow(message)
+        buttons=QDialogButtonBox(QDialogButtonBox.StandardButton.Open|QDialogButtonBox.StandardButton.Cancel)
+        buttons.button(QDialogButtonBox.StandardButton.Open).setText("Ouvrir")
+        buttons.button(QDialogButtonBox.StandardButton.Cancel).setText("Annuler")
+        known={d.date for d in days}
+        def changed(value):
+            valid=value.toString("yyyy-MM-dd") in known
+            buttons.button(QDialogButtonBox.StandardButton.Open).setEnabled(valid)
+            message.setText("" if valid else "Aucune journée enregistrée à cette date.")
+        listing.activated.connect(lambda index:selected.setDate(QDate.fromString(listing.itemData(index),"yyyy-MM-dd")))
+        selected.dateChanged.connect(changed)
+        buttons.accepted.connect(dialog.accept);buttons.rejected.connect(dialog.reject);layout.addRow(buttons)
+        if dialog.exec()==QDialog.DialogCode.Accepted:self.open_home_day(selected.date().toString("yyyy-MM-dd"))
 
     def duplicate_week(self):
         if self._worker is not None or (self.dirty and not self.save_week()):

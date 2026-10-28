@@ -17,7 +17,7 @@ def prepare(source: Path, destination: Path, version: str) -> list[Path]:
     if not re.fullmatch(r"\d+\.\d+\.\d+", version):
         raise ValueError("Version invalide")
     required_checks = (
-        "qt_application", "coverage_and_exact_minutes", "sqlite_save_reopen_backup",
+        "qt_application", "home_dashboard", "coverage_and_exact_minutes", "sqlite_save_reopen_backup",
         "dashboard_day", "pdf_export_preview_print_modules",
         "ortools_cp_sat_generation", "offline_operations", "portable_data_write",
     )
