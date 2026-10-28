@@ -124,14 +124,9 @@ def check_installation(destination: str | Path) -> int:
                 if window.calendar.canvas.grab().isNull():
                     raise RuntimeError("Le calendrier ne peut pas être dessiné.")
                 report["checks"]["dashboard_day"] = True
-                from gardeplan.ui.day_selector import DayPicker
-                picker = DayPicker(QDate.fromString(restored.planning_date, "yyyy-MM-dd"), window)
-                picker.show()
-                application.processEvents()
-                if picker.grab().isNull() or any(cell.width() < 44 or cell.height() < 44 for cell in picker.cells):
+                picker = window.week_date
+                if picker.grab().isNull() or picker.height() < 44 or picker.font().pixelSize() < 16 or picker.calendarPopup():
                     raise RuntimeError("Le sélecteur de journée ne respecte pas les dimensions lisibles.")
-                picker.close()
-                picker.deleteLater()
                 report["checks"]["readable_date_selector"] = True
 
                 general_pdf = folder / "general.pdf"

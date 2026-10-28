@@ -133,7 +133,7 @@ def test_profile_sections_share_one_window_and_stack_on_small_screens(valid_week
                           for i in range(column.layout().count()) if column.layout().itemAt(i).widget()])
          for column in (dialog.profile_columns.left, dialog.profile_columns.right)])
     for widget in (dialog.name, dialog.seniority, dialog.target, dialog.maximum,
-                   dialog.availability, dialog.absences, dialog.preferences, dialog.restrictions):
+                   dialog.availability, dialog.absences, dialog.restrictions):
         assert widget.isVisible() and widget.window() is dialog
         position = widget.mapTo(dialog.scroll.viewport(), QPoint())
         assert position.y() >= 0
@@ -145,7 +145,7 @@ def test_profile_sections_share_one_window_and_stack_on_small_screens(valid_week
     assert dialog.scroll.horizontalScrollBar().maximum() == 0, (
         dialog.size(), dialog.body.size(), dialog.profile_columns.right.minimumSizeHint())
     assert dialog.scroll.verticalScrollBar().maximum() > 0
-    dialog.scroll.ensureWidgetVisible(dialog.preferences)
+    dialog.scroll.ensureWidgetVisible(dialog.restrictions)
     qapp.processEvents()
     assert dialog.buttons.isVisible()
     assert dialog.preferences.font().pixelSize() >= 16

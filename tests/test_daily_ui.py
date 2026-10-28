@@ -167,7 +167,6 @@ def test_sidebar_add_opens_one_readable_form_and_persists_full_profile(day_windo
         dialog.maximum.setValue(645)
         dialog.availability.add_row(0, 410, 1055)
         dialog.absences.add_row(0, 540, 555)
-        dialog.preferences.item(0).setCheckState(Qt.CheckState.Checked)
         dialog.restrictions.setPlainText("Préférence pour le groupe A")
         dialog.show()
         qapp.processEvents()
@@ -185,7 +184,7 @@ def test_sidebar_add_opens_one_readable_form_and_persists_full_profile(day_windo
     assert (created.target_minutes, created.guaranteed_minutes, created.max_minutes) == (433, 300, 645)
     assert created.availability == [Window(0, 410, 1055)]
     assert created.absences == [Window(0, 540, 555)]
-    assert created.preferred_groups == [existing.groups[0].id]
+    assert created.preferred_groups == []
     assert created.color not in {ed.color for ed in existing.educators}
     assert created.restrictions == "Préférence pour le groupe A"
     assert day_window.week.shifts == existing.shifts

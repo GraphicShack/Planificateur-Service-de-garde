@@ -64,16 +64,22 @@ def _prefix(day, start, end):
     return f"{DAYS[day]}, {format_time(start)} à {format_time(end)} : "
 
 
-def validate(week: Week) -> list[Issue]:
-    if week.planning_date and (week.activities or week.rooms):
+def validate(week: Week, *, _service=False) -> list[Issue]:
+    if week.planning_date and not _service:
+        from .planning import service_view
         from copy import deepcopy
-        schedule = deepcopy(week)
+        safe = all(g.name.strip() and g.ratio > 0 and g.min_educators >= 2 and
+                   all(0 <= p.start < p.end <= 1440 and p.students >= 0 for p in g.periods)
+                   for g in week.groups)
+        schedule = service_view(week) if safe else deepcopy(week)
         schedule.activities, schedule.rooms = [], []
-        return validate(schedule)
+        return validate(schedule, _service=True)
     issues: list[Issue] = []
     def add(code, message, day=None, start=None, end=None, group_id="", shift_ids=None, suggestion="", severity="error"):
         if week.planning_date and day == 0:
             message = message.replace("Lundi,", week.day_label(0).split(" — ", 1)[0] + ",", 1)
+        if week.planning_date:
+            message = message.replace("du groupe Service de garde", "du service de garde").replace("le groupe Service de garde", "le service de garde").replace("groupe Service de garde", "service de garde")
         issues.append(Issue(severity, code, message, day, start, end, group_id, shift_ids or [], suggestion))
 
     educators = {e.id: e for e in week.educators}
@@ -87,7 +93,7 @@ def validate(week: Week) -> list[Issue]:
     if week.status not in STATUSES:
         add("missing_data", "Le statut de l'horaire est invalide.")
     if not week.groups:
-        add("missing_data", "Ajoutez au moins un groupe et ses heures d'ouverture.", suggestion="Ouvrir la gestion des groupes.")
+        add("missing_data", "Renseignez les inscriptions de la journée." if week.planning_date else "Ajoutez au moins un groupe et ses heures d'ouverture.", suggestion="Ouvrir les inscriptions.")
     if not week.educators:
         add("missing_data", "Ajoutez des éducatrices avant de préparer l'horaire.", suggestion="Cliquer sur Ajouter une éducatrice.")
     valid_settings = (

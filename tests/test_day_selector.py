@@ -165,11 +165,8 @@ def test_popup_small_size_scrolls_without_shrinking_targets(picker, qapp):
 
 def test_popup_date_updates_planning_and_reopens_saved_day(day_window, monkeypatch):
     original = day_window.week.to_dict()
-    def select(dialog):
-        dialog.choose(QDate(2026, 10, 29))
-        return dialog.result()
-    monkeypatch.setattr(DayPicker, "exec", select)
-    day_window.week_date.click()
+    assert not day_window.week_date.calendarPopup()
+    day_window.week_date.setDate(QDate(2026, 10, 29))
     assert day_window.week.planning_date == "2026-10-29"
     assert day_window.calendar.week.planning_date == "2026-10-29"
     day_window.week_date.setDate(QDate(2026, 10, 28))

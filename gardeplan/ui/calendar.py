@@ -200,7 +200,7 @@ class _Canvas(QWidget):
             return
         for column in range(len(c.columns())):
             day = column if c.mode == "Semaine" else c.day
-            group_id = None if c.mode == "Semaine" else c.week.groups[column].id
+            group_id = None if c.mode == "Semaine" or c.single_service else c.group_id(column)
             shifts = [s for s in c.week.shifts if s.day == day and
                       (group_id is None or s.group_id == group_id)]
             activities = [a for a in c.week.activities if c.show_activities and a.day == day and
@@ -269,10 +269,11 @@ class _Canvas(QWidget):
                            QColor("#fdfefb"))
         # Closed periods are subdued, leaving open periods clearly identifiable.
         if c.week and c.mode == "Jour":
-            for index, group in enumerate(c.week.groups):
+            for index, group in enumerate(c.week.groups[:1] if c.single_service else c.week.groups):
                 p.fillRect(QRectF(index*c.column_width, bounds.top(), c.column_width, bounds.height()),
                            QColor("#f4f6f1"))
-                for period in group.periods:
+                periods = [p for g in c.week.groups for p in g.periods] if c.single_service else group.periods
+                for period in periods:
                     if period.day == c.day:
                         p.fillRect(QRectF(index*c.column_width, c.y(period.start), c.column_width,
                                         (period.end-period.start)*c.scale), QColor("#ffffff"))
@@ -289,7 +290,7 @@ class _Canvas(QWidget):
                     columns = [day] if 0 <= day < 5 else []
                 elif day == c.day:
                     group_id = getattr(issue, "group_id", "")
-                    columns = [i for i,g in enumerate(c.week.groups) if not group_id or g.id == group_id]
+                    columns = [0] if c.single_service else [i for i,g in enumerate(c.week.groups) if not group_id or g.id == group_id]
                 else:
                     columns = []
                 for i in columns:
@@ -442,7 +443,7 @@ class _Canvas(QWidget):
                 half = min(11, rect.width()/5)
                 for y in (rect.top()+4, rect.bottom()-4):
                     p.drawLine(QPointF(center-half, y), QPointF(center+half, y))
-        if not n:
+        if not n or (c.single_service and not self.blocks):
             p.setPen(QColor("#324a37"))
             p.setFont(_font(12,QFont.Weight.DemiBold))
             p.drawText(QRectF(30,55,self.width()-60,50),Qt.TextFlag.TextWordWrap,
@@ -465,7 +466,7 @@ class _Canvas(QWidget):
     def _tip(self, block):
         c, value = self.calendar, block.value
         group=next((g for g in c.week.groups if g.id==value.group_id),None)
-        group_name=group.name if group else "Groupe manquant"
+        group_name="Service de garde" if c.single_service else group.name if group else "Affectation manquante"
         if block.kind == "activity":
             room = next((r for r in c.week.rooms if r.id == value.room_id), None)
             return (f"{value.name}\n{group_name}\n{format_time(value.start)} à {format_time(value.end)}"
@@ -569,7 +570,7 @@ class _Canvas(QWidget):
             c.edit_requested.emit(block.kind, block.value.id)
         elif c.week and c.week.groups and not c.read_only:
             column = min(len(c.week.groups)-1, max(0, int(event.position().x()//c.column_width)))
-            c.create_requested.emit(c.day, c.minute(event.position().y()), c.week.groups[column].id)
+            c.create_requested.emit(c.day, c.minute(event.position().y()), c.group_id(column))
 
     def contextMenuEvent(self, event):
         c = self.calendar
@@ -604,8 +605,8 @@ class _Canvas(QWidget):
             col += 1
         else:
             return super().keyPressEvent(event)
-        if 0 <= start < end <= 1440 and 0 <= col < len(c.week.groups):
-            c.change_requested.emit(block.kind,block.value.id,c.day,start,end,c.week.groups[col].id)
+        if 0 <= start < end <= 1440 and 0 <= col < len(c.columns()):
+            c.change_requested.emit(block.kind,block.value.id,c.day,start,end,c.group_id(col))
 
     def dragEnterEvent(self, event):
         c = self.calendar
@@ -626,7 +627,7 @@ class _Canvas(QWidget):
         if not any(e.id == educator_id and e.active for e in c.week.educators):
             return
         column = max(0,min(len(c.week.groups)-1,int(event.position().x()//c.column_width)))
-        c.educator_dropped.emit(educator_id,c.day,c.minute(event.position().y()),c.week.groups[column].id)
+        c.educator_dropped.emit(educator_id,c.day,c.minute(event.position().y()),c.group_id(column))
         event.acceptProposedAction()
 
 
@@ -642,6 +643,7 @@ class CalendarWidget(QWidget):
         super().__init__(parent)
         self.week = None
         self.show_activities = True
+        self.single_service = False
         self.day = 0
         self.mode = "Jour"
         self.read_only = False
@@ -702,6 +704,8 @@ class CalendarWidget(QWidget):
     def columns(self):
         if not self.week:
             return []
+        if self.single_service:
+            return [("Horaires des éducatrices", "Glisser un nom ou double-cliquer sur une plage vide", "#214F40")]
         if self.mode == "Semaine":
             result=[]
             monday=date.fromisoformat(self.week.monday)
@@ -717,6 +721,9 @@ class CalendarWidget(QWidget):
             students = max((p.students for p in group.periods if p.day == self.day), default=0)
             result.append((group.name, f"{len(people)} éducatrices · {students} enfants", group.color))
         return result
+
+    def group_id(self, column=0):
+        return self.week.groups[0 if self.single_service else column].id if self.week.groups else ""
 
     def y(self,minute):
         return (minute-self.start_minute)*self.scale
@@ -782,9 +789,9 @@ class CalendarWidget(QWidget):
         n=max(1,len(self.columns()))
         minimum=220 if self.mode=="Semaine" else 225
         if self.week and self.mode == "Jour":
-            for group in self.week.groups:
-                points = sorted([(s.start, 1) for s in self.week.shifts if s.day == self.day and s.group_id == group.id]
-                                + [(s.end, -1) for s in self.week.shifts if s.day == self.day and s.group_id == group.id])
+            for group in self.week.groups[:1] if self.single_service else self.week.groups:
+                shifts = [s for s in self.week.shifts if s.day == self.day and (self.single_service or s.group_id == group.id)]
+                points = sorted([(s.start, 1) for s in shifts] + [(s.end, -1) for s in shifts])
                 count = maximum = 0
                 for _, change in points:
                     count += change

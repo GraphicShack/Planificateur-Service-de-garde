@@ -162,3 +162,18 @@ def test_registration_preview_is_live_and_has_no_day_name_field(planner):
     assert "fermée" in dialog.preview.text()
     assert not any(field.accessibleName() == "Nom de la journée" for field in dialog.findChildren(QLineEdit))
     dialog.deleteLater()
+
+
+def test_single_service_screen_has_no_groups_preferences_or_monthly_popup(planner):
+    from gardeplan.ui.forms import EducatorDialog
+    from gardeplan.ui.date_field import DateField
+    assert len(planner.calendar.columns()) == 1
+    assert "Groupe" not in planner.calendar.columns()[0][0]
+    assert "groups" not in planner.menu_actions
+    assert isinstance(planner.week_date, DateField)
+    assert not planner.week_date.calendarPopup()
+    dialog = EducatorDialog(planner.week)
+    dialog.show()
+    assert dialog.preferences.isHidden()
+    dialog.close()
+    dialog.deleteLater()

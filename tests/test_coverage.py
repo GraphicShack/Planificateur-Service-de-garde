@@ -33,6 +33,20 @@ class CoverageTests(unittest.TestCase):
         self.assertIn("21 h 15 planifiées", label)
         self.assertIn("Couverture incomplète", label)
 
+    def test_historical_groups_are_analyzed_globally_without_mutating_storage_data(self):
+        from copy import deepcopy
+        from gardeplan.planning import service_view
+        from gardeplan.validation import validate
+        plan = covered_day()
+        plan.groups.append(Group("old", "Ancien B", periods=[GroupPeriod(0, 420, 1050, 5)]))
+        plan.shifts[1].group_id = "old"
+        original = deepcopy(plan)
+        view = service_view(plan)
+        self.assertEqual(len(view.groups), 1)
+        self.assertEqual(view.groups[0].periods[0].students, 10)
+        self.assertFalse(any(p.severity == "error" for p in validate(plan)))
+        self.assertEqual(plan, original)
+
     def test_complete_day_and_partial_boundary_slices(self):
         plan = covered_day()
         pieces = quarter_hour_coverage(plan)

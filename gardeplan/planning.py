@@ -14,6 +14,33 @@ def service_ratio(week):
     return min((g.ratio for g in week.groups if g.ratio > 0), default=20)
 
 
+def service_view(week):
+    """An analytical copy of historical groups as one SDG; never rewrite data."""
+    result = deepcopy(week)
+    result.activities, result.rooms = [], []
+    for person in result.educators:
+        person.preferred_groups = []
+    if not result.groups:
+        return result
+    known = {g.id for g in result.groups}
+    service = Group(result.groups[0].id, "Service de garde", "#214F40", service_ratio(result), 2)
+    periods = [p for g in result.groups for p in g.periods if p.day == 0]
+    points = sorted({x for p in periods for x in (p.start, p.end)})
+    for a, b in zip(points, points[1:]):
+        if not any(p.start <= a < p.end for p in periods):
+            continue
+        count = sum(max((p.students for p in g.periods if p.day == 0 and p.start <= a < p.end), default=0) for g in result.groups)
+        if service.periods and service.periods[-1].end == a and service.periods[-1].students == count:
+            service.periods[-1].end = b
+        else:
+            service.periods.append(GroupPeriod(0, a, b, count))
+    result.groups = [service]
+    for shift in result.shifts:
+        if shift.group_id in known:
+            shift.group_id = service.id
+    return result
+
+
 def plan_service_day(week, registrations):
     """One daily pupil pool; keep exact shifts and immutable older versions."""
     if not week.planning_date:

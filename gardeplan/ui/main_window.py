@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
 
 from ..branding import DISPLAY_NAME, SHORT_NAME
 from ..models import (
-    Week, Shift, Activity, STATUS_LABELS, DAYS, new_id, totals,
+    Week, Shift, Activity, Group, STATUS_LABELS, DAYS, new_id, totals,
     format_duration, format_time, move_shift,
 )
 from ..daily import day_plan
@@ -29,7 +29,8 @@ from ..coverage import day_summary
 from ..optimizer import generate
 from ..pdf import export_general, export_individual, export_combined, export_all_individual
 from .calendar import CalendarWidget, EDUCATOR_MIME
-from .day_selector import DaySelector, full_date
+from .day_selector import full_date
+from .date_field import DateField
 from .flow_layout import FlowLayout
 from .theme import DATE_STYLE
 from .inline_name import InlineDayName
@@ -154,8 +155,7 @@ class MainWindow(QMainWindow):
         rail_layout.addSpacing(35)
         for name, tip, callback in (
                 ("calendar", "Planification de la journée", lambda: self.calendar.setFocus()),
-                ("users", "Afficher ou masquer l'équipe", self.toggle_sidebar),
-                ("panel", "Gérer les groupes", lambda: self.manage_entities("groups"))):
+                ("users", "Afficher ou masquer l'équipe", self.toggle_sidebar)):
             button = self._button("", callback, tip)
             button.setObjectName("railButton")
             button.setProperty("active", name == "calendar")
@@ -211,7 +211,7 @@ class MainWindow(QMainWindow):
         navigation.setSpacing(2)
         self.previous_day_button = self._button("", lambda: self.navigate_day(-1), "Journée précédente", icon_name="chevron-left")
         navigation.addWidget(self.previous_day_button)
-        self.week_date = DaySelector()
+        self.week_date = DateField()
         self.week_date.dateChanged.connect(self._date_changed)
         navigation.addWidget(self.week_date)
         self.next_day_button = self._button("", lambda: self.navigate_day(1), "Journée suivante", icon_name="chevron-right")
@@ -359,6 +359,7 @@ class MainWindow(QMainWindow):
         self.version_banner.setWordWrap(True)
         surface.addWidget(self.version_banner)
         self.calendar = CalendarWidget()
+        self.calendar.single_service = True
         self.calendar.show_activities = False
         self.calendar.canvas.setAccessibleName("Calendrier des horaires")
         self.calendar.edit_requested.connect(self.edit_block)
@@ -451,7 +452,6 @@ class MainWindow(QMainWindow):
         inactive = add(organisation, "inactive", "Afficher les profils inactifs", lambda: self.show_inactive.setChecked(not self.show_inactive.isChecked()))
         inactive.setCheckable(True)
         organisation.addSeparator()
-        add(organisation, "groups", "Groupes…", lambda: self.manage_entities("groups"))
         add(organisation, "settings", "Règles de planification…", lambda: self.edit_settings())
         status_menu = self.command_menu.addMenu("Statut de la journée")
         status_commands = {"draft": "Conserver en brouillon", "validated": "Valider l'horaire", "published": "Publier l'horaire", "archived": "Archiver la journée"}
@@ -640,8 +640,7 @@ class MainWindow(QMainWindow):
             name.setText(name.fontMetrics().elidedText(name.text(), Qt.TextElideMode.ElideRight, 156))
             identity.addWidget(name)
             groups = {group.id: group.name for group in self.week.groups}
-            assigned = sorted({groups.get(shift.group_id, "") for shift in self.week.shifts if shift.educator_id == educator.id})
-            detail = QLabel(f"Rang {educator.seniority} · " + (" · ".join(assigned) or "Éducatrice"))
+            detail = QLabel(f"Rang {educator.seniority} · Éducatrice")
             detail.setObjectName("smallMuted")
             identity.addWidget(detail)
             heading.addLayout(identity, 1)
@@ -683,16 +682,23 @@ class MainWindow(QMainWindow):
 
     def refresh_alerts(self):
         self.alert_list.clear()
-        errors = sum(issue.severity == "error" for issue in self.issues)
-        warnings = len(self.issues) - errors
+        displayed, seen = [], set()
+        for issue in self.issues:
+            label = alert_text(self.week, issue, global_scope=True)
+            if (issue.severity, label) not in seen:
+                seen.add((issue.severity, label))
+                displayed.append(issue)
+        errors = sum(issue.severity == "error" for issue in displayed)
+        warnings = len(displayed) - errors
         self.alert_toggle.setText(f"{errors} erreur{'s' if errors != 1 else ''} · {warnings} avertissement{'s' if warnings != 1 else ''}")
-        self.top_alert_button.setText(f"Vérifier ({len(self.issues)})")
+        self.top_alert_button.setText(f"Vérifier ({len(displayed)})")
+        self.top_alert_button.setAccessibleName(self.top_alert_button.text())
         self.top_alert_button.setIcon(icon("alert" if self.issues else "check", size=16, color="#a26828" if self.issues else "#49765c"))
         self.top_alert_button.setToolTip(f"{errors} erreur(s) bloquante(s) · {warnings} avertissement(s). Cliquer pour voir les détails.")
         ready = bool(self.week.educators and any(group.periods for group in self.week.groups))
         self.alert_heading_label.setText("Points à vérifier" if self.issues else "Aucune alerte")
-        for issue in sorted(self.issues, key=lambda item: (item.severity != "error", item.day if item.day is not None else 9, item.start or 0)):
-            item = QListWidgetItem(("Erreur — " if issue.severity == "error" else "Attention — ") + alert_text(self.week, issue))
+        for issue in sorted(displayed, key=lambda item: (item.severity != "error", item.day if item.day is not None else 9, item.start or 0)):
+            item = QListWidgetItem(("Erreur — " if issue.severity == "error" else "Attention — ") + alert_text(self.week, issue, global_scope=True))
             item.setForeground(QColor("#a33c32" if issue.severity == "error" else "#8a651a"))
             item.setData(Qt.ItemDataRole.UserRole, issue)
             item.setToolTip(issue.suggestion or issue.message)
@@ -787,7 +793,7 @@ class MainWindow(QMainWindow):
         self.refresh()
 
     def _date_changed(self, selected):
-        if not self._updating:
+        if not self._updating and selected == self.week_date.date() and self.week_date.isDateAvailable(selected):
             self.switch_day(selected.toPython())
 
     def navigate_day(self, direction):
@@ -1029,7 +1035,13 @@ class MainWindow(QMainWindow):
             return
         dialog = SettingsDialog(self.week, self)
         if dialog.exec() == QDialog.DialogCode.Accepted:
-            self.commit(lambda week: setattr(week, "settings", dialog.result_item()))
+            def apply(week):
+                week.settings = dialog.result_item()
+                if not week.groups:
+                    week.groups.append(Group(new_id(), "Service de garde"))
+                for group in week.groups:
+                    group.ratio = dialog.staff_ratio.value()
+            self.commit(apply)
 
     def new_shift(self, checked=False, *, day=None, start=None, group_id="", educator_id=""):
         if not self._can_edit():

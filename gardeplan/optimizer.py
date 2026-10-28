@@ -328,6 +328,9 @@ def generate(week: Week, time_limit: float = 20) -> GenerationResult:
     # Les erreurs de structure sont signalées avant tout accès au solveur.
     try:
         snapshot = Week.from_dict(week.to_dict())
+        if snapshot.planning_date:
+            from .planning import service_view
+            snapshot = service_view(snapshot)
     except (TypeError, ValueError) as exc:
         return GenerationResult(False, None, str(exc), "invalid_data")
     settings = snapshot.settings
