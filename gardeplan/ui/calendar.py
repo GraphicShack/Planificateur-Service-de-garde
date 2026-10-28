@@ -422,7 +422,7 @@ class _Canvas(QWidget):
             p.setFont(_font(7.5 if compact else 9 if rect.width() >= 120 else 8.5,
                             QFont.Weight.DemiBold))
             if c.mode == "Jour":
-                p.setFont(_pixel_font(13, QFont.Weight.DemiBold))
+                p.setFont(_pixel_font(14, QFont.Weight.Bold))
             title = value.name if is_activity else (educator.name if educator else "Éducatrice manquante")
             if compact:
                 title="".join(word[:1].upper() for word in title.replace("—"," ").split()[:3])
@@ -434,15 +434,19 @@ class _Canvas(QWidget):
                 title = fitted_name(educator.name, text_width, p.font())
             p.drawText(QRectF(rect.left()+padding,rect.top()+9+content_offset,text_width,20),
                        Qt.AlignmentFlag.AlignVCenter,title)
+            metadata_top = rect.top()+content_offset+70
             if rect.height() >= 44:
                 p.setFont(_font(6.5 if compact else 8))
                 p.setPen(QColor(TEXT))
                 if c.mode == "Jour":
-                    p.setFont(_pixel_font(12))
+                    p.setFont(_pixel_font(13))
                 start = self.drag["start"] if self.drag and self.drag["block"] is block else value.start
                 end = self.drag["end"] if self.drag and self.drag["block"] is block else value.end
                 time_range=f"{format_time(start)} – {format_time(end)}"
-                if compact:
+                if c.mode == "Jour":
+                    subtitle = time_range if p.fontMetrics().horizontalAdvance(time_range) <= text_width else f"{format_time(start)}\n{format_time(end)}"
+                    line_count = subtitle.count("\n")+1
+                elif compact:
                     subtitle=f"{format_time(start)}\n{format_time(end)}"
                     line_count=2
                     # Preserve every digit in narrow weekly lanes. The full
@@ -466,20 +470,24 @@ class _Canvas(QWidget):
                     label=room.name if room else "Sans lieu"
                     subtitle += "\n" + p.fontMetrics().elidedText(label,Qt.TextElideMode.ElideRight,text_width)
                     line_count+=1
-                p.drawText(QRectF(rect.left()+padding,rect.top()+32+content_offset,text_width,min(rect.height()-36-content_offset,line_count*18)),
-                           Qt.AlignmentFlag.AlignTop,subtitle)
+                time_flags = Qt.AlignmentFlag.AlignTop | Qt.TextFlag.TextWordWrap | Qt.TextFlag.TextWrapAnywhere
+                time_height = p.boundingRect(QRectF(0,0,max(1,text_width),2000),time_flags,subtitle).height()
+                time_top = rect.top()+32+content_offset
+                metadata_top = max(metadata_top,time_top+time_height+8)
+                p.drawText(QRectF(rect.left()+padding,time_top,text_width,max(1,min(rect.bottom()-time_top-5,time_height))),
+                           time_flags,subtitle)
             status_lines = []
             if hour_status and hour_status.code in {"target", "maximum"}:
                 status_lines.append(hour_status.label)
             if not is_activity and (value.breaks or status_lines):
-                p.setFont(_pixel_font(12))
+                p.setFont(_pixel_font(13))
                 p.setPen(QColor(TEXT))
                 notes = "\n".join(status_lines+[break_label(pause, start-value.start) for pause in value.breaks])
                 if status_lines:
                     p.setPen(QColor(hour_status.color))
-                top = rect.top()+content_offset+70
+                top = metadata_top
                 p.drawText(QRectF(rect.left()+10, top, max(1, rect.width()-20), max(1, rect.bottom()-top-8)),
-                           Qt.TextFlag.TextWordWrap | Qt.AlignmentFlag.AlignTop, notes)
+                           Qt.TextFlag.TextWordWrap | Qt.TextFlag.TextWrapAnywhere | Qt.AlignmentFlag.AlignTop, notes)
             p.restore()
             if not is_activity:
                 p.fillRect(QRectF(rect.left()+1, rect.top()+1, 4, max(1, rect.height()-2)), color)
