@@ -8,7 +8,7 @@ import sys
 import pytest
 from PySide6.QtCore import Qt, QDate, QPoint
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QDialog
 
 from gardeplan.ui.day_selector import DayPicker, DaySelector, full_date
 from gardeplan.ui.theme import TEXT, SECONDARY, SURFACE, SOFT, FOREST, HOVER, contrast
@@ -181,7 +181,7 @@ def test_enter_opens_date_picker_and_escape_closes_without_change(qapp, monkeypa
     opened = []
     def inspect(dialog):
         opened.append(dialog.selected)
-        return dialog.Rejected
+        return QDialog.DialogCode.Rejected
     monkeypatch.setattr(DayPicker, "exec", inspect)
     QTest.keyClick(field, Qt.Key.Key_Return)
     assert opened == [QDate(2026, 10, 26)]
@@ -225,7 +225,7 @@ def test_small_planner_wraps_controls_and_keeps_date_untruncated(day_window, qap
 def test_scale_200_percent_keeps_readable_targets_in_small_panel():
     code = """
 import json
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QDialog
 from PySide6.QtCore import QDate
 from gardeplan.ui.day_selector import DayPicker
 app=QApplication([])
