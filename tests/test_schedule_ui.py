@@ -341,6 +341,13 @@ def test_dragging_a_shift_into_another_group_preserves_its_exact_hours(planner,q
     assert (result.start,result.end,result.educator_id) == before
 
 
+def test_undo_redo_share_the_day_name_row(planner):
+    row = planner.day_controls_layout
+    widgets = [row.itemAt(i).widget() for i in range(row.count())]
+    assert all(widget in widgets for widget in (planner.day_title,planner.undo_button,planner.redo_button))
+    assert planner.undo_button.parentWidget() is planner.day_title.parentWidget()
+
+
 def test_old_drafts_adopt_new_rules_but_historical_versions_stay_frozen(planner):
     legacy=deepcopy(planner.week);legacy.settings.staffing_policy=1
     planner._load(legacy)
