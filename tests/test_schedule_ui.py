@@ -117,3 +117,11 @@ def test_platform_undo_redo_keyboard_shortcuts(planner, qapp):
     QTest.keySequence(planner, QKeySequence("Ctrl+Shift+Z"))
     qapp.processEvents()
     assert planner.week.day_names[0] == "Au clavier"
+
+
+def test_registrations_replace_the_visible_add_shift_button(planner):
+    from PySide6.QtWidgets import QPushButton
+    assert planner.enrolment_button.isVisible()
+    assert not planner.add_button.isVisible()
+    assert not any("Ajouter un quart" == button.text() for button in planner.findChildren(QPushButton) if button.isVisible())
+    assert "double-cliquez" in planner.calendar.canvas.accessibleDescription()

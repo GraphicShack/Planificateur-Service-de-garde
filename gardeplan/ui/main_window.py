@@ -36,6 +36,7 @@ from .forms import EducatorDialog, GroupDialog, RoomDialog, ShiftDialog, Activit
 
 
 class EducatorList(QListWidget):
+    create_shift = Signal(str)
     def __init__(self):
         super().__init__()
         self.setDragEnabled(True)
@@ -45,6 +46,14 @@ class EducatorList(QListWidget):
         self.setFrameShape(QFrame.Shape.NoFrame)
         self.setStyleSheet("QListWidget {background:transparent;} QListWidget::item:selected {background:#e3eee8;border-radius:8px;}")
         self.setAccessibleName("Éducatrices à glisser dans le calendrier")
+        self.setAccessibleDescription("Glisser un nom ou appuyer sur Entrée pour créer son quart.")
+
+    def keyPressEvent(self, event):
+        item = self.currentItem()
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter) and item and item.data(Qt.ItemDataRole.UserRole + 1):
+            self.create_shift.emit(item.data(Qt.ItemDataRole.UserRole))
+            return
+        super().keyPressEvent(event)
 
     def startDrag(self, supported_actions):
         item = self.currentItem()
@@ -279,8 +288,9 @@ class MainWindow(QMainWindow):
         self.educator_list.setObjectName("educatorList")
         self.educator_list.itemDoubleClicked.connect(lambda item: self.edit_educator(item.data(Qt.ItemDataRole.UserRole)))
         self.educator_list.itemSelectionChanged.connect(self._refresh_profile_button)
+        self.educator_list.create_shift.connect(lambda identifier: self.new_shift(educator_id=identifier, group_id=self.week.groups[0].id if self.week.groups else ""))
         sidebar.addWidget(self.educator_list, 1)
-        sidebar.addWidget(note("Glissez un nom sur le calendrier."))
+        sidebar.addWidget(note("Glissez un nom ou double-cliquez sur une plage vide pour créer un quart. Au clavier : sélectionnez un nom, puis Entrée."))
         self.splitter.addWidget(self.sidebar)
 
         right = QWidget()
@@ -308,8 +318,6 @@ class MainWindow(QMainWindow):
         self.calendar_summary.setObjectName("muted")
         day_row.addWidget(self.calendar_summary)
         self.enrolment_button = self._button("Inscriptions", self.enrolment, "Répartir les inscriptions d'une journée pédagogique", icon_name="users")
-        self.enrolment_button.setObjectName("subtleButton")
-        day_row.addWidget(self.enrolment_button)
         segmented = QFrame()
         segmented.setObjectName("segmentedControl")
         modes = QHBoxLayout(segmented)
@@ -326,7 +334,8 @@ class MainWindow(QMainWindow):
         self.add_button = self._button("Ajouter un quart", self.new_shift, "Ajouter un quart de travail", icon_name="plus")
         self.add_button.setObjectName("menuButton")
         self.add_menu = QMenu(self)
-        day_row.addWidget(self.add_button)
+        self.add_button.setParent(self._hidden_controls)
+        day_row.addWidget(self.enrolment_button)
         self.top_alert_button = self._button("Vérifier l'horaire", self.verify, "Vérifier la couverture, les relèves et les heures", icon_name="check")
         self.top_alert_button.setObjectName("subtleButton")
         self.verify_button = self.top_alert_button
@@ -555,7 +564,7 @@ class MainWindow(QMainWindow):
         self.version_banner.setText(banner)
         self.version_banner.setVisible(bool(banner))
         self.week_status_label.setText(f"{STATUS_LABELS[self.week.status]} · Hors ligne")
-        self.enrolment_button.setText("Inscriptions" if self.week.groups else "Préparer la journée")
+        self.enrolment_button.setText("Inscriptions")
         self.add_button.setEnabled(not self.read_only)
         self._sync_menu_actions()
         self._updating = False
@@ -1051,7 +1060,7 @@ class MainWindow(QMainWindow):
         if not self._can_edit():
             return
         if not self.week.educators or not self.week.groups:
-            QMessageBox.information(self, "Préparer le calendrier", "Ajoutez une éducatrice et un groupe avant de créer un quart.")
+            QMessageBox.information(self, "Préparer le calendrier", "Ajoutez une éducatrice et saisissez les inscriptions, puis glissez son nom sur le calendrier ou double-cliquez sur une plage vide.")
             return
         dialog = ShiftDialog(self.week, day=self.day if day is None else day, start=self.week.settings.open_minute if start is None else start, group_id=group_id, educator_id=educator_id, parent=self)
         self._entity_dialog(dialog, "shifts", None)

@@ -185,7 +185,7 @@ class _Canvas(QWidget):
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.setAccessibleName("Calendrier des affectations et activités")
         self.setAccessibleDescription(
-            "Glissez une éducatrice dans un groupe. Déplacez un bloc ou tirez son bord. "
+            "Glissez une éducatrice depuis l'équipe ou double-cliquez sur une plage vide pour créer un quart. Déplacez un bloc ou tirez son bord. "
             "Double-cliquez pour saisir les heures exactes. Les flèches déplacent le bloc sélectionné.")
 
     def sizeHint(self):
@@ -450,7 +450,7 @@ class _Canvas(QWidget):
             p.setFont(_font(9.5))
             p.setPen(QColor("#83907e"))
             p.drawText(QRectF(30,108,self.width()-60,90),Qt.TextFlag.TextWordWrap,
-                       "Créez vos groupes avec Inscriptions, puis glissez une éducatrice dans le calendrier.")
+                       "Saisissez les inscriptions, puis glissez une éducatrice dans le calendrier ou double-cliquez sur une plage vide.")
         if c.highlighted_interval and c.highlighted_interval[0] == c.day:
             _, start, end = c.highlighted_interval
             area = QRectF(2, c.y(start), self.width()-4, max(3, (end-start)*c.scale))
@@ -581,11 +581,6 @@ class _Canvas(QWidget):
             action = menu.addAction("Modifier…")
             if menu.exec(event.globalPos()) == action:
                 c.edit_requested.emit(block.kind,block.value.id)
-        elif c.week and c.week.groups and not c.read_only:
-            action = menu.addAction("Ajouter un bloc ici…")
-            if menu.exec(event.globalPos()) == action:
-                col = min(len(c.week.groups)-1,max(0,int(event.pos().x()//c.column_width)))
-                c.create_requested.emit(c.day,c.minute(event.pos().y()),c.week.groups[col].id)
 
     def keyPressEvent(self, event):
         c = self.calendar
