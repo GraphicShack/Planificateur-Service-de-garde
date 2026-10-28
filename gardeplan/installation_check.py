@@ -173,6 +173,10 @@ def check_installation(destination: str | Path) -> int:
                     qualities.append((-len(shifts),totals(generated.proposal)[person.id],-max(s.end for s in shifts)))
                 if qualities!=sorted(qualities,reverse=True):
                     raise RuntimeError("L’ordre des rangs n’est pas respecté dans les profils équivalents.")
+                timeline=coverage_timeline(generated.proposal)
+                if not timeline[0].shared or not timeline[-1].shared or (timeline[0].actual,timeline[0].required)!=(2,2) or (timeline[-1].actual,timeline[-1].required)!=(2,2):
+                    raise RuntimeError("L’accueil commun doit compter deux personnes au total à l’ouverture et à la fermeture.")
+                report["checks"]["shared_opening_closing"] = True
                 report["checks"]["daily_groups_seniority_eight_hours"] = True
                 report["checks"]["ortools_cp_sat_generation"] = True
                 report["checks"]["offline_operations"] = True

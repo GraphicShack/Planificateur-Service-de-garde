@@ -35,9 +35,9 @@ class EnrolmentPanel(QWidget):
         self.preview.setWordWrap(True)
         self.preview.setAccessibleName("Besoin calculé en direct")
         root.addWidget(self.preview)
-        explanation = QLabel("Deux éducatrices minimum dans chaque groupe ouvert, pendant toute sa plage, préparation et fermeture comprises. Chaque pause doit être remplacée. Le ratio configuré peut exiger davantage de personnes. Avec zéro inscription, la journée est fermée.")
-        explanation.setWordWrap(True)
-        root.addWidget(explanation)
+        self.explanation = QLabel()
+        self.explanation.setWordWrap(True)
+        root.addWidget(self.explanation)
         root.addStretch()
         self.save_button = QPushButton("Enregistrer")
         self.save_button.setObjectName("editorSave")
@@ -60,6 +60,8 @@ class EnrolmentPanel(QWidget):
         self.update_preview()
 
     def update_preview(self):
+        from ..staffing import staffing_description
+        self.explanation.setText(staffing_description(self.week)+" Avec zéro inscription, la journée est fermée.")
         count = self.count.value()
         from ..planning import plan_pedagogical_day
         prepared=plan_pedagogical_day(self.week,0,count,20)

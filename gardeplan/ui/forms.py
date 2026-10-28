@@ -873,7 +873,8 @@ class SettingsDialog(EditorDialog):
         form.addRow("Préparation avant ouverture", self.opening_buffer)
         form.addRow("Fermeture après le départ", self.closing_buffer)
         form.addRow("Chevauchement de relève", self.handover)
-        form.addRow(note("Deux éducatrices minimum par groupe ouvert, y compris pendant les dix minutes de préparation et les cinq minutes de fermeture. Le ratio peut en exiger davantage. Chaque pause est remplacée ; chaque relève conserve quinze minutes communes." if week.planning_date else "Deux éducatrices en continu et quinze minutes communes à chaque relève."))
+        from ..staffing import staffing_description
+        form.addRow(note(staffing_description(week) if week.planning_date else "Deux éducatrices en continu et quinze minutes communes à chaque relève."))
         form = self.add_page("Pauses automatiques")
         self.break_after = MinuteEdit(getattr(settings, "break_after_minutes", 0), duration=True)
         self.break_minutes = integer(getattr(settings, "break_minutes", 0), 0, 180, " min")
