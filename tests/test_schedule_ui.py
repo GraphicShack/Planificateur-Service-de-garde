@@ -246,7 +246,7 @@ def test_management_pages_replace_team_and_keep_the_calendar_width(planner, qapp
     assert planner.management_stack.currentWidget() is planner.team_page
     planner.enrolment_button.click()
     qapp.processEvents()
-    assert planner.management_stack.currentWidget() is planner.enrolment_panel
+    assert planner.management_stack.currentWidget() is planner.enrolment_page
     assert not planner.educator_list.isVisible()
     assert planner.calendar.width() == original_width
     planner.enrolment_panel.count.setValue(41)

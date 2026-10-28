@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
     QDialogButtonBox, QFileDialog, QFormLayout, QFrame, QHBoxLayout,
     QInputDialog, QLabel, QLineEdit, QListWidget, QListWidgetItem, QMainWindow,
     QMenu, QMessageBox, QProgressBar, QProgressDialog, QPushButton,
-    QSlider, QSpinBox, QSplitter, QStackedWidget, QVBoxLayout, QWidget,
+    QSlider, QSpinBox, QSplitter, QStackedWidget, QScrollArea, QVBoxLayout, QWidget,
 )
 
 from ..branding import DISPLAY_NAME, SHORT_NAME
@@ -465,7 +465,12 @@ class MainWindow(QMainWindow):
         self.enrolment_panel = EnrolmentPanel(self.week)
         self.enrolment_panel.accepted.connect(self.apply_enrolment)
         self.enrolment_panel.rejected.connect(lambda: self.show_management("team"))
-        self.management_stack.addWidget(self.enrolment_panel)
+        self.enrolment_page = QScrollArea()
+        self.enrolment_page.setWidgetResizable(True)
+        self.enrolment_page.setFrameShape(QFrame.Shape.NoFrame)
+        self.enrolment_page.setMinimumSize(0,0)
+        self.enrolment_page.setWidget(self.enrolment_panel)
+        self.management_stack.addWidget(self.enrolment_page)
         self.management_stack.setCurrentWidget(self.team_page)
         self.splitter.addWidget(right)
         self.splitter.setSizes([265, 1100])
@@ -990,7 +995,7 @@ class MainWindow(QMainWindow):
         self.coverage_toggle.setToolTip(action+" la bande de ratio. Elle n’est jamais incluse dans le PDF.")
 
     def show_management(self, page):
-        target = {"team": self.team_page, "enrolment": self.enrolment_panel,
+        target = {"team": self.team_page, "enrolment": self.enrolment_page,
                   "alerts": self.alert_panel}[page]
         self.management_stack.setCurrentWidget(target)
         self.sidebar.show()
