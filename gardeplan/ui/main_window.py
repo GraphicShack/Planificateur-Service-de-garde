@@ -1010,7 +1010,7 @@ class MainWindow(QMainWindow):
             return True
         self.autosave.stop()
         try:
-            self.repo.save(self.week,keep_deleted=preserve_deleted)
+            self.repo.save(self.week,keep_deleted=True) if preserve_deleted else self.repo.save(self.week)
             self.dirty = False
             self._save_error_shown = False
             self._set_save_state(True)

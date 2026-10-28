@@ -4,6 +4,23 @@ from gardeplan.models import Week,Shift,Educator
 from test_home_data import planned_day
 
 
+def test_format_two_is_backed_up_before_migration_and_history_stays_intact(tmp_path):
+    import sqlite3
+    from contextlib import closing
+    repo=Repository(tmp_path/'data.sqlite');plan=planned_day();identifier=repo.save(plan)
+    with closing(sqlite3.connect(repo.path)) as conn,conn:
+        conn.execute("UPDATE metadata SET value='2' WHERE key='schema_version'")
+        conn.execute('DROP TABLE day_deletions')
+    upgraded=Repository(repo.path)
+    assert upgraded.load_version(identifier)==plan
+    backups=list(tmp_path.glob('data-avant-format3-*.sqlite3'))
+    assert len(backups)==1
+    with closing(sqlite3.connect(backups[0])) as conn:
+        assert conn.execute("SELECT value FROM metadata WHERE key='schema_version'").fetchone()[0]=='2'
+    upgraded.delete_day(plan.planning_date)
+    assert upgraded.list_days()==[]
+
+
 def test_deletion_hides_the_date_and_keeps_history_other_days_and_profiles(tmp_path):
     repo=Repository(tmp_path/'data.sqlite')
     plan=planned_day();identifier=repo.save(plan)

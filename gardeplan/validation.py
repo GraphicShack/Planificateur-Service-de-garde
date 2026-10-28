@@ -80,7 +80,7 @@ def validate(week: Week, *, _service=False) -> list[Issue]:
     issues: list[Issue] = []
     def add(code, message, day=None, start=None, end=None, group_id="", shift_ids=None, suggestion="", severity="error"):
         if week.planning_date and day == 0:
-            message = message.replace("Lundi,", week.day_label(0).split(" — ", 1)[0] + ",", 1)
+            message = message.replace("Lundi,", week.day_label(0).split(" — ", 1)[0] + ",", 1).replace("Lundi :",week.day_label(0).split(" — ",1)[0]+" :",1)
         if week.planning_date:
             message = message.replace("du groupe Service de garde", "du service de garde").replace("au groupe Service de garde", "au service de garde").replace("le groupe Service de garde", "le service de garde").replace("groupe Service de garde", "service de garde").replace("ce groupe", "le service de garde").replace("un groupe introuvable", "une affectation introuvable")
             suggestion = suggestion.replace("rouvrir le groupe", "rouvrir le service de garde")

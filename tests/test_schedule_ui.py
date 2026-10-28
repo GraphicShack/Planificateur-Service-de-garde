@@ -19,6 +19,7 @@ def planner(tmp_path, qapp, monkeypatch):
     repo = Repository(tmp_path / "journee.sqlite3")
     repo.save(plan)
     window = MainWindow(repo, plan, start_home=False)
+    window.save_week(manual=False)
     window.show()
     qapp.processEvents()
     yield window
@@ -44,6 +45,12 @@ def test_verification_opens_alert_and_selects_exact_gap(planner, qapp):
 
 
 def test_valid_day_explicitly_reports_no_alert(planner):
+    def shorter_day(plan):
+        plan.settings.close_minute=850
+        for group in plan.groups:group.periods[0].end=850
+        for shift in plan.shifts:shift.end=855
+        for person in plan.educators:person.target_minutes=445
+    planner.commit(shorter_day)
     planner.top_alert_button.click()
     assert planner.top_alert_button.accessibleName() == "Vérifier (0)"
     assert planner.alert_badge.text() == "0"
@@ -351,7 +358,7 @@ def test_undo_redo_share_the_day_name_row(planner):
 def test_old_drafts_adopt_new_rules_but_historical_versions_stay_frozen(planner):
     legacy=deepcopy(planner.week);legacy.settings.staffing_policy=1
     planner._load(legacy)
-    assert planner.week.settings.staffing_policy==2 and planner.dirty
+    assert planner.week.settings.staffing_policy==3 and planner.dirty
     assert legacy.settings.staffing_policy==1
     legacy.status='archived'
     planner._load(legacy,version=123)

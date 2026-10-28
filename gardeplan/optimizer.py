@@ -507,7 +507,7 @@ def generate(week: Week, time_limit: float = 20) -> GenerationResult:
     notes = ["La recherche utilise des bornes métier exactes et des départs intermédiaires espacés d'une heure.",
              "Les quarts non verrouillés seront remplacés uniquement après votre confirmation."]
     if daily_priorities:
-        notes.append("Priorités : attribuer des heures au plus de personnes possible, limiter les heures inutiles, puis privilégier les rangs 1, 2, etc. : davantage d’heures, moins de coupures et fin plus tôt.")
+        notes.append("Priorités : attribuer des heures au plus de personnes possible, limiter les heures inutiles, puis privilégier les rangs 1, 2, etc. : quarts continus, davantage d’heures et fin plus tôt.")
         if not priority_complete:
             notes.append(f"La recherche a atteint son délai : les préférences ne sont pas toutes prouvées optimales ({completed_ranks} rangs examinés).")
         scheduled = {s.educator_id for s in proposal.shifts if paid_minutes(s)>0}

@@ -92,15 +92,15 @@ def check_installation(destination: str | Path) -> int:
                 folder = Path(directory)
                 today = date.today()
                 monday = (today - timedelta(days=today.weekday())).isoformat()
-                week = Week(monday)
-                week.educators = [Educator("e1", "Éducatrice test A", target_minutes=645,
-                                           max_minutes=1000),
-                                  Educator("e2", "Éducatrice test B", seniority=2,
-                                           target_minutes=645, max_minutes=1000)]
-                week.groups = [Group("g1", "Groupe test", periods=[GroupPeriod(0, 420, 1050, 30)])]
-                week.shifts = [Shift("s1", "e1", "g1", 0, 410, 1055, 10, 5),
-                               Shift("s2", "e2", "g1", 0, 410, 1055, 10, 5)]
-                week.planning_date = monday
+                from gardeplan.daily import day_plan
+                week = day_plan(monday)
+                week.educators = [Educator(f"e{i+1}", f"Éducatrice test {i+1}", seniority=i+1,
+                                           target_minutes=0, max_minutes=480) for i in range(4)]
+                week.groups = [Group(f"g{i+1}", f"Groupe test {i+1}",
+                                     periods=[GroupPeriod(0,420,1050,20)]) for i in range(2)]
+                week.shifts = [Shift(f"s{i+1}", f"e{i+1}", f"g{i%2+1}",0,
+                                     410 if i<2 else 720,735 if i<2 else 1055,
+                                     10 if i<2 else 15,0 if i<2 else 5) for i in range(4)]
                 week.day_names = {0: "Journée pédagogique — Vérification"}
                 if any(issue.severity == "error" for issue in validate(week)):
                     raise RuntimeError("Le jeu de contrôle métier n'est pas valide.")
@@ -161,6 +161,19 @@ def check_installation(destination: str | Path) -> int:
                     raise RuntimeError(f"La génération CP-SAT a échoué : {generated.message}")
                 if any(issue.severity == "error" for issue in validate(generated.proposal)):
                     raise RuntimeError("Le solveur a renvoyé une proposition invalide.")
+                from gardeplan.models import totals
+                from gardeplan.coverage import coverage_timeline
+                if {s.group_id for s in generated.proposal.shifts}!={g.id for g in request.groups}:
+                    raise RuntimeError("Tous les groupes ne sont pas couverts par la génération.")
+                if not all(0<totals(generated.proposal).get(e.id,0)<=480 for e in request.educators):
+                    raise RuntimeError("La répartition de l’équipe ou le plafond de huit heures n’est pas respecté.")
+                qualities=[]
+                for person in request.educators:
+                    shifts=[s for s in generated.proposal.shifts if s.educator_id==person.id]
+                    qualities.append((-len(shifts),totals(generated.proposal)[person.id],-max(s.end for s in shifts)))
+                if qualities!=sorted(qualities,reverse=True):
+                    raise RuntimeError("L’ordre des rangs n’est pas respecté dans les profils équivalents.")
+                report["checks"]["daily_groups_seniority_eight_hours"] = True
                 report["checks"]["ortools_cp_sat_generation"] = True
                 report["checks"]["offline_operations"] = True
                 # Ne pas déclencher la sauvegarde à la fermeture du tableau de

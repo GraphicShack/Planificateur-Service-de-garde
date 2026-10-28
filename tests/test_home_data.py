@@ -9,9 +9,10 @@ from gardeplan.alerts import visible_alerts
 
 def planned_day(selected='2026-10-28'):
     plan=day_plan(selected)
-    plan.educators=[Educator(str(i),f'Éducatrice {i}',seniority=i+1,target_minutes=0,max_minutes=720) for i in range(2)]
-    plan.groups=[Group('g','Groupe A',periods=[GroupPeriod(0,420,1050,5)])]
-    plan.shifts=[Shift(str(i),str(i),'g',0,410,1055,10,5) for i in range(2)]
+    plan.settings.close_minute=850
+    plan.educators=[Educator(str(i),f'Éducatrice {i}',seniority=i+1,target_minutes=0,max_minutes=480) for i in range(2)]
+    plan.groups=[Group('g','Groupe A',periods=[GroupPeriod(0,420,850,5)])]
+    plan.shifts=[Shift(str(i),str(i),'g',0,410,855,10,5) for i in range(2)]
     return plan
 
 
@@ -28,14 +29,14 @@ class HomeDataTests(unittest.TestCase):
         plan=planned_day();plan.day_names[0]='Journée des découvertes'
         brief=summarize_day(plan)
         self.assertEqual(brief.status,'Couverture complète')
-        self.assertEqual((brief.children,brief.minimum,brief.educators,brief.paid),(5,2,2,'21 h 30'))
+        self.assertEqual((brief.children,brief.minimum,brief.educators,brief.paid),(5,2,2,'14 h 50'))
         plan.shifts[0].breaks=[Break(720,750,False,'dinner')]
         brief=summarize_day(plan)
         self.assertEqual(brief.alerts,len(visible_alerts(plan)))
         self.assertEqual(brief.status,'1 alerte')
-        self.assertEqual(brief.paid,'21 h 00')
+        self.assertEqual(brief.paid,'14 h 20')
         self.assertEqual(brief.name,'Journée des découvertes')
-        self.assertEqual(brief.hours,'6 h 50 – 17 h 35')
+        self.assertEqual(brief.hours,'6 h 50 – 14 h 15')
 
     def test_empty_storage_stays_empty(self):
         with TemporaryDirectory() as folder:

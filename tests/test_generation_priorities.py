@@ -14,7 +14,7 @@ def short_day():
 
 def quality(plan,person):
     shifts=[s for s in plan.shifts if s.educator_id==person.id]
-    return (totals(plan).get(person.id,0),-len(shifts),-max((s.end for s in shifts),default=0))
+    return (-len(shifts),totals(plan).get(person.id,0),-max((s.end for s in shifts),default=0))
 
 
 def test_everyone_gets_hours_and_sparse_ranks_receive_the_best_schedules_first():

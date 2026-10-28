@@ -17,6 +17,11 @@ def day_window(tmp_path, qapp, monkeypatch):
         monkeypatch.setattr(QMessageBox, name, lambda *args: None)
     repo = Repository(tmp_path / "journees.sqlite")
     plan = prepared_day()
+    # Current editable fixture: a shorter service day fits the new 8 h cap.
+    plan.settings.close_minute=850
+    for group in plan.groups:group.periods[0].end=850
+    for shift in plan.shifts:shift.end=855
+    for person in plan.educators:person.target_minutes=445
     repo.save(plan)
     window = MainWindow(repo, plan, start_home=False)
     yield window
@@ -56,7 +61,7 @@ def test_daily_forms_only_offer_selected_date_and_daily_hours(day_window):
     window = day_window
     person = EducatorDialog(window.week)
     assert person.target.value() == 0
-    assert person.maximum.value() == 720
+    assert person.maximum.value() == 480
     person.availability.add_row()
     assert person.availability.table.cellWidget(0, 0).count() == 1
     assert person.availability.table.isColumnHidden(0)
@@ -164,7 +169,7 @@ def test_sidebar_add_opens_one_readable_form_and_persists_full_profile(day_windo
         dialog.seniority_date.setText("2020-08-24")
         dialog.target.setValue(433)
         dialog.guaranteed.setValue(300)
-        dialog.maximum.setValue(645)
+        dialog.maximum.setValue(480)
         dialog.availability.add_row(0, 410, 1055)
         dialog.absences.add_row(0, 540, 555)
         dialog.restrictions.setPlainText("Préférence pour le groupe A")
@@ -181,7 +186,7 @@ def test_sidebar_add_opens_one_readable_form_and_persists_full_profile(day_windo
     created = day_window.week.educators[-1]
     assert created.name == "Élodie Gagnon" and created.seniority == 4
     assert created.seniority_date == "2020-08-24"
-    assert (created.target_minutes, created.guaranteed_minutes, created.max_minutes) == (433, 300, 645)
+    assert (created.target_minutes, created.guaranteed_minutes, created.max_minutes) == (433, 300, 480)
     assert created.availability == [Window(0, 410, 1055)]
     assert created.absences == [Window(0, 540, 555)]
     assert created.preferred_groups == []
@@ -208,4 +213,4 @@ def test_activities_and_rooms_are_not_exposed_and_do_not_block_schedules(day_win
     assert all(block.kind == "shift" for block in day_window.calendar.canvas.blocks)
     assert "add_activity" not in day_window.menu_actions and "rooms" not in day_window.menu_actions
     assert not any("activité" in action.text().lower() for action in day_window.add_menu.actions())
-    assert (day_window.calendar.start_minute, day_window.calendar.end_minute) == (360, 1080)
+    assert (day_window.calendar.start_minute, day_window.calendar.end_minute) == (360, 900)
