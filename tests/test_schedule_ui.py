@@ -125,3 +125,26 @@ def test_registrations_replace_the_visible_add_shift_button(planner):
     assert not planner.add_button.isVisible()
     assert not any("Ajouter un quart" == button.text() for button in planner.findChildren(QPushButton) if button.isVisible())
     assert "double-cliquez" in planner.calendar.canvas.accessibleDescription()
+
+
+def test_day_name_enter_escape_blur_and_pdf(planner, qapp, tmp_path):
+    from PySide6.QtTest import QTest
+    from gardeplan.pdf import export_general
+    from pypdf import PdfReader
+    name = planner.day_title
+    name.button.click()
+    name.editor.setText("Journée des sciences")
+    QTest.keyClick(name.editor, Qt.Key.Key_Return)
+    assert planner.week.day_names[0] == "Journée des sciences"
+    name.button.click()
+    name.editor.setText("À annuler")
+    QTest.keyClick(name.editor, Qt.Key.Key_Escape)
+    assert planner.week.day_names[0] == "Journée des sciences"
+    name.button.click()
+    name.editor.setText("Journée sportive")
+    planner.enrolment_button.setFocus()
+    qapp.processEvents()
+    assert planner.week.day_names[0] == "Journée sportive"
+    target = tmp_path / "nom.pdf"
+    export_general(planner.week, target)
+    assert "Journée sportive" in PdfReader(target).pages[0].extract_text()

@@ -31,6 +31,7 @@ from .calendar import CalendarWidget, EDUCATOR_MIME
 from .day_selector import DaySelector, full_date
 from .flow_layout import FlowLayout
 from .theme import DATE_STYLE
+from .inline_name import InlineDayName
 from .visuals import icon, logo_icon, logo_pixmap
 from .forms import EducatorDialog, GroupDialog, RoomDialog, ShiftDialog, ActivityDialog, SettingsDialog, integer, note
 
@@ -311,8 +312,9 @@ class MainWindow(QMainWindow):
         self.day_combo.setObjectName("daySelector")
         self.day_combo.setMinimumWidth(170)
         self.day_combo.activated.connect(self.select_day)
-        self.day_title = QLabel()
+        self.day_title = InlineDayName()
         self.day_title.setObjectName("dayTitle")
+        self.day_title.changed.connect(self._rename_day)
         day_row.addWidget(self.day_title)
         self.calendar_summary = QLabel()
         self.calendar_summary.setObjectName("muted")
@@ -533,7 +535,8 @@ class MainWindow(QMainWindow):
         self.day_combo.clear()
         self.day_combo.addItems([self.week.day_label(day) for day in self.week.active_days])
         full_title = self.week.day_names.get(self.day) or "Journée pédagogique"
-        self.day_title.setText(self.day_title.fontMetrics().elidedText(full_title, Qt.TextElideMode.ElideRight, 310))
+        self.day_title.setText(self.week.day_names.get(self.day, ""))
+        self.day_title.setEnabled(not self.read_only)
         self.day_title.setToolTip(full_title)
         self.calendar_summary.setText("6 h 50 – 17 h 35")
         self.day_combo.setCurrentIndex(self.day)
@@ -928,13 +931,10 @@ class MainWindow(QMainWindow):
     def name_day(self):
         if not self._can_edit():
             return
-        name, accepted = QInputDialog.getText(self, "Nommer la journée", "Nom facultatif de la journée (160 caractères maximum) :", text=self.week.day_names.get(self.day, ""))
-        if accepted:
-            name = name.strip()
-            if len(name) > 160:
-                QMessageBox.warning(self, "Nom trop long", "Choisissez un nom de 160 caractères maximum.")
-                return
-            self.commit(lambda week: week.day_names.__setitem__(self.day, name))
+        self.day_title.start_editing()
+
+    def _rename_day(self, name):
+        self.commit(lambda week: week.day_names.__setitem__(self.day, name.strip()))
 
     def enrolment(self):
         if not self._can_edit():
@@ -946,9 +946,6 @@ class MainWindow(QMainWindow):
         for group in self.week.groups:
             count.setValue(count.value() + max([p.students for p in group.periods if p.day == self.day] or [0]))
         size = integer(20, 1, 1000, " enfants / groupe")
-        from PySide6.QtWidgets import QLineEdit
-        day_name = QLineEdit(self.week.day_names.get(self.day, ""))
-        day_name.setPlaceholderText("Ex. Journée pédagogique — Halloween")
         preview = QLabel()
         preview.setWordWrap(True)
         def update():
@@ -962,7 +959,6 @@ class MainWindow(QMainWindow):
         layout.addRow(note(self.week.day_label(self.day)))
         layout.addRow("Nombre d'inscriptions", count)
         layout.addRow("Taille souhaitée d'un groupe", size)
-        layout.addRow("Nom de la journée", day_name)
         layout.addRow(preview)
         layout.addRow(note("Cette action répartit les enfants entre les groupes et ouvre ceux-ci sur toute la journée. Les quarts existants sont conservés ; vérifiez les alertes ou générez une proposition ensuite."))
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
@@ -973,7 +969,7 @@ class MainWindow(QMainWindow):
         layout.addRow(buttons)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             from ..planning import plan_pedagogical_day
-            self.commit(lambda week: plan_pedagogical_day(week, self.day, count.value(), size.value(), day_name.text().strip()))
+            self.commit(lambda week: plan_pedagogical_day(week, self.day, count.value(), size.value()))
 
     def edit_educator(self, identifier=None):
         if not self._can_edit():

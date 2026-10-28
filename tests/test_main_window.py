@@ -84,15 +84,17 @@ def test_published_edits_create_draft_and_retain_original_snapshot(dashboard):
 
 def test_custom_day_name_autosaves_and_can_be_cleared(dashboard, monkeypatch):
     window = dashboard
-    monkeypatch.setattr(QInputDialog, "getText", lambda *args, **kwargs: ("  Pédagogique — Halloween  ", True))
     window.name_day()
+    window.day_title.editor.setText("  Pédagogique — Halloween  ")
+    window.day_title.finish_editing()
     assert window.week.day_names[0] == "Pédagogique — Halloween"
     assert "Pédagogique — Halloween" in window.day_combo.currentText()
     window.autosave.timeout.emit()
     assert not window.dirty
     assert window.repo.load_week(window.week.monday).day_names[0] == "Pédagogique — Halloween"
-    monkeypatch.setattr(QInputDialog, "getText", lambda *args, **kwargs: ("", True))
     window.name_day()
+    window.day_title.editor.clear()
+    window.day_title.finish_editing()
     assert window.week.day_names[0] == ""
     assert window.week.day_label(0) == "Lundi 26/10"
 
