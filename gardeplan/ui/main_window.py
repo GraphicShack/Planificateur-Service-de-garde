@@ -331,6 +331,13 @@ class MainWindow(QMainWindow):
         self.top_alert_button.setObjectName("subtleButton")
         self.verify_button = self.top_alert_button
         day_row.addWidget(self.top_alert_button)
+        for button, name in ((self.undo_button, "undo"), (self.redo_button, "redo")):
+            button.setObjectName("subtleButton")
+            button.setIcon(icon(name))
+            button.setMinimumHeight(44)
+            button.setStyleSheet("font-size:16px;")
+            day_row.addWidget(button)
+            button.show()
         surface.addWidget(day_controls)
         self.version_banner = QLabel()
         self.version_banner.setObjectName("versionBanner")
@@ -412,9 +419,11 @@ class MainWindow(QMainWindow):
         self.file_menu.setStyleSheet("QMenu {background:white;color:#203D32;font-size:16px;} QMenu::item {padding:12px 16px;} QMenu::item:selected {background:#DFEBE4;color:#203D32;}")
         self.folder_button.setMenu(self.file_menu)
         add(self.file_menu, "save", "Enregistrer l’horaire", lambda: self.save_week(manual=True), "Ctrl+S")
-        add(self.command_menu, "undo", "Annuler", lambda: self.undo(), "Ctrl+Z")
+        undo = add(self.command_menu, "undo", "Annuler", lambda: self.undo(), "Ctrl+Z")
+        undo.setShortcuts(QKeySequence.keyBindings(QKeySequence.StandardKey.Undo))
         redo = add(self.command_menu, "redo", "Rétablir", lambda: self.redo())
-        redo.setShortcuts([QKeySequence("Ctrl+Shift+Z"), QKeySequence("Ctrl+Y")])
+        keys = QKeySequence.keyBindings(QKeySequence.StandardKey.Redo) + [QKeySequence("Ctrl+Shift+Z"), QKeySequence("Ctrl+Y")]
+        redo.setShortcuts(list({key.toString(): key for key in keys}.values()))
         self.addAction(redo)
         add(self.command_menu, "pdf_preview", "Aperçu avant impression…", lambda: self._preview_pdf("general", None))
         self.command_menu.addSeparator()
@@ -697,7 +706,7 @@ class MainWindow(QMainWindow):
         if before.to_dict() == candidate.to_dict():
             return False
         self._undo.append(before)
-        self._undo = self._undo[-80:]
+        self._undo = self._undo[-50:]
         self._redo.clear()
         self.week = candidate
         self._modified()
@@ -713,6 +722,7 @@ class MainWindow(QMainWindow):
         if not self._undo or self.read_only:
             return
         self._redo.append(deepcopy(self.week))
+        self._redo = self._redo[-50:]
         self.week = self._undo.pop()
         self.week.status = "draft"
         self._modified()
@@ -721,6 +731,7 @@ class MainWindow(QMainWindow):
         if not self._redo or self.read_only:
             return
         self._undo.append(deepcopy(self.week))
+        self._undo = self._undo[-50:]
         self.week = self._redo.pop()
         self.week.status = "draft"
         self._modified()

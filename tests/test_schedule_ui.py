@@ -86,3 +86,34 @@ def test_dinner_duration_editor_and_paid_hours_are_real(planner, qapp):
     assert paid_minutes(result) == 600
     assert "10 h 00" in dialog.summary.text()
     dialog.deleteLater()
+
+
+def test_fifty_action_history_buttons_redo_and_branching(planner):
+    for index in range(60):
+        planner.commit(lambda plan, i=index: plan.day_names.__setitem__(0, f"Journée {i}"))
+    assert len(planner._undo) == 50
+    assert planner.undo_button.isVisible() and planner.redo_button.isVisible()
+    for _ in range(50):
+        planner.undo_button.click()
+    assert planner.week.day_names[0] == "Journée 9"
+    assert not planner.undo_button.isEnabled()
+    for _ in range(50):
+        planner.redo_button.click()
+    assert planner.week.day_names[0] == "Journée 59"
+    planner.undo()
+    planner.commit(lambda plan: plan.day_names.__setitem__(0, "Autre choix"))
+    assert not planner._redo and not planner.redo_button.isEnabled()
+
+
+def test_platform_undo_redo_keyboard_shortcuts(planner, qapp):
+    from PySide6.QtGui import QKeySequence
+    from PySide6.QtTest import QTest
+    planner.activateWindow()
+    planner.calendar.canvas.setFocus()
+    planner.commit(lambda plan: plan.day_names.__setitem__(0, "Au clavier"))
+    QTest.keySequence(planner, QKeySequence(QKeySequence.StandardKey.Undo))
+    qapp.processEvents()
+    assert planner.week.day_names.get(0) != "Au clavier"
+    QTest.keySequence(planner, QKeySequence("Ctrl+Shift+Z"))
+    qapp.processEvents()
+    assert planner.week.day_names[0] == "Au clavier"
