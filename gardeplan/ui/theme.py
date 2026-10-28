@@ -33,7 +33,7 @@ def light_palette():
 
 EDITOR_STYLE = f"""
 QDialog#editorDialog {{ background:#F7F9F8; color:{TEXT}; }}
-QDialog#editorDialog QWidget {{ color:{TEXT}; font-size:16px; }}
+QDialog#editorDialog QWidget {{ color:{TEXT}; font-family:'Segoe UI','SF Pro Text','Noto Sans',sans-serif; font-size:16px; }}
 QDialog#editorDialog QWidget#editorBody {{ background:#F7F9F8; }}
 QDialog#editorDialog QScrollArea {{ background:#F7F9F8; border:0; }}
 QDialog#editorDialog QFrame#formSection {{ background:{SURFACE}; border:1px solid #DCE4DF; border-radius:10px; }}
