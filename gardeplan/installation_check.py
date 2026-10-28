@@ -107,7 +107,7 @@ def check_installation(destination: str | Path) -> int:
                 report["checks"]["coverage_and_exact_minutes"] = True
                 repository = Repository(folder / "verification.sqlite")
                 repository.save(week)
-                restored = repository.load_week(week.monday)
+                restored = repository.load_day(week.planning_date)
                 if restored is None or restored.to_dict() != week.to_dict():
                     raise RuntimeError("La sauvegarde SQLite ne se rouvre pas à l'identique.")
                 repository.backup(folder / "copie.sqlite")
