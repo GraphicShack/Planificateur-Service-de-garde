@@ -1,5 +1,6 @@
 """Real daily persistence, compatibility, exact totals, PDFs and constraints."""
 from copy import deepcopy
+from contextlib import closing
 import hashlib
 import importlib.util
 import json
@@ -103,18 +104,22 @@ class DailyTests(unittest.TestCase):
         raw.pop("planning_date")
         payload = json.dumps(raw, ensure_ascii=False)
         checksum = hashlib.sha256(payload.encode()).hexdigest()
-        with sqlite3.connect(self.repo.path) as conn:
+        with closing(sqlite3.connect(self.repo.path)) as conn, conn:
             conn.execute("UPDATE metadata SET value='1' WHERE key='schema_version'")
             conn.execute("INSERT INTO versions(monday,created_at,status,payload,checksum) VALUES(?,?,?,?,?)",
                          (old.monday, "2026-10-26T00:00:00Z", "draft", payload, checksum))
         reopened = Repository(self.repo.path)
+        safety = list(self.root.glob("planning-avant-format2-*.sqlite3"))
+        self.assertEqual(len(safety), 1)
+        with closing(sqlite3.connect(safety[0])) as conn, conn:
+            self.assertEqual(conn.execute("SELECT value FROM metadata WHERE key='schema_version'").fetchone()[0], "1")
         extracted = reopened.load_day("2026-10-28")
         self.assertEqual([s.id for s in extracted.shifts], ["b"])
         self.assertEqual(extracted.shifts[0].day, 0)
         self.assertEqual(extracted.day_names, {0: "Mercredi ancien"})
         self.assertEqual(extracted.educators[0].target_minutes, 0)
         self.assertEqual(reopened.load_week(old.monday), old)
-        with sqlite3.connect(reopened.path) as conn:
+        with closing(sqlite3.connect(reopened.path)) as conn, conn:
             self.assertEqual(conn.execute("SELECT payload,checksum FROM versions WHERE monday=?", (old.monday,)).fetchone(), (payload, checksum))
             self.assertEqual(conn.execute("SELECT value FROM metadata WHERE key='schema_version'").fetchone()[0], "2")
         self.assertIsNone(reopened.load_day("2026-10-29"))

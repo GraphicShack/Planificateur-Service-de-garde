@@ -56,6 +56,12 @@ class Repository:
             existing = conn.execute("SELECT value FROM metadata WHERE key='schema_version'").fetchone()
             if not existing or existing[0] not in SUPPORTED_SCHEMAS:
                 raise StorageError("Cette base utilise une version non prise en charge. Conservez-la et mettez l’application à jour.")
+            if existing[0] == "1":
+                source_path = Path(conn.execute("PRAGMA database_list").fetchone()[2])
+                stamp = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+                safety = source_path.with_name(f"{source_path.stem}-avant-format2-{stamp}.sqlite3")
+                with closing(sqlite3.connect(safety)) as target:
+                    conn.backup(target)
         conn.executescript("""
             CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL);
             CREATE TABLE IF NOT EXISTS versions (
