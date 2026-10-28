@@ -5,7 +5,7 @@ from copy import deepcopy
 from datetime import date
 import re
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QEvent
 from PySide6.QtGui import QColor, QValidator
 from PySide6.QtWidgets import (
     QAbstractItemView, QCheckBox, QColorDialog, QComboBox, QDialog,
@@ -345,8 +345,9 @@ class EditorDialog(QDialog):
 
 class ProfileColumns(QWidget):
     """One continuous form, with two columns only when they fit comfortably."""
-    def __init__(self, parent=None):
+    def __init__(self, viewport, parent=None):
         super().__init__(parent)
+        self.viewport = viewport
         self.columns = QGridLayout(self)
         self.columns.setContentsMargins(0, 0, 0, 0)
         self.columns.setSpacing(12)
@@ -361,15 +362,22 @@ class ProfileColumns(QWidget):
         self.columns.setColumnStretch(0, 1)
         self.columns.setColumnStretch(1, 1)
         self.stacked = False
+        viewport.installEventFilter(self)
 
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        stacked = self.width() < 920
+    def eventFilter(self, watched, event):
+        if watched is self.viewport and event.type() == QEvent.Type.Resize:
+            self.arrange(self.viewport.width())
+        return super().eventFilter(watched, event)
+
+    def arrange(self, available_width):
+        # The content's minimum width can exceed the viewport before stacking.
+        # Using its own width would then prevent the narrow layout from running.
+        stacked = available_width < 920
+        for form in self.left.findChildren(QFormLayout):
+            form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapAllRows if stacked
+                                  else QFormLayout.RowWrapPolicy.DontWrapRows)
         if stacked != self.stacked:
             self.stacked = stacked
-            for form in self.left.findChildren(QFormLayout):
-                form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapAllRows if stacked
-                                      else QFormLayout.RowWrapPolicy.DontWrapRows)
             self.columns.removeWidget(self.right)
             self.columns.addWidget(self.right, 1 if stacked else 0, 0 if stacked else 1)
             self.columns.setColumnStretch(1, 0 if stacked else 1)
@@ -403,7 +411,7 @@ class EducatorDialog(EditorDialog):
             self.source.seniority = min(11, max((person.seniority for person in week.educators), default=0) + 1)
         ed = self.source
         self.body_layout.addWidget(note("Le nom est obligatoire. Les disponibilités et les préférences sont facultatives."))
-        self.profile_columns = ProfileColumns()
+        self.profile_columns = ProfileColumns(self.scroll.viewport())
         self.body_layout.addWidget(self.profile_columns)
         identity, identity_layout = profile_section("Profil et ancienneté")
         form = QFormLayout()
