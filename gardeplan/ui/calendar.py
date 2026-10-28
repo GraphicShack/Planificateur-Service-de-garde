@@ -103,7 +103,7 @@ class _Gutter(QWidget):
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.fillRect(self.rect(), QColor("#fafbf8"))
-        painter.setFont(_pixel_font(12))
+        painter.setFont(_pixel_font(13))
         c = self.calendar
         offset = c.scroll.verticalScrollBar().value()
         for minute in range((c.start_minute+29)//30*30, c.end_minute+1, 30):
@@ -338,7 +338,7 @@ class _Canvas(QWidget):
         for minute in range(first, last+1, 30):
             if c.scale < .5 and minute % 60:
                 continue
-            p.setPen(QPen(QColor("#e6ebe3") if minute % 60 == 0 else QColor("#f3f5ef"), 1))
+            p.setPen(QPen(QColor("#CDD8D0") if minute % 60 == 0 else QColor("#E7ECE8"), 1.2 if minute % 60 == 0 else .7))
             p.drawLine(QPointF(0, c.y(minute)), QPointF(self.width(), c.y(minute)))
         p.setPen(QColor("#e7ece4"))
         for i in range(n + 1):
@@ -768,7 +768,7 @@ class CalendarWidget(QWidget):
         self.corner = corner
         corner.setFixedSize(82,66)
         corner.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        corner.setStyleSheet("background:#fafbf8;color:#96a18f;font-size:9px;font-weight:600;"
+        corner.setStyleSheet("background:#fafbf8;color:#52655E;font-size:13px;font-weight:600;"
                              "border-bottom:1px solid #e5eae3;")
         self.header = _Header(self)
         self.header_scroll = QScrollArea()
