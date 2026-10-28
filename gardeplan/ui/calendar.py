@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
 )
 
 from ..models import format_time, format_duration
+from .coverage_band import CoverageBand
 
 DAYS = ("Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi")
 EDUCATOR_MIME = "application/x-gardeplan-educator"
@@ -635,11 +636,14 @@ class CalendarWidget(QWidget):
         self.canvas = _Canvas(self)
         self.scroll.setWidget(self.canvas)
         self.gutter = _Gutter(self)
+        self.coverage_band = CoverageBand()
+        self.coverage_band.interval_selected.connect(lambda a, b: self.scroll_to(a))
         layout.addWidget(corner,0,0)
         layout.addWidget(self.header_scroll,0,1)
-        layout.addWidget(self.gutter,1,0)
-        layout.addWidget(self.scroll,1,1)
-        layout.setRowStretch(1,1)
+        layout.addWidget(self.coverage_band,1,0,1,2)
+        layout.addWidget(self.gutter,2,0)
+        layout.addWidget(self.scroll,2,1)
+        layout.setRowStretch(2,1)
         layout.setColumnStretch(1,1)
         self.scroll.verticalScrollBar().valueChanged.connect(lambda _: self.gutter.update())
         self.scroll.horizontalScrollBar().valueChanged.connect(self.header_scroll.horizontalScrollBar().setValue)
@@ -691,6 +695,7 @@ class CalendarWidget(QWidget):
         self.week=week
         self.day=max(0,min(4,int(day)))
         self.issues=list(issues or [])
+        self.coverage_band.set_week(week, self.day)
         self.canvas.drag=None
         starts=[s.start for s in week.shifts]+([a.start for a in week.activities] if self.show_activities else [])
         ends=[s.end for s in week.shifts]+([a.end for a in week.activities] if self.show_activities else [])
