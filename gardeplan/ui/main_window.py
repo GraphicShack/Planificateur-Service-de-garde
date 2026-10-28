@@ -582,7 +582,7 @@ class MainWindow(QMainWindow):
             item = QListWidgetItem()
             item.setData(Qt.ItemDataRole.UserRole, educator.id)
             item.setData(Qt.ItemDataRole.UserRole + 1, educator.active and not self.read_only)
-            item.setSizeHint(QSize(245, 108))
+            item.setSizeHint(QSize(0, 108))
             tooltip = f"{educator.name}\nAncienneté : {educator.seniority}\nPlanifiées : {format_duration(minutes)} · Cible : {format_duration(educator.target_minutes)}\nDouble-cliquez pour modifier le profil."
             item.setToolTip(tooltip)
             card = QFrame()

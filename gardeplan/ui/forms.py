@@ -126,8 +126,10 @@ class IntervalsEditor(QWidget):
             self.table.setMaximumHeight(112)
         layout.addWidget(self.table)
         row = QHBoxLayout()
-        add = QPushButton("+ Ajouter une période")
-        remove = QPushButton("Retirer la sélection")
+        add = QPushButton("+ Ajouter" if compact else "+ Ajouter une période")
+        remove = QPushButton("Retirer" if compact else "Retirer la sélection")
+        add.setAccessibleName("Ajouter une période")
+        remove.setAccessibleName("Retirer la période sélectionnée")
         copy_days = QPushButton("Copier lundi → semaine")
         add.clicked.connect(lambda: self.add_row())
         remove.clicked.connect(self.remove_selected)
@@ -417,6 +419,9 @@ class EducatorDialog(EditorDialog):
         self.target = MinuteEdit(ed.target_minutes, duration=True)
         self.guaranteed = MinuteEdit(ed.guaranteed_minutes, duration=True)
         self.maximum = MinuteEdit(ed.max_minutes, duration=True)
+        for field in (self.name, self.color, self.seniority, self.seniority_date,
+                      self.target, self.guaranteed, self.maximum):
+            field.setFixedHeight(44)
         form.addRow("Nom et prénom", self.name)
         form.addRow("Couleur", self.color)
         form.addRow("Rang d'ancienneté", self.seniority)

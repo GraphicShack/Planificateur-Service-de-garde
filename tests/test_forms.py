@@ -119,12 +119,14 @@ def test_profile_stays_light_with_a_dark_parent(valid_week, track_dialog, qapp):
 
 def test_profile_sections_share_one_window_and_stack_on_small_screens(valid_week, track_dialog, qapp):
     dialog = track_dialog(EducatorDialog(valid_week))
-    dialog.resize(1120, 960)
     dialog.show()
+    dialog.resize(1120, 960)
     for _ in range(3):
         qapp.processEvents()
     assert not dialog.profile_columns.stacked
-    assert dialog.scroll.verticalScrollBar().maximum() == 0
+    assert dialog.scroll.verticalScrollBar().maximum() == 0, (
+        dialog.size(), dialog.scroll.viewport().size(), dialog.body.size(),
+        dialog.profile_columns.left.size(), dialog.profile_columns.right.size())
     for widget in (dialog.name, dialog.seniority, dialog.target, dialog.maximum,
                    dialog.availability, dialog.absences, dialog.preferences, dialog.restrictions):
         assert widget.isVisible() and widget.window() is dialog
@@ -135,7 +137,8 @@ def test_profile_sections_share_one_window_and_stack_on_small_screens(valid_week
     for _ in range(3):
         qapp.processEvents()
     assert dialog.profile_columns.stacked
-    assert dialog.scroll.horizontalScrollBar().maximum() == 0
+    assert dialog.scroll.horizontalScrollBar().maximum() == 0, (
+        dialog.size(), dialog.body.size(), dialog.profile_columns.right.minimumSizeHint())
     assert dialog.scroll.verticalScrollBar().maximum() > 0
     dialog.scroll.ensureWidgetVisible(dialog.preferences)
     qapp.processEvents()
