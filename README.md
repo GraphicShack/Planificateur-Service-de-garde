@@ -4,7 +4,7 @@
 
 <h1 align="center">Planificateur — Service de garde</h1>
 
-<p align="center"><strong>Version 0.2.1 · Portable, sans installation</strong></p>
+<p align="center"><strong>Version 0.2.2 · Portable, sans installation</strong></p>
 
 <p align="center">
   <strong>Des horaires clairs pour chaque journée pédagogique.</strong><br>
@@ -12,9 +12,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.2.1/Planificateur-SDG-0.2.1-Windows-x64-Portable.zip">Télécharger pour Windows</a>
+  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.2.2/Planificateur-SDG-0.2.2-Windows-x64-Portable.zip">Télécharger pour Windows</a>
   &nbsp;·&nbsp;
-  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.2.1/Planificateur-SDG-0.2.1-macOS-arm64-Portable.zip">Télécharger pour Mac</a>
+  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.2.2/Planificateur-SDG-0.2.2-macOS-arm64-Portable.zip">Télécharger pour Mac</a>
   &nbsp;·&nbsp;
   <a href="docs/GUIDE.md">Guide d’utilisation</a>
 </p>
@@ -38,10 +38,12 @@ Aujourd’hui, le planificateur se concentre sur une journée pédagogique à la
 - **Préparer les groupes** à partir des inscriptions et de la taille souhaitée des groupes.
 - **Ajuster les quarts à la minute** par glisser-déposer, redimensionnement ou saisie exacte, avec pauses et temps de préparation.
 - **Vérifier la couverture** et demander une proposition automatique respectant les contraintes et les quarts verrouillés.
-- **Enregistrer et retrouver les horaires** depuis le bouton Dossier : ouverture, duplication, historique et sauvegardes locales.
+- **Enregistrer et retrouver les horaires** depuis l’icône Dossier de la barre latérale : ouverture, duplication, historique et sauvegardes locales.
 - **Imprimer un seul PDF général**, au format lettre paysage, avec huit éducateurs maximum par page et une couleur stable par groupe. Les interruptions restent vides.
 
-L’interface se consacre aux horaires. Chaque date conserve ses propres inscriptions, affectations, heures et versions.
+L’interface se consacre aux horaires. Chaque date conserve ses propres inscriptions, affectations, heures et versions. Le dossier de la barre latérale regroupe les fichiers et les sauvegardes ; les profils se remplissent dans une seule fenêtre claire, sans onglets.
+
+[Voir le formulaire d’ajout d’un profil](docs/ajouter-educateur.png)
 
 ## Une journée, des règles explicites
 
@@ -76,7 +78,7 @@ Le PDF reprend le modèle de journée pédagogique fourni : titre à gauche, dat
 
 **Respecter les heures réelles.** Les besoins dépassaient une simple grille par heure : il fallait conserver chaque minute et distinguer les buffers, les pauses, le temps payé et la couverture effective des groupes.
 
-**Trouver une interface suffisamment simple.** Le projet a évolué vers une planification quotidienne, un calendrier plus lisible et un menu Dossier centralisé. La taille des textes, les contrastes et les zones cliquables font partie des critères de vérification.
+**Trouver une interface suffisamment simple.** Le projet a évolué vers une planification quotidienne, un calendrier plus lisible et un menu Dossier centralisé. La taille des textes, les contrastes et les zones cliquables font partie des critères de vérification. Les différences de dimensions entre Windows et Mac ont aussi nécessité des formulaires qui adaptent leurs colonnes à la place disponible.
 
 **Livrer sans installation.** Python, Qt et les autres dépendances sont inclus dans les distributions portables. Sur Mac, une difficulté particulière venait d’AppTranslocation, qui peut lancer une copie temporaire en lecture seule. Le démarrage retrouve le dossier d’origine ou permet de le choisir. L’autorisation d’ouverture de macOS reste distincte : la distribution ne possède pas de notarisation Apple.
 

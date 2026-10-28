@@ -2,6 +2,19 @@
 
 Les constructions et les contrôles natifs s’exécutent sur GitHub Actions. Les fichiers à remettre sont les ZIP portables d’une exécution réussie correspondant au code voulu. Une sortie compilée dont le contrôle échoue n’est pas livrée.
 
+## Livraison 0.2.2 — interface épurée et formulaire clair
+
+La [version 0.2.2](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/tag/v0.2.2) utilise le code `2319f51fb39dd6358a20a8b802650f71bae89e07`. Les deux constructions ont réussi **180 tests chacune**, plus les six sous-cas de pagination et les contrôles du programme compilé et du ZIP extrait :
+
+- [Windows — tests et ZIP portable vérifiés](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40629432220).
+- [Mac — tests et ZIP portable vérifiés](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40629432248).
+
+Le dossier est accessible dans la barre latérale, avec ses commandes réelles d’ouverture, d’enregistrement, de duplication, d’historique et de sauvegarde. Les boutons Aujourd’hui sont retirés du planificateur et du sélecteur ; le repère de la date actuelle reste visible dans la grille.
+
+Le formulaire des profils tient dans une seule fenêtre, sans onglets. Les tests vérifient les champs à 16 px, le contraste avec un parent en thème sombre, la présence de toutes les sections dans le grand format et le passage à une colonne avec défilement vertical dans une fenêtre de 540 × 600. Un profil complet est créé depuis le bouton de l’équipe, enregistré puis relu dans SQLite, avec son rang, ses heures exactes, sa couleur, ses disponibilités, ses absences et ses préférences.
+
+Les vérifications ont permis de corriger des différences de dimensions natives et un problème de basculement des colonnes sur Windows. La mise en page utilise la largeur de la fenêtre visible, afin que les dimensions minimales du contenu ne bloquent pas son adaptation. Les captures publiées proviennent du code réel rendu sur le poste Linux avec l’adaptateur Qt5 temporaire, non livré ; les contrôles Qt6 sont ceux des deux constructions natives ci-dessus.
+
 ## Livraison 0.2.1 — sélecteur lisible et horaires uniquement
 
 La [version 0.2.1](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/tag/v0.2.1) est publiée à la demande explicite du responsable du projet. Les constructions du code `61aeb0f4664ac55e880857ac90362e811bb4c5b4` ont réussi **176 tests chacune**, plus les six sous-cas de pagination et les contrôles des ZIP extraits :
