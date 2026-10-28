@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
     QDialogButtonBox, QFileDialog, QFormLayout, QFrame, QHBoxLayout,
     QInputDialog, QLabel, QLineEdit, QListWidget, QListWidgetItem, QMainWindow,
     QMenu, QMessageBox, QProgressBar, QProgressDialog, QPushButton,
-    QSlider, QSpinBox, QSplitter, QVBoxLayout, QWidget,
+    QSlider, QSpinBox, QSplitter, QStackedWidget, QVBoxLayout, QWidget,
 )
 
 from ..branding import DISPLAY_NAME, SHORT_NAME
@@ -35,7 +35,7 @@ from .date_field import DateField
 from .flow_layout import FlowLayout
 from .theme import DATE_STYLE
 from .inline_name import InlineDayName
-from .enrolment import EnrolmentDialog
+from .enrolment import EnrolmentPanel
 from .visuals import icon, logo_icon, logo_pixmap
 from .forms import EducatorDialog, GroupDialog, RoomDialog, ShiftDialog, ActivityDialog, SettingsDialog, integer, note
 
@@ -147,16 +147,17 @@ class MainWindow(QMainWindow):
         self.navigation_rail = rail
         rail.setFixedWidth(72)
         rail_layout = QVBoxLayout(rail)
+        self.rail_layout = rail_layout
         rail_layout.setContentsMargins(10, 28, 10, 20)
         rail_layout.setSpacing(18)
         mark = QLabel()
         mark.setPixmap(logo_pixmap(38))
         mark.setAlignment(Qt.AlignmentFlag.AlignCenter)
         rail_layout.addWidget(mark)
-        rail_layout.addSpacing(35)
+        rail_layout.addSpacing(12)
         for name, tip, callback in (
                 ("calendar", "Planification de la journée", lambda: self.calendar.setFocus()),
-                ("users", "Afficher ou masquer l'équipe", self.toggle_sidebar)):
+                ("users", "Afficher l’équipe", lambda: self.show_management("team"))):
             button = self._button("", callback, tip)
             button.setObjectName("railButton")
             button.setProperty("active", name == "calendar")
@@ -270,7 +271,13 @@ class MainWindow(QMainWindow):
         self.sidebar = QFrame()
         self.sidebar.setObjectName("sidebar")
         self.sidebar.setMinimumWidth(250)
-        sidebar = QVBoxLayout(self.sidebar)
+        side_outer = QVBoxLayout(self.sidebar)
+        side_outer.setContentsMargins(0,0,0,0)
+        self.management_stack = QStackedWidget()
+        side_outer.addWidget(self.management_stack)
+        self.team_page = QWidget()
+        self.management_stack.addWidget(self.team_page)
+        sidebar = QVBoxLayout(self.team_page)
         sidebar.setContentsMargins(0, 0, 5, 0)
         sidebar.setSpacing(10)
         side_head = QHBoxLayout()
@@ -338,7 +345,12 @@ class MainWindow(QMainWindow):
         self.calendar_summary.setObjectName("muted")
         self.calendar_summary.setWordWrap(True)
         self.calendar_summary.setContentsMargins(14, 2, 14, 10)
-        self.enrolment_button = self._button("Inscriptions", self.enrolment, "Répartir les inscriptions d'une journée pédagogique", icon_name="users")
+        self.enrolment_button = self._button("", self.enrolment, "Inscriptions de la journée", icon_name="edit")
+        self.enrolment_button.setObjectName("railButton")
+        self.enrolment_button.setIcon(icon("edit", color="#D5E3DD"))
+        self.enrolment_button.setIconSize(QSize(22,22))
+        self.enrolment_button.setFixedSize(50,50)
+        rail_layout.insertWidget(rail_layout.count()-2,self.enrolment_button)
         segmented = QFrame()
         segmented.setObjectName("segmentedControl")
         modes = QHBoxLayout(segmented)
@@ -356,7 +368,6 @@ class MainWindow(QMainWindow):
         self.add_button.setObjectName("menuButton")
         self.add_menu = QMenu(self)
         self.add_button.setParent(self._hidden_controls)
-        day_row.addWidget(self.enrolment_button)
         self.top_alert_button = self._button("Vérifier l'horaire", self.verify, "Vérifier la couverture, les relèves et les heures", icon_name="check")
         self.top_alert_button.setObjectName("subtleButton")
         self.verify_button = self.top_alert_button
@@ -432,6 +443,7 @@ class MainWindow(QMainWindow):
         alert_heading = QHBoxLayout()
         self.alert_heading_label = QLabel("Points à vérifier")
         self.alert_heading_label.setObjectName("alertTitle")
+        self.alert_heading_label.setStyleSheet("font-size:16px;font-weight:600;")
         alert_heading.addWidget(self.alert_heading_label)
         alert_heading.addStretch()
         self.close_alerts_button = self._button("Fermer", self.close_alerts, "Fermer les détails des alertes")
@@ -443,13 +455,18 @@ class MainWindow(QMainWindow):
         self.alert_list.setMaximumHeight(16777215)
         self.alert_list.setMinimumHeight(54)
         self.alert_list.setWordWrap(True)
+        self.alert_list.setStyleSheet("font-size:14px;")
         self.alert_list.itemClicked.connect(self.navigate_issue)
         self.alert_list.itemActivated.connect(self.navigate_issue)
         alert_layout.addWidget(self.alert_list)
         self.alert_panel.setMinimumWidth(220)
         self.alert_panel.setMaximumWidth(320)
-        self.schedule_panes.addWidget(self.alert_panel)
-        self.alert_panel.hide()
+        self.management_stack.addWidget(self.alert_panel)
+        self.enrolment_panel = EnrolmentPanel(self.week)
+        self.enrolment_panel.accepted.connect(self.apply_enrolment)
+        self.enrolment_panel.rejected.connect(lambda: self.show_management("team"))
+        self.management_stack.addWidget(self.enrolment_panel)
+        self.management_stack.setCurrentWidget(self.team_page)
         self.splitter.addWidget(right)
         self.splitter.setSizes([265, 1100])
 
@@ -572,7 +589,7 @@ class MainWindow(QMainWindow):
     def close_alerts(self):
         self.statusBar().clearMessage()
         self.alert_toggle.setChecked(False)
-        self.alert_panel.hide()
+        self.show_management("team")
 
     def refresh(self):
         self._updating = True
@@ -605,7 +622,7 @@ class MainWindow(QMainWindow):
         self.refresh_alerts()
         self.undo_button.setEnabled(bool(self._undo) and not self.read_only)
         self.redo_button.setEnabled(bool(self._redo) and not self.read_only)
-        for widget in (self.generate_button, self.add_educator_button, self.add_shift_button, self.add_activity_button, self.name_day_button, self.enrolment_button, self.settings_button):
+        for widget in (self.generate_button, self.add_educator_button, self.add_shift_button, self.add_activity_button, self.name_day_button, self.settings_button):
             widget.setEnabled(not self.read_only)
         self.status_combo.setEnabled(not self.read_only)
         self.save_button.setEnabled(self._history_version is None and self._worker is None)
@@ -619,7 +636,10 @@ class MainWindow(QMainWindow):
             banner = "Version publiée conservée dans l'historique. Toute modification créera un nouveau brouillon."
         self.version_banner.setText(banner)
         self.version_banner.setVisible(bool(banner))
-        self.enrolment_button.setText("Inscriptions")
+        if getattr(self,"_enrolment_key",None) != self.week.storage_key:
+            self.enrolment_panel.load_week(self.week)
+            self._enrolment_key = self.week.storage_key
+        self.enrolment_panel.save_button.setEnabled(not self.read_only)
         self.add_button.setEnabled(not self.read_only)
         self._sync_menu_actions()
         self._updating = False
@@ -932,7 +952,7 @@ class MainWindow(QMainWindow):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         if hasattr(self, "sidebar"):
-            if self.width() < 960 and not self._sidebar_manual_hidden:
+            if self.width() < 960 and not self._sidebar_manual_hidden and self.management_stack.currentWidget() is self.team_page:
                 self.sidebar.hide()
                 self._auto_hidden_sidebar = True
             elif self.width() >= 960 and self._auto_hidden_sidebar:
@@ -940,6 +960,8 @@ class MainWindow(QMainWindow):
                 self._auto_hidden_sidebar = False
         if hasattr(self,"workspace_layout") and hasattr(self,"day_controls_layout"):
             compact = self.height() < 800
+            self.rail_layout.setSpacing(8 if compact else 18)
+            self.rail_layout.setContentsMargins(10,12 if compact else 28,10,12 if compact else 20)
             narrow = self.width() < 1000
             self.workspace_layout.setSpacing(6 if compact else 14)
             self.workspace_layout.setContentsMargins(18 if compact else 28,8 if compact else 20,18 if compact else 28,8 if compact else 10)
@@ -967,21 +989,28 @@ class MainWindow(QMainWindow):
         self.coverage_toggle.setAccessibleName(action+" la bande de ratio")
         self.coverage_toggle.setToolTip(action+" la bande de ratio. Elle n’est jamais incluse dans le PDF.")
 
+    def show_management(self, page):
+        target = {"team": self.team_page, "enrolment": self.enrolment_panel,
+                  "alerts": self.alert_panel}[page]
+        self.management_stack.setCurrentWidget(target)
+        self.sidebar.show()
+        self._sidebar_manual_hidden = False
+        self._auto_hidden_sidebar = False
+        self.alert_toggle.setChecked(page == "alerts")
+        for button, active in ((self.enrolment_button,page == "enrolment"),
+                               (self.top_alert_button,page == "alerts")):
+            button.setProperty("active", active)
+            button.style().unpolish(button)
+            button.style().polish(button)
+        {"team": self.educator_search, "enrolment": self.enrolment_panel.count,
+         "alerts": self.alert_list}[page].setFocus()
+
     def toggle_alerts(self):
-        self.alert_panel.setVisible(self.alert_toggle.isChecked())
-        self._position_alerts()
+        self.show_management("alerts" if self.alert_toggle.isChecked() else "team")
 
     def _position_alerts(self):
-        narrow = self.width() < 1000
-        self.schedule_panes.setOrientation(Qt.Orientation.Vertical if narrow else Qt.Orientation.Horizontal)
-        self.alert_panel.setMinimumWidth(0 if narrow else 220)
-        self.alert_panel.setMaximumWidth(16777215 if narrow else 320)
-        self.alert_list.setMaximumHeight(118 if narrow else 16777215)
-        if self.alert_panel.isVisible():
-            if narrow:
-                self.schedule_panes.setSizes([max(250,self.schedule_panes.height()-150),150])
-            else:
-                self.schedule_panes.setSizes([max(330,self.schedule_panes.width()-288),280])
+        # Management pages share the left panel; they never shrink the calendar.
+        pass
 
     def fit_day(self):
         first = self.calendar.start_minute
@@ -1017,9 +1046,7 @@ class MainWindow(QMainWindow):
 
     def verify(self):
         self.refresh()
-        self.alert_toggle.setChecked(True)
-        self.alert_panel.show()
-        self._position_alerts()
+        self.show_management("alerts")
         self.alert_list.show()
         errors = sum(item.severity == "error" for item in self.issues)
         self.statusBar().showMessage(f"Vérification terminée : {errors} erreur(s) bloquante(s), {len(self.issues) - errors} avertissement(s).", 8000)
@@ -1055,12 +1082,16 @@ class MainWindow(QMainWindow):
         self.commit(lambda week: week.day_names.__setitem__(self.day, name.strip()))
 
     def enrolment(self):
+        self.enrolment_panel.load_week(self.week)
+        self.enrolment_panel.save_button.setEnabled(not self.read_only)
+        self.show_management("enrolment")
+
+    def apply_enrolment(self):
         if not self._can_edit():
             return
-        dialog = EnrolmentDialog(self.week, self)
-        if dialog.exec() == QDialog.DialogCode.Accepted:
-            from ..planning import plan_service_day
-            self.commit(lambda week: plan_service_day(week, dialog.count.value()))
+        from ..planning import plan_service_day
+        self.commit(lambda week: plan_service_day(week, self.enrolment_panel.count.value()))
+        self.statusBar().showMessage("Inscriptions enregistrées.", 4000)
 
     def edit_educator(self, identifier=None):
         if not self._can_edit():

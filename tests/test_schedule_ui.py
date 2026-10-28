@@ -239,3 +239,37 @@ def test_resize_handles_work_without_hover_and_keyboard_resizes_exact_minutes(pl
     QTest.keyClick(canvas, Qt.Key.Key_Down, Qt.KeyboardModifier.ShiftModifier)
     assert planner.week.shifts[0].end == end+1
     assert "Entrée" in canvas.accessibleDescription()
+
+
+def test_management_pages_replace_team_and_keep_the_calendar_width(planner, qapp):
+    original_width = planner.calendar.width()
+    assert planner.management_stack.currentWidget() is planner.team_page
+    planner.enrolment_button.click()
+    qapp.processEvents()
+    assert planner.management_stack.currentWidget() is planner.enrolment_panel
+    assert not planner.educator_list.isVisible()
+    assert planner.calendar.width() == original_width
+    planner.enrolment_panel.count.setValue(41)
+    planner.enrolment_panel.save_button.click()
+    assert sum(p.students for g in planner.week.groups for p in g.periods) == 41
+    planner.top_alert_button.click()
+    qapp.processEvents()
+    assert planner.management_stack.currentWidget() is planner.alert_panel
+    assert planner.calendar.width() == original_width
+    assert not planner.enrolment_panel.isVisible()
+    planner.close_alerts_button.click()
+    assert planner.management_stack.currentWidget() is planner.team_page
+    assert planner.educator_list.isVisible()
+    assert planner.alert_badge.text() != "0"
+
+
+def test_hidden_dinner_still_removes_coverage_and_unpaid_minutes(planner, qapp):
+    from gardeplan.coverage import coverage_timeline
+    from gardeplan.models import paid_minutes
+    planner.commit(lambda plan: plan.shifts[0].breaks.append(Break(720,750,False,"dinner")))
+    qapp.processEvents()
+    shift = planner.week.shifts[0]
+    block = next(b for b in planner.calendar.canvas.blocks if b.value.id == shift.id)
+    assert "Dîner" not in planner.calendar.canvas._tip(block)
+    assert paid_minutes(shift) == 615
+    assert next(p for p in coverage_timeline(planner.week) if p.start == 720).actual == 1
