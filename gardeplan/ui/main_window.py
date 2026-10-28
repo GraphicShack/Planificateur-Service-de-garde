@@ -158,6 +158,7 @@ class MainWindow(QMainWindow):
         mark.setAlignment(Qt.AlignmentFlag.AlignCenter)
         rail_layout.addWidget(mark)
         rail_layout.addSpacing(12)
+        self.rail_buttons = {}
         for name, tip, callback in (
                 ("calendar", "Planification de la journée", lambda: self.calendar.setFocus()),
                 ("users", "Afficher l’équipe", lambda: self.show_management("team"))):
@@ -168,6 +169,7 @@ class MainWindow(QMainWindow):
             button.setIconSize(QSize(22, 22))
             button.setFixedSize(50, 50)
             rail_layout.addWidget(button)
+            self.rail_buttons[name] = button
         self.folder_button = self._button("", lambda: None,
             "Dossier : enregistrer, ouvrir et sauvegarder les horaires", icon_name="folder")
         self.folder_button.setObjectName("railButton")
@@ -349,9 +351,9 @@ class MainWindow(QMainWindow):
         self.calendar_summary.setObjectName("muted")
         self.calendar_summary.setWordWrap(True)
         self.calendar_summary.setContentsMargins(14, 2, 14, 10)
-        self.enrolment_button = self._button("", self.enrolment, "Inscriptions de la journée", icon_name="edit")
+        self.enrolment_button = self._button("", self.enrolment, "Inscriptions de la journée", icon_name="clipboard")
         self.enrolment_button.setObjectName("railButton")
-        self.enrolment_button.setIcon(icon("edit", color="#D5E3DD"))
+        self.enrolment_button.setIcon(icon("clipboard", color="#D5E3DD"))
         self.enrolment_button.setIconSize(QSize(22,22))
         self.enrolment_button.setFixedSize(50,50)
         rail_layout.insertWidget(rail_layout.count()-2,self.enrolment_button)
@@ -488,6 +490,8 @@ class MainWindow(QMainWindow):
         self.week_status_label.setObjectName("muted")
         self.statusBar().hide()
         self.statusBar().messageChanged.connect(lambda message: self.statusBar().setVisible(bool(message)))
+        rail_layout.removeWidget(self.folder_button)
+        rail_layout.insertWidget(rail_layout.indexOf(self.more_button),self.folder_button)
         self._build_command_menus()
 
     def _add_menu_action(self, menu, key, text, callback, shortcut=None):

@@ -8,6 +8,7 @@ from PySide6.QtSvg import QSvgRenderer
 LOGO_PATH = Path(__file__).resolve().parent.parent / "assets" / "logo.svg"
 
 _PATHS = {
+    "clipboard": '<rect x="5" y="4" width="14" height="18" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M9 11h6m-6 4h6m-6 4h4"/>',
     "calendar": '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 10h18m-13 4h2m4 0h2m-8 4h2"/>',
     "chevron-left": '<path d="m14 6-6 6 6 6"/>',
     "chevron-right": '<path d="m10 6 6 6-6 6"/>',

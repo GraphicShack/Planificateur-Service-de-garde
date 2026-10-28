@@ -356,3 +356,13 @@ def test_old_drafts_adopt_new_rules_but_historical_versions_stay_frozen(planner)
     legacy.status='archived'
     planner._load(legacy,version=123)
     assert planner.week.settings.staffing_policy==1 and not planner.dirty
+
+
+def test_sidebar_groups_planning_tools_above_file_and_settings(planner):
+    from PySide6.QtWidgets import QPushButton
+    row = planner.rail_layout
+    buttons = [row.itemAt(i).widget() for i in range(row.count()) if isinstance(row.itemAt(i).widget(),QPushButton)]
+    assert buttons == [planner.rail_buttons['calendar'],planner.rail_buttons['users'],
+                       planner.enrolment_button,planner.coverage_toggle,planner.top_alert_button,
+                       planner.folder_button,planner.more_button]
+    assert all(button.width()>=44 and button.height()>=44 for button in buttons)
