@@ -49,6 +49,14 @@ class CoverageTests(unittest.TestCase):
         plan.shifts[1].educator_id = "0"
         self.assertEqual(coverage_timeline(plan)[0].actual, 1)
 
+    def test_plain_language_alert_preserves_the_exact_gap(self):
+        from gardeplan.validation import Issue
+        from gardeplan.alerts import alert_text
+        plan = covered_day()
+        plan.shifts[0].breaks = [Break(720, 795)]
+        label = alert_text(plan, Issue("error", "coverage", "", 0, 720, 795, "g"))
+        self.assertEqual(label, "12 h 00 – 13 h 15 : 1 éducatrice au lieu de 2")
+
 
 if __name__ == "__main__":
     unittest.main()

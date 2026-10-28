@@ -418,6 +418,13 @@ class _Canvas(QWidget):
             p.setPen(QColor("#83907e"))
             p.drawText(QRectF(30,108,self.width()-60,90),Qt.TextFlag.TextWordWrap,
                        "Créez vos groupes avec Inscriptions, puis glissez une éducatrice dans le calendrier.")
+        if c.highlighted_interval and c.highlighted_interval[0] == c.day:
+            _, start, end = c.highlighted_interval
+            area = QRectF(2, c.y(start), self.width()-4, max(3, (end-start)*c.scale))
+            p.fillRect(area, QColor(33, 79, 64, 22))
+            p.setBrush(Qt.BrushStyle.NoBrush)
+            p.setPen(QPen(QColor("#173F32"), 2, Qt.PenStyle.DashLine))
+            p.drawRect(area)
 
     def _hit(self, pos):
         return next((b for b in reversed(self.blocks) if b.rect.contains(pos)), None)
@@ -610,6 +617,7 @@ class CalendarWidget(QWidget):
         self.mode = "Jour"
         self.read_only = False
         self.issues = []
+        self.highlighted_interval = None
         self.snap_minutes = 1
         self.scale = 1.65
         self.start_minute,self.end_minute = 360,1140
@@ -637,7 +645,7 @@ class CalendarWidget(QWidget):
         self.scroll.setWidget(self.canvas)
         self.gutter = _Gutter(self)
         self.coverage_band = CoverageBand()
-        self.coverage_band.interval_selected.connect(lambda a, b: self.scroll_to(a))
+        self.coverage_band.interval_selected.connect(lambda a, b: self.highlight_interval(self.day, a, b))
         layout.addWidget(corner,0,0)
         layout.addWidget(self.header_scroll,0,1)
         layout.addWidget(self.coverage_band,1,0,1,2)
@@ -730,6 +738,12 @@ class CalendarWidget(QWidget):
 
     def scroll_to(self,minute):
         self.scroll.verticalScrollBar().setValue(int(self.y(minute)))
+
+    def highlight_interval(self, day, start, end):
+        self.highlighted_interval = (day, start, end)
+        self.scroll_to(max(self.start_minute, start-20))
+        self.canvas.setAccessibleDescription(f"Plage sélectionnée : {format_time(start)} à {format_time(end)}. Entrée sur un quart pour le modifier.")
+        self.canvas.update()
 
     def _layout_calendar(self):
         n=max(1,len(self.columns()))

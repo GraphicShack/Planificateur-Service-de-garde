@@ -24,6 +24,7 @@ from ..models import (
 )
 from ..daily import day_plan
 from ..validation import validate
+from ..alerts import alert_text
 from ..optimizer import generate
 from ..pdf import export_general, export_individual, export_combined, export_all_individual
 from .calendar import CalendarWidget, EDUCATOR_MIME
@@ -380,6 +381,7 @@ class MainWindow(QMainWindow):
         self.alert_list.setMinimumHeight(54)
         self.alert_list.setWordWrap(True)
         self.alert_list.itemClicked.connect(self.navigate_issue)
+        self.alert_list.itemActivated.connect(self.navigate_issue)
         alert_layout.addWidget(self.alert_list)
         right_layout.addWidget(self.alert_panel)
         self.alert_panel.hide()
@@ -657,19 +659,19 @@ class MainWindow(QMainWindow):
         errors = sum(issue.severity == "error" for issue in self.issues)
         warnings = len(self.issues) - errors
         self.alert_toggle.setText(f"{errors} erreur{'s' if errors != 1 else ''} · {warnings} avertissement{'s' if warnings != 1 else ''}")
-        self.top_alert_button.setText(f"Vérifier ({len(self.issues)})" if self.issues else "Vérifier l'horaire")
+        self.top_alert_button.setText(f"Vérifier ({len(self.issues)})")
         self.top_alert_button.setIcon(icon("alert" if self.issues else "check", size=16, color="#a26828" if self.issues else "#49765c"))
         self.top_alert_button.setToolTip(f"{errors} erreur(s) bloquante(s) · {warnings} avertissement(s). Cliquer pour voir les détails.")
         ready = bool(self.week.educators and any(group.periods for group in self.week.groups))
-        self.alert_heading_label.setText("Points à vérifier" if self.issues else ("Aucune erreur détectée" if ready else "Préparez votre journée"))
+        self.alert_heading_label.setText("Points à vérifier" if self.issues else "Aucune alerte")
         for issue in sorted(self.issues, key=lambda item: (item.severity != "error", item.day if item.day is not None else 9, item.start or 0)):
-            item = QListWidgetItem(("● " if issue.severity == "error" else "△ ") + issue.message)
+            item = QListWidgetItem(("Erreur — " if issue.severity == "error" else "Attention — ") + alert_text(self.week, issue))
             item.setForeground(QColor("#a33c32" if issue.severity == "error" else "#8a651a"))
             item.setData(Qt.ItemDataRole.UserRole, issue)
             item.setToolTip(issue.suggestion or issue.message)
             self.alert_list.addItem(item)
         if not self.issues:
-            self.alert_list.addItem("Aucune erreur détectée. La couverture et les heures ont été vérifiées." if ready else "Ajoutez vos éducatrices, puis créez vos groupes ou saisissez les inscriptions de la journée.")
+            self.alert_list.addItem("Aucune alerte")
 
     def _can_edit(self):
         if self.read_only:
@@ -869,7 +871,7 @@ class MainWindow(QMainWindow):
         if issue is not None and issue.day is not None:
             self.expand_day(issue.day)
             if issue.start is not None:
-                self.calendar.scroll_to(max(0, issue.start - 20))
+                self.calendar.highlight_interval(issue.day, issue.start, issue.end or issue.start+1)
         if issue is not None and issue.suggestion:
             self.statusBar().showMessage(issue.suggestion, 12000)
 
