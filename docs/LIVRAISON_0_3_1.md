@@ -80,6 +80,7 @@ Aucun service distant ni compte utilisateur n’est ajouté. Il n’y a pas de m
 - `tests/test_home_data.py`
 - `tests/test_home_ui.py`
 - `tests/test_main_window.py`
+- `tests/test_portable_startup.py`
 - `tests/test_schedule_ui.py`
 - `tests/test_staff_layout.py`
 - `tests/test_staffing_policy.py`

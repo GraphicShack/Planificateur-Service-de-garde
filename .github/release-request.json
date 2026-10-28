@@ -1,6 +1,6 @@
 {
-  "version": "0.3.0",
-  "commit": "8c1863d5396106b97be42877ffe1fe121b81579c",
+  "version": "0.3.1",
+  "commit": "a7456ec72d6705f8d9643f2216a5894460278c8b",
   "approved": true,
-  "authorization": "Autorisation explicite dans cette conversation : « fait tout les changement et ensuite push et release le programme ». Les corrections de grille et la fermeture du ratio sont incluses ; les constructions Windows et Mac du SHA exact ont réussi avant cette demande de publication."
+  "authorization": "Autorisation explicite : « Montre moi un aperçu une fois ça fait et ensuite release » puis « publie now ». L’aperçu réel de l’accueil a été montré. La publication attend les deux constructions natives réussies du SHA exact, avec leurs contrôles après extraction et les notes issues du CHANGELOG."
 }
