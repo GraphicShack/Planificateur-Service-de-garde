@@ -197,6 +197,17 @@ def _requirements(week: Week) -> list[str]:
                 result.append(f"Jour {day + 1}, {format_time(a)} à {format_time(b)} : {needed} éducatrices requises, seulement {available} disponibles.")
                 if len(result) >= 12:
                     return result
+    if week.planning_date and week.settings.staffing_policy >= 3:
+        points=sorted({t for g in week.groups for p in g.periods for t in (p.start,p.end)}|set(boundaries(week)))
+        needed_minutes=0
+        for a,b in zip(points,points[1:]):
+            needs=[group_requirement(week,a,max(p.students for p in g.periods if p.day==0 and p.start<=a<p.end),g.ratio,g.min_educators)
+                   for g in week.groups if any(p.day==0 and p.start<=a<p.end for p in g.periods)]
+            if needs:needed_minutes+=(b-a)*max(minimum_presence(week,a),sum(needs))
+        capacity=sum(min(e.max_minutes,daily_limit(week),sum(b-a for a,b in _windows(e,0))) for e in active)
+        if needed_minutes>capacity:
+            from .models import format_duration
+            result.append(f"La couverture des enfants exige au moins {format_duration(needed_minutes)}. L’équipe dispose d’au plus {format_duration(capacity)} avec le plafond de 8 h 00 par personne et les disponibilités. Ajoutez du personnel ou corrigez les disponibilités ; aucun horaire invalide ne sera créé.")
     guaranteed = sum(e.guaranteed_minutes for e in active)
     maximum = sum(e.max_minutes for e in active)
     if guaranteed > maximum:
@@ -422,12 +433,14 @@ def generate(week: Week, time_limit: float = 20) -> GenerationResult:
             _cover(model, candidates, activity.day, needs, group.id, set(activity.responsible_ids))
     _handovers(model, candidates, snapshot)
     objective = []
+    total_variables = {}
     ranked = sorted((e for e in snapshot.educators if e.active), key=lambda e: (e.seniority, e.name.casefold(), e.id))
     priorities = {e.id: len(ranked) - idx for idx, e in enumerate(ranked)}
     for educator in snapshot.educators:
         choices = by_person[educator.id]
         total = model.new_int_var(0, max(0, educator.max_minutes), f"minutes_{educator.id}")
         model.add(total == sum(c.paid * c.variable for c in choices))
+        total_variables[educator.id] = total
         model.add(total >= educator.guaranteed_minutes if educator.active else total == 0)
         bound = max(educator.max_minutes, educator.target_minutes, 1)
         under = model.new_int_var(0, bound, f"manque_{educator.id}")
@@ -449,7 +462,13 @@ def generate(week: Week, time_limit: float = 20) -> GenerationResult:
     solver.parameters.max_time_in_seconds = max(0.1, min(float(time_limit), 120.0))
     solver.parameters.num_search_workers = 4
     solver.parameters.random_seed = 17
-    status = solver.solve(model)
+    daily_priorities = bool(snapshot.planning_date and settings.staffing_policy >= 3)
+    priority_complete = True
+    if daily_priorities:
+        from .optimizer_priorities import solve_daily
+        solver,status,priority_complete,completed_ranks = solve_daily(model,candidates,by_person,total_variables,snapshot,time_limit)
+    else:
+        status = solver.solve(model)
     if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
         if status == cp_model.INFEASIBLE:
             return GenerationResult(False, None,
@@ -484,9 +503,17 @@ def generate(week: Week, time_limit: float = 20) -> GenerationResult:
         return GenerationResult(False, None,
             "Le solveur a trouvé des quarts, mais la vérification complète détecte encore des erreurs. La proposition n'a pas été appliquée.",
             "validation_failed", [issue.message for issue in blocking[:15]])
-    label = "optimale dans les quarts candidats" if status == cp_model.OPTIMAL else "valide, optimisation interrompue au délai choisi"
+    label = "optimale dans les quarts candidats" if status == cp_model.OPTIMAL and priority_complete else "valide, optimisation interrompue au délai choisi"
+    notes = ["La recherche utilise des bornes métier exactes et des départs intermédiaires espacés d'une heure.",
+             "Les quarts non verrouillés seront remplacés uniquement après votre confirmation."]
+    if daily_priorities:
+        notes.append("Priorités : attribuer des heures au plus de personnes possible, limiter les heures inutiles, puis privilégier les rangs 1, 2, etc. : davantage d’heures, moins de coupures et fin plus tôt.")
+        if not priority_complete:
+            notes.append(f"La recherche a atteint son délai : les préférences ne sont pas toutes prouvées optimales ({completed_ranks} rangs examinés).")
+        scheduled = {s.educator_id for s in proposal.shifts if paid_minutes(s)>0}
+        omitted = [e.name for e in ranked if e.id not in scheduled]
+        if omitted:
+            notes.append("Sans heures dans cette proposition (contraintes ou délai de recherche) : "+", ".join(omitted)+". Vérifiez leurs disponibilités et maximums avant de confirmer.")
     return GenerationResult(True, proposal,
         f"Proposition {label}. Examinez-la avant de l'appliquer; {len(proposal.shifts)} quarts, {len(issues)} avertissements.",
-        "optimal" if status == cp_model.OPTIMAL else "feasible",
-        ["La recherche utilise des bornes métier exactes et des départs intermédiaires espacés d'une heure.",
-         "Les quarts non verrouillés seront remplacés uniquement après votre confirmation."])
+        "optimal" if status == cp_model.OPTIMAL and priority_complete else "feasible", notes)
