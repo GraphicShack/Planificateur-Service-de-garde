@@ -11,12 +11,12 @@ import math
 from typing import Any
 
 from PySide6.QtCore import Qt, QRectF, QSize, Signal, QPointF, QTimer, QEvent
-from PySide6.QtGui import QColor, QFont, QPainter, QPen
+from PySide6.QtGui import QColor, QFont, QFontMetrics, QPainter, QPen
 from PySide6.QtWidgets import (
     QWidget, QScrollArea, QGridLayout, QLabel, QMenu, QToolTip,
 )
 
-from ..models import format_time, format_duration
+from ..models import Educator, format_time, format_duration
 from ..hours import educator_hour_state
 from .coverage_band import CoverageBand
 from .theme import TEXT
@@ -48,6 +48,15 @@ def _pixel_font(size=12, weight=QFont.Weight.Normal):
     font.setPixelSize(max(12, size))
     font.setWeight(weight)
     return font
+
+
+def fitted_name(name, width, font):
+    metrics = QFontMetrics(font)
+    if metrics.horizontalAdvance(name) <= width:
+        return name
+    words = name.split()
+    initials = (words[0][:1]+words[-1][:1]).upper() if len(words) > 1 else name[:2].upper()
+    return initials if metrics.horizontalAdvance(initials) <= width else initials[:1]
 
 
 def shift_palette(educator):
@@ -219,20 +228,26 @@ class _Canvas(QWidget):
             available = c.column_width - 16
             activity_width = max(75, available * .30) if activities else 0
             work_width = available - activity_width - (5 if activities else 0)
-            lane_ends: list[int] = []
-            assigned = []
-            for s in sorted(shifts, key=lambda s: (s.start, s.end, s.id)):
-                lane = next((i for i, end in enumerate(lane_ends) if end <= s.start), len(lane_ends))
-                if lane == len(lane_ends):
-                    lane_ends.append(s.end)
-                else:
-                    lane_ends[lane] = s.end
-                assigned.append((s, lane))
-            lane_count = max(1, len(lane_ends))
+            if c.single_service:
+                people = c.staff_lanes()
+                lanes = {person.id: index for index, person in enumerate(people)}
+                assigned = [(s, lanes[s.educator_id]) for s in shifts if s.educator_id in lanes]
+                lane_count = max(1, len(people))
+            else:
+                lane_ends: list[int] = []
+                assigned = []
+                for s in sorted(shifts, key=lambda s: (s.start, s.end, s.id)):
+                    lane = next((i for i, end in enumerate(lane_ends) if end <= s.start), len(lane_ends))
+                    if lane == len(lane_ends):
+                        lane_ends.append(s.end)
+                    else:
+                        lane_ends[lane] = s.end
+                    assigned.append((s, lane))
+                lane_count = max(1, len(lane_ends))
             for s, lane in assigned:
                 width = work_width / lane_count
                 rect = QRectF(left + lane * width, c.y(s.start) + 1,
-                              max(8, width - 4), max(2, (s.end - s.start) * c.scale - 2))
+                              max(2 if c.single_service else 8, width - 4), max(2, (s.end - s.start) * c.scale - 2))
                 self.blocks.append(_Block("shift", s, rect, column, lane, lane_count))
             # Activities occupy independent lanes, distinct from educator work.
             activity_ends: list[int] = []
@@ -321,6 +336,17 @@ class _Canvas(QWidget):
         for i in range(n + 1):
             p.drawLine(QPointF(i*c.column_width, bounds.top()),
                        QPointF(i*c.column_width, bounds.bottom()))
+        if c.single_service and c.week:
+            people = c.staff_lanes()
+            lane_width = (c.column_width-16)/max(1,len(people))
+            p.setFont(_pixel_font(14, QFont.Weight.DemiBold))
+            for index, person in enumerate(people):
+                x = 8+index*lane_width
+                p.setPen(QColor("#DFE5E1"))
+                p.drawLine(QPointF(x,bounds.top()),QPointF(x,bounds.bottom()))
+                p.setPen(QColor(TEXT))
+                name = fitted_name(person.name, max(1,lane_width-8), p.font())
+                p.drawText(QRectF(x+4,8,max(1,lane_width-8),22),Qt.AlignmentFlag.AlignCenter,name)
         educators = {e.id:e for e in c.week.educators} if c.week else {}
         groups = {g.id:g for g in c.week.groups} if c.week else {}
         rooms = {r.id:r for r in c.week.rooms} if c.week else {}
@@ -404,6 +430,8 @@ class _Canvas(QWidget):
                 title = "Verrouillé · " + title
             text_width=max(0,int(rect.width()-padding-5))
             title=p.fontMetrics().elidedText(title,Qt.TextElideMode.ElideRight,text_width)
+            if c.single_service and educator:
+                title = fitted_name(educator.name, text_width, p.font())
             p.drawText(QRectF(rect.left()+padding,rect.top()+9+content_offset,text_width,20),
                        Qt.AlignmentFlag.AlignVCenter,title)
             if rect.height() >= 44:
@@ -576,7 +604,10 @@ class _Canvas(QWidget):
                            if c.mode == "Jour" and not self.calendar.read_only and not getattr(block.value,"locked",False)
                            else Qt.CursorShape.PointingHandCursor)
         else:
-            self.setToolTip("")
+            people = c.staff_lanes() if c.single_service and c.week else []
+            lane_width = (c.column_width-16)/max(1,len(people))
+            index = int((event.position().x()-8)/lane_width) if lane_width > 0 else -1
+            self.setToolTip(people[index].name if 0 <= index < len(people) else "")
             self.setCursor(Qt.CursorShape.ArrowCursor)
 
     def leaveEvent(self, event):
@@ -792,6 +823,15 @@ class CalendarWidget(QWidget):
     def group_id(self, column=0):
         return self.week.groups[0 if self.single_service else column].id if self.week.groups else ""
 
+    def staff_lanes(self):
+        assigned = {s.educator_id for s in self.week.shifts if s.day == self.day}
+        known = {e.id for e in self.week.educators}
+        people = [e for e in self.week.educators if e.active or e.id in assigned]
+        people.extend(Educator(identifier,"Éducatrice manquante",seniority=12,active=False)
+                      for identifier in sorted(assigned-known))
+        return sorted(people,
+                      key=lambda e: (not e.active, e.seniority, e.name.casefold()))
+
     def y(self,minute):
         return (minute-self.start_minute)*self.scale
 
@@ -866,7 +906,8 @@ class CalendarWidget(QWidget):
                     count += change
                     maximum = max(maximum, count)
                 minimum = max(minimum, maximum*156+16)
-        self.column_width=max(minimum,self.scroll.viewport().width()/n)
+        self.column_width=max(1,self.scroll.viewport().width()) if self.single_service else max(minimum,self.scroll.viewport().width()/n)
+        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff if self.single_service else Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.canvas.resize(self.canvas.sizeHint())
         # The header has no vertical scrollbar. Its trailing blank area makes
         # its horizontal scroll range match the body's, even at the far right.
