@@ -112,3 +112,20 @@ Les boutons **Annuler** et **Rétablir** conservent cinquante actions. Les racco
 Le bouton **+** à côté de « L’équipe » ouvre un formulaire clair, sans onglets. Le profil, le rang d’ancienneté, les heures, les disponibilités, les absences, les notes se remplissent dans une seule fenêtre. Une couleur distincte et le premier rang libre sont proposés dès la création. Les rangs vont de 1 à 11, peuvent rester non consécutifs et ne peuvent pas être attribués à deux profils. Les objectifs non définis sont vides. Les heures garanties sont conservées car la génération les applique comme minimum obligatoire.
 
 Sur un grand écran, les sections apparaissent en deux colonnes. Sur un petit écran, elles s’empilent avec un défilement vertical ; les boutons **Enregistrer** et **Annuler** restent visibles. Les textes et les champs restent lisibles lorsque le système utilise un thème sombre.
+
+
+## Navigation dans le panneau de gauche
+
+Les icônes de la barre latérale remplacent le contenu du panneau de gauche :
+**Équipe**, **Inscriptions** ou **Vérification**. Le calendrier conserve sa place.
+L’icône Vérification affiche le nombre de points à vérifier dans un badge.
+Cliquez l’icône Équipe, ou le bouton de retour, pour retrouver la liste.
+
+Dans Inscriptions, le besoin se met à jour pendant la saisie. Cliquez
+**Enregistrer** pour appliquer le nombre d’enfants à la journée sélectionnée.
+Un changement de date charge les inscriptions de cette nouvelle journée.
+Les versions archivées restent en consultation.
+
+Les dîners ne sont plus dessinés ni nommés dans les blocs du calendrier.
+Ils restent modifiables dans le formulaire du quart. Ils sont exclus de la
+couverture et, lorsqu’ils ne sont pas payés, du total rémunéré.
