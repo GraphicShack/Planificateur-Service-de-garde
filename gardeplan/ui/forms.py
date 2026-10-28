@@ -5,7 +5,7 @@ from copy import deepcopy
 from datetime import date
 import re
 
-from PySide6.QtCore import Qt, QEvent
+from PySide6.QtCore import Qt, QEvent, Signal
 from PySide6.QtGui import QColor, QValidator
 from PySide6.QtWidgets import (
     QAbstractItemView, QCheckBox, QColorDialog, QComboBox, QDialog,
@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (
 )
 from gardeplan.models import (
     Activity, Break, Educator, Group, GroupPeriod, Room, Settings, Shift,
-    Window, new_id, format_duration, format_time,
+    Window, new_id, format_duration, format_time, paid_minutes,
 )
 from gardeplan.identity import next_educator_color
 from .theme import EDITOR_STYLE, light_palette
@@ -207,12 +207,13 @@ class IntervalsEditor(QWidget):
 
 
 class BreaksEditor(QWidget):
+    changed = Signal()
     def __init__(self, breaks=()):
         super().__init__()
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        self.table = QTableWidget(0, 3)
-        self.table.setHorizontalHeaderLabels(["Début", "Fin", "Rémunérée"])
+        self.table = QTableWidget(0, 5)
+        self.table.setHorizontalHeaderLabels(["Début", "Fin", "Payée", "Type", "Durée"])
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.table.verticalHeader().hide()
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
@@ -227,15 +228,38 @@ class BreaksEditor(QWidget):
         actions.addWidget(remove)
         layout.addLayout(actions)
         for b in breaks:
-            self.add_row(b.start, b.end, b.paid)
+            self.add_row(b.start, b.end, b.paid, b.kind)
 
-    def add_row(self, start=720, end=750, paid=False):
+    def add_row(self, start=720, end=750, paid=False, kind="pause"):
         row = self.table.rowCount()
         self.table.insertRow(row)
         self.table.setCellWidget(row, 0, MinuteEdit(start))
         self.table.setCellWidget(row, 1, MinuteEdit(end))
         self.table.setCellWidget(row, 2, check("Oui", paid))
-        self.table.setRowHeight(row, 40)
+        category = QComboBox()
+        category.addItem("Pause", "pause")
+        category.addItem("Dîner", "dinner")
+        category.setCurrentIndex(max(0, category.findData(kind)))
+        self.table.setCellWidget(row, 3, category)
+        duration = MinuteEdit(max(1, end-start), duration=True)
+        duration.setMinimum(1)
+        self.table.setCellWidget(row, 4, duration)
+        self.table.setRowHeight(row, 48)
+        first, last = self.table.cellWidget(row, 0), self.table.cellWidget(row, 1)
+        def update_duration():
+            duration.blockSignals(True)
+            duration.setValue(max(1, last.value()-first.value()))
+            duration.blockSignals(False)
+            self.changed.emit()
+        def update_end():
+            last.setValue(min(1440, first.value()+duration.value()))
+            self.changed.emit()
+        first.valueChanged.connect(update_duration)
+        last.valueChanged.connect(update_duration)
+        duration.valueChanged.connect(update_end)
+        self.table.cellWidget(row, 2).toggled.connect(lambda _: self.changed.emit())
+        category.currentIndexChanged.connect(lambda _: self.changed.emit())
+        self.changed.emit()
 
     def remove_selected(self):
         rows = {i.row() for i in self.table.selectedIndexes()}
@@ -243,6 +267,7 @@ class BreaksEditor(QWidget):
             rows.add(self.table.currentRow())
         for row in sorted(rows, reverse=True):
             self.table.removeRow(row)
+        self.changed.emit()
 
     def values(self, start, end):
         result = []
@@ -253,7 +278,7 @@ class BreaksEditor(QWidget):
             last.interpretText()
             if not start <= first.value() < last.value() <= end:
                 raise ValueError(f"Pause {row + 1} : choisissez des heures comprises dans la présence du quart.")
-            result.append(Break(first.value(), last.value(), self.table.cellWidget(row, 2).isChecked()))
+            result.append(Break(first.value(), last.value(), self.table.cellWidget(row, 2).isChecked(), self.table.cellWidget(row, 3).currentData()))
         result.sort(key=lambda b: b.start)
         if any(a.end > b.start for a, b in zip(result, result[1:])):
             raise ValueError("Deux pauses se chevauchent. Corrigez leurs heures.")
@@ -622,8 +647,9 @@ class ShiftDialog(EditorDialog):
         form.addRow(self.summary)
         form.addRow(self.locked)
         form.addRow(note("Les heures de présence incluent les buffers. Exemple : présence 06:50–12:00 et préparation 10 min donnent une couverture à partir de 07:00. Les pauses ne couvrent jamais les élèves."))
-        form = self.add_page("Pauses")
+        form = self.add_page("Pauses et dîner")
         self.breaks = BreaksEditor(shift.breaks)
+        self.breaks.changed.connect(self.refresh_summary)
         form.addRow(self.breaks)
         form.addRow(note("Saisissez les heures exactes de chaque pause. Une pause rémunérée compte dans les heures travaillées, mais pas dans la couverture du groupe."))
         for spin in (self.start, self.end, self.before, self.after):
@@ -639,6 +665,15 @@ class ShiftDialog(EditorDialog):
             self.summary.setText("Aucune couverture : ajustez les heures de présence ou les buffers.")
         else:
             self.summary.setText(f"Couverture avant déduction des pauses : {format_time(first)} à {format_time(last)}\nPrésence totale : {format_duration(max(0, self.end.value() - self.start.value()))}")
+            try:
+                candidate = deepcopy(self.source)
+                candidate.start, candidate.end = self.start.value(), self.end.value()
+                candidate.buffer_before, candidate.buffer_after = self.before.value(), self.after.value()
+                candidate.before_paid, candidate.after_paid = self.before_paid.isChecked(), self.after_paid.isChecked()
+                candidate.breaks = self.breaks.values(candidate.start, candidate.end)
+                self.summary.setText(self.summary.text()+f"\nHeures rémunérées : {format_duration(paid_minutes(candidate))}")
+            except ValueError as error:
+                self.summary.setText(str(error))
 
     def build_item(self):
         shift = deepcopy(self.source)

@@ -89,6 +89,7 @@ class Break:
     start: int
     end: int
     paid: bool = False
+    kind: str = "pause"
 
 
 @dataclass
@@ -226,6 +227,8 @@ def _construct(cls, raw: Any, children: dict[str, Any] | None = None):
             raise ValueError("Le zoom du calendrier doit être un nombre compris entre 0,25 et 4.")
         if result.snap_minutes not in (0, 1, 5, 15):
             raise ValueError("Le magnétisme doit être désactivé ou réglé sur 1, 5 ou 15 minutes.")
+    if cls is Break and (not isinstance(result.kind, str) or result.kind not in {"pause", "dinner"}):
+        raise ValueError("Choisissez une pause ou un dîner.")
     return result
 
 

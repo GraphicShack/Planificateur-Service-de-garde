@@ -53,6 +53,12 @@ def shift_palette(educator):
     return _light(accent, .12), accent, QColor(TEXT)
 
 
+def break_label(pause, delta=0):
+    title = "Dîner" if pause.kind == "dinner" else "Pause"
+    paid = "payée" if pause.paid else "non payée"
+    return f"{title} · {format_time(pause.start+delta)} – {format_time(pause.end+delta)} · {pause.end-pause.start} min · {paid}"
+
+
 def _day_name(week: Any, day: int) -> str:
     names = getattr(week, "day_names", {})
     return str(names.get(str(day), names.get(day, "")))
@@ -353,9 +359,10 @@ class _Canvas(QWidget):
                     p.drawLine(pause_rect.topLeft(),pause_rect.topRight())
                     p.drawLine(pause_rect.bottomLeft(),pause_rect.bottomRight())
                     if pause_rect.height() >= 19:
-                        p.setPen(QColor("#74806e"))
-                        p.setFont(_font(7.5))
-                        p.drawText(pause_rect.adjusted(9,0,-5,0),Qt.AlignmentFlag.AlignVCenter,"Pause")
+                        p.setPen(QColor(TEXT))
+                        p.setFont(_pixel_font(12))
+                        p.drawText(pause_rect.adjusted(9,0,-5,0),Qt.AlignmentFlag.AlignVCenter,
+                                   "Dîner" if pause.kind == "dinner" else "Pause")
             tall = not is_activity and rect.height() >= 128 and rect.width() >= 90
             content_offset = 43 if tall else 0
             if tall:
@@ -418,6 +425,13 @@ class _Canvas(QWidget):
                     line_count+=1
                 p.drawText(QRectF(rect.left()+padding,rect.top()+32+content_offset,text_width,min(rect.height()-36-content_offset,line_count*18)),
                            Qt.AlignmentFlag.AlignTop,subtitle)
+            if not is_activity and value.breaks:
+                p.setFont(_pixel_font(12))
+                p.setPen(QColor(TEXT))
+                notes = "\n".join(break_label(pause, start-value.start) for pause in value.breaks)
+                top = rect.top()+content_offset+70
+                p.drawText(QRectF(rect.left()+10, top, max(1, rect.width()-20), max(1, rect.bottom()-top-8)),
+                           Qt.TextFlag.TextWordWrap | Qt.AlignmentFlag.AlignTop, notes)
             p.restore()
             if not is_activity:
                 p.fillRect(QRectF(rect.left()+1, rect.top()+1, 4, max(1, rect.height()-2)), color)
@@ -462,7 +476,8 @@ class _Canvas(QWidget):
                 f"Couverture : {format_time(value.start+value.buffer_before)} à "
                 f"{format_time(value.end-value.buffer_after)} (hors pauses)\n"
                 f"Préparation : {value.buffer_before} min · Fermeture : {value.buffer_after} min\n"
-                + ("Quart verrouillé" if value.locked else "Double-clic : modifier les heures"))
+                + "\n".join(break_label(pause) for pause in value.breaks)
+                + ("\nQuart verrouillé" if value.locked else "\nDouble-clic : modifier les heures"))
 
     def mousePressEvent(self, event):
         if event.button() != Qt.MouseButton.LeftButton:

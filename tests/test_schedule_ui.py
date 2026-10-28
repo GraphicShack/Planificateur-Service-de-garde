@@ -73,3 +73,16 @@ def test_shift_colours_have_readable_text_for_arbitrary_educator_colours(planner
         assert contrast(text.name(), fill.name()) >= 4.5
     assert _pixel_font(12).pixelSize() >= 12
     assert all(block.rect.width() >= 140 for block in planner.calendar.canvas.blocks)
+
+
+def test_dinner_duration_editor_and_paid_hours_are_real(planner, qapp):
+    from gardeplan.ui.forms import ShiftDialog
+    from gardeplan.models import paid_minutes
+    dialog = ShiftDialog(planner.week, planner.week.shifts[0])
+    dialog.breaks.add_row(720, 750, False, "dinner")
+    dialog.breaks.table.cellWidget(0, 4).setValue(45)
+    result = dialog.build_item()
+    assert result.breaks[0] == Break(720, 765, False, "dinner")
+    assert paid_minutes(result) == 600
+    assert "10 h 00" in dialog.summary.text()
+    dialog.deleteLater()

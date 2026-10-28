@@ -57,6 +57,15 @@ class CoverageTests(unittest.TestCase):
         label = alert_text(plan, Issue("error", "coverage", "", 0, 720, 795, "g"))
         self.assertEqual(label, "12 h 00 – 13 h 15 : 1 éducatrice au lieu de 2")
 
+    def test_dinner_survives_serialization_and_changes_pay_only_when_unpaid(self):
+        from gardeplan.models import Week
+        plan = covered_day()
+        plan.shifts[0].breaks = [Break(720, 765, False, "dinner")]
+        restored = Week.from_dict(plan.to_dict())
+        self.assertEqual(restored.shifts[0].breaks[0].kind, "dinner")
+        self.assertEqual(paid_minutes(restored.shifts[0]), 600)
+        self.assertEqual(next(p for p in coverage_timeline(restored) if p.start == 720).actual, 1)
+
 
 if __name__ == "__main__":
     unittest.main()
