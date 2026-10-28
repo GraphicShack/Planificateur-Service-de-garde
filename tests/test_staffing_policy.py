@@ -48,6 +48,10 @@ class StaffingPolicyTests(unittest.TestCase):
         self.assertEqual(duplicate_day(historical,'2026-10-29').settings.staffing_policy,2)
         self.assertEqual(Week.from_dict(historical.to_dict()).settings.staffing_policy,1)
 
+    def test_invalid_ratio_is_reported_before_staffing_calculations(self):
+        plan=relaxed_day();plan.groups[0].ratio=0
+        self.assertTrue(any(i.code=='missing_data' for i in validate(plan)))
+
     @unittest.skipUnless(find_spec('ortools'),'OR-Tools vérifié sur Windows et Mac')
     def test_generator_can_open_with_one_and_release_the_second_at_1720(self):
         from gardeplan.optimizer import generate

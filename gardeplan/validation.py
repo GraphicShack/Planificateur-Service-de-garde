@@ -225,6 +225,8 @@ def validate(week: Week, *, _service=False) -> list[Issue]:
         if not periods:
             continue
         g = groups[group_id]
+        if type(g.ratio) is not int or g.ratio < 1 or type(g.min_educators) is not int or g.min_educators < 2:
+            continue  # The missing_data issue above must be reported before calculations.
         staff = by_group_day[(group_id, day)]
         values = []
         for minute in range(min(p.start for p in periods), max(p.end for p in periods)):
