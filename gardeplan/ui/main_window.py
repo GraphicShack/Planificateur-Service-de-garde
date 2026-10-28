@@ -527,6 +527,9 @@ class MainWindow(QMainWindow):
             self.home_page.error.setText(f"Les journées ne peuvent pas être chargées : {error}")
             self.home_page.error.show()
         self.content_stack.setCurrentWidget(self.home_page)
+        self.rail_buttons['calendar'].setProperty("active",False)
+        self.rail_buttons['calendar'].style().unpolish(self.rail_buttons['calendar'])
+        self.rail_buttons['calendar'].style().polish(self.rail_buttons['calendar'])
         self.home_button.setProperty("active",True)
         self.home_button.style().unpolish(self.home_button)
         self.home_button.style().polish(self.home_button)
@@ -536,6 +539,9 @@ class MainWindow(QMainWindow):
     def show_planner(self):
         if hasattr(self,"content_stack"):
             self.content_stack.setCurrentWidget(self.planner_page)
+        self.rail_buttons['calendar'].setProperty("active",True)
+        self.rail_buttons['calendar'].style().unpolish(self.rail_buttons['calendar'])
+        self.rail_buttons['calendar'].style().polish(self.rail_buttons['calendar'])
         self.home_button.setProperty("active",False)
         self.home_button.style().unpolish(self.home_button)
         self.home_button.style().polish(self.home_button)

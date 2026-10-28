@@ -81,6 +81,7 @@ class DayButton(QPushButton):
         self.row.addWidget(text,1)
         badge=label(brief.status)
         badge.setSizePolicy(QSizePolicy.Policy.Preferred,QSizePolicy.Policy.Preferred)
+        badge.setMinimumWidth(100 if brief.alerts else 195)
         badge.setMaximumWidth(205)
         badge.setStyleSheet('background:#FFF0D8;color:#804500;padding:8px;border-radius:14px;font-weight:600;' if brief.alerts else 'background:#E7F2EC;color:#214F40;padding:8px;border-radius:14px;font-weight:600;')
         self.row.addWidget(badge)
