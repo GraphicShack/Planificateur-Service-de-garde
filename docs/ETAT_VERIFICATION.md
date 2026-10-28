@@ -2,6 +2,25 @@
 
 Les constructions et les contrôles natifs s’exécutent sur GitHub Actions. Les fichiers à remettre sont les ZIP portables d’une exécution réussie correspondant au code voulu. Une sortie compilée dont le contrôle échoue n’est pas livrée.
 
+## Livraison 0.3.3 — deux personnes au total pendant l’accueil commun
+
+Le code exact testé est `6339a4862ac343bd52cc121bc491103dbb129fc1`. Les deux constructions natives réussissent **267 tests chacune**, plus les **six sous-cas de pagination**, sans test ignoré :
+
+- [Windows — tests, compilation et ZIP extrait vérifiés](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40777732864).
+- [Mac Apple Silicon — tests, compilation et ZIP extrait vérifiés](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40777732838).
+
+La règle initiale est de deux personnes au total de 6 h 50 à 7 h et de 17 h à 17 h 35, tous groupes confondus. De 7 h à 17 h, le minimum de deux reste propre à chaque groupe ouvert. Le ratio collectif reste obligatoire pendant l’accueil commun. Les pauses et les buffers non dédiés à la couverture ne comptent pas comme surveillance.
+
+Sept nouveaux contrôles couvrent les bornes exactes (dont 16 h 59/17 h), les deux personnes du même groupe dans le service commun, une pause d’une minute avec une seule alerte collective, le ratio sur tous les enfants, les buffers, la transmission entre groupes, les snapshots historiques et la génération. Les dix contrôles de préparation de release et de notes passent aussi.
+
+Le diagnostic du programme compilé vérifie `shared_opening_closing` : deux personnes réellement présentes et deux requises à l’ouverture et à la fermeture, avec participation de toute l’équipe, respect des rangs et des huit heures. Ces vérifications sont exécutées sur l’exécutable, dans le dossier portable puis après extraction du ZIP. La publication refuse un rapport sans ce contrôle.
+
+La suite complète locale Qt6/OR-Tools réussit aussi 267 tests et six sous-cas. Un diagnostic source Qt6 confirme les opérations SQLite/PDF/solveur hors ligne et les plages communes. Les aperçus Qt6 et le PDF d’exemple ont été générés et inspectés avant publication, avec deux groupes, huit profils fictifs, deux ouvertures à 6 h 50 et deux fermetures à 17 h 35 ; les autres groupes rejoignent à 7 h et quittent à 17 h. Les heures individuelles sont 8 h, 8 h, 8 h, 8 h, 3 h, 3 h, 2 h 15 et 2 h 15, soit 42 h 30 au total.
+
+Les versions de travail adoptent la règle version 4 ; les versions publiées/archivées conservent leurs règles. Le format SQLite 3, les sauvegardes, les priorités, les verrous et le plafond de huit heures restent inchangés. [Fichiers modifiés, hypothèses et limites](LIVRAISON_0_3_3.md). Les notes sont reprises automatiquement depuis le [CHANGELOG](../CHANGELOG.md).
+
+La recherche peut atteindre son délai sans prouver toutes les préférences optimales ; elle le signale et n’applique jamais une proposition invalide. Aucune mise à jour automatique ni notarisation DeveloperID Mac n’est ajoutée. Les essais sur le poste de l’école, le lecteur d’écran et l’imprimante physique restent à réaliser. Conservez le dossier `donnees` pendant la mise à jour.
+
 ## Livraison 0.3.2 — rangs, tous les groupes et plafond de huit heures
 
 Le code exact testé est `8bb801276a79a9cacee14887776c7cbd31a7453f`. Les deux constructions natives réussissent **260 tests chacune**, plus les **six sous-cas de pagination**, sans test ignoré :

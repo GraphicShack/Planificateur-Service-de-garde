@@ -18,7 +18,7 @@ Les quarts gardent leurs groupes : la présence collective suffit pendant les pl
 2. Explications dans Inscriptions et Paramètres. La bande et les alertes portent le libellé « Tous les groupes ». Le contrôle du logiciel portable vérifie deux personnes au total aux extrémités.
 3. Version 0.3.3, notes de version, aperçus Qt6 et PDF d’exemple actualisés. Chaque étape possède un commit distinct.
 
-La suite locale réussit 267 tests et six sous-cas de pagination, dont sept nouveaux tests de plages communes. Dix tests supplémentaires vérifient la préparation de la release et ses notes. Le diagnostic source Qt6/OR-Tools vérifie aussi les extrémités collectives. Les résultats Windows/Mac et le SHA exact sont consignés dans [État des vérifications](ETAT_VERIFICATION.md) avant publication.
+Les suites locale, Windows et Mac réussissent chacune 267 tests et six sous-cas de pagination, dont sept nouveaux tests de plages communes. Les exécutables compilés sont contrôlés dans leur dossier portable puis après extraction des ZIP. Dix tests supplémentaires vérifient la préparation de la release et ses notes. Le diagnostic source Qt6/OR-Tools vérifie aussi les extrémités collectives. Les résultats Windows/Mac et le SHA exact sont consignés dans [État des vérifications](ETAT_VERIFICATION.md) avant publication.
 
 ## Hypothèses et limites
 
