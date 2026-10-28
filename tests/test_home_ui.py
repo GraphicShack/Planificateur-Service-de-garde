@@ -1,3 +1,5 @@
+import faulthandler
+import pytest
 from datetime import date
 from copy import deepcopy
 from PySide6.QtCore import Qt
@@ -6,6 +8,24 @@ from gardeplan.daily import day_plan
 from gardeplan.storage import Repository
 from gardeplan.ui.main_window import MainWindow
 from test_home_data import planned_day
+
+
+@pytest.fixture(autouse=True)
+def bounded_home_checks(monkeypatch):
+    """Unexpected native message boxes fail with their text instead of waiting."""
+    from PySide6.QtWidgets import QMessageBox
+    messages=[]
+    def record(parent,title,message,*args,**kwargs):
+        messages.append(f"{title}: {message}")
+        return QMessageBox.StandardButton.Ok
+    for name in ("warning","critical","information"):
+        monkeypatch.setattr(QMessageBox,name,record)
+    faulthandler.dump_traceback_later(120,exit=True)
+    try:
+        yield
+    finally:
+        faulthandler.cancel_dump_traceback_later()
+    assert not messages, "\n".join(messages)
 
 
 def close(window,qapp):
