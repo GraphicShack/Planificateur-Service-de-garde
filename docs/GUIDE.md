@@ -215,3 +215,13 @@ La recherche attribue d’abord des heures au plus grand nombre de personnes pos
 Le maximum quotidien est de 8 h rémunérées, tous les quarts cumulés. Les buffers payés et les pauses payées comptent ; les pauses non payées sont déduites. Un maximum individuel plus bas reste obligatoire. Un dépassement manuel est une erreur rouge et empêche de valider/publier ; le brouillon demeure sauvegardable pour correction.
 
 Sur l’accueil, **Supprimer** demande confirmation puis retire la journée de la liste. Ses anciennes versions et les profils restent conservés. La suppression survit aux sauvegardes et à leur import. Pour reprendre cette date, créez une nouvelle journée à cette date, ou restaurez une version dans l’historique du dossier. La migration au format SQLite 3 crée une copie de sécurité avant toute modification du format ; ne remplacez pas le dossier `donnees` lors d’une mise à jour.
+
+## Apparence et animations — version 0.3.4
+
+Dans l’icône **Réglages** en bas de la barre latérale, choisissez **Affichage…**.
+
+- Choisissez **Forêt**, **Bleu**, **Prune** ou **Ardoise**. Le changement est immédiat.
+- Pour un accent à votre goût, choisissez **Personnalisé**, puis **Choisir une couleur…** ou saisissez une valeur telle que `#245C85`. Les couleurs trop claires sont ajustées pour que les textes blancs restent lisibles ; l’accent réellement appliqué et son contraste sont affichés.
+- Désactivez **Animations discrètes** pour une navigation immédiate sans effet. Les transitions ne déplacent jamais les quarts et ne modifient pas les heures.
+
+Ces préférences sont conservées dans `interface.json`, à côté de la base SQLite (dans `donnees` en mode portable). Elles ne créent pas de nouvelle version d’horaire. Les sauvegardes d’horaires SQLite restent indépendantes de ces préférences d’affichage. Les couleurs des éducatrices et des groupes, les alertes et le PDF ne changent pas avec le thème. Les thèmes disponibles gardent des surfaces claires ; aucun thème sombre n’est proposé.

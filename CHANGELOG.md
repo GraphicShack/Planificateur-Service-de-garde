@@ -4,6 +4,15 @@ Chaque release reprend la section correspondant à sa version. Une section doit
 être ajoutée ici avant de publier ; le contrôle de publication refuse une
 version sans notes. Les téléchargements sont dans les [Releases GitHub](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases).
 
+## [0.3.4] — 2026-10-28
+
+- Transitions discrètes entre l’accueil et la planification, et entre les panneaux Équipe, Inscriptions et Vérification. Les effets courts (120–160 ms) sont interruptibles ; les commandes et le clavier restent immédiatement utilisables.
+- Survol et focus des boutons accompagnés d’un contour progressif, sans déplacement des contrôles ni des quarts. Les animations peuvent être désactivées dans Réglages → Affichage.
+- Quatre thèmes clairs : Forêt, Bleu, Prune et Ardoise. Un accent personnalisé peut être choisi dans un sélecteur de couleur ou saisi en hexadécimal ; une couleur trop claire est foncée pour conserver un contraste d’au moins 4,5:1 avec le texte blanc.
+- Les thèmes s’appliquent à l’accueil, à la barre latérale, aux boutons, aux formulaires, aux champs de date et aux sélections de la grille. Les couleurs des éducatrices, des groupes, des alertes et du PDF sont conservées.
+- Le thème et la préférence d’animation sont enregistrés dans `donnees/interface.json`, séparément des horaires. Un fichier absent ou endommagé ne bloque pas l’application ; une écriture impossible est expliquée dans Affichage.
+- Les options d’affichage défilent sur les petits écrans, avec un bouton Fermer toujours accessible. Huit tests ciblés supplémentaires couvrent les transitions, les clics et le focus, le contraste, les préférences et la conservation des données.
+
 ## [0.3.3] — 2026-10-28
 
 - Accueil commun de 6 h 50 à 7 h et de 17 h à 17 h 35 : minimum de deux personnes au total, tous groupes confondus. Le minimum de deux par groupe demeure de 7 h à 17 h.
