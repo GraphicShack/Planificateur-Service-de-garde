@@ -2,6 +2,25 @@
 
 Les constructions et les contrôles natifs s’exécutent sur GitHub Actions. Les fichiers à remettre sont les ZIP portables d’une exécution réussie correspondant au code voulu. Une sortie compilée dont le contrôle échoue n’est pas livrée.
 
+## Livraison 0.2.1 — sélecteur lisible et horaires uniquement
+
+La [version 0.2.1](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/tag/v0.2.1) est publiée à la demande explicite du responsable du projet. Les constructions du code `61aeb0f4664ac55e880857ac90362e811bb4c5b4` ont réussi **176 tests chacune**, plus les six sous-cas de pagination et les contrôles des ZIP extraits :
+
+- [Windows — 176 tests et paquet portable vérifié](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40622502409).
+- [Mac — 176 tests et paquet portable vérifié](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40622502394).
+
+Les nouveaux contrôles utilisent les véritables événements QTest pour le clavier, le survol et le focus ; ils vérifient les passages de mois/d’année, l’année bissextile, les limites de dates, la sélection simple, l’annulation et le chargement du planning après sélection. Un sous-processus Qt6 avec `QT_SCALE_FACTOR=2` vérifie une fenêtre de 360 × 330 pixels logiques à 200 %, sans réduire les cases ni les caractères. Le diagnostic du binaire gelé ouvre et dessine aussi le sélecteur, avec une cible minimale de 44 × 44.
+
+Les paires de texte du sélecteur ont un contraste de 5,63:1 à 11,83:1. Les dates et contrôles principaux sont à 16 px minimum, le mois et l’année à 20 px gras. Les voisins affichent leur mois, les dates indisponibles sont barrées et aujourd’hui conserve contour et point sur la sélection. Les boutons principaux et les actions du calendrier se réorganisent dans une fenêtre étroite ; le sélecteur défile au besoin.
+
+Le menu Dossier a été testé avec ses vrais rappels d’enregistrement, ouverture, duplication, historique, export/import de sauvegarde. Les activités et locaux historiques ne sont plus exposés dans l’interface quotidienne et ne bloquent pas les horaires ; leur présence dans les données a fait l’objet d’un test de conservation.
+
+Le calendrier et le PDF utilisent les bornes exactes 6 h 50 et 17 h 35. Un quart quotidien extérieur à la plage configurée est signalé. Le nouvel exemple PDF a été rendu et inspecté avec huit éducateurs fictifs et des heures conformes aux règles de couverture.
+
+Les aperçus publiés ont été produits par le code réel avec l’adaptateur Qt5 temporaire du poste Linux, non livré. Les vérifications Qt6 proviennent des exécutions natives ci-dessus. Un second aperçu local à 200 % confirme un DPR de 2, des cases de 44 pixels minimum et une police de 16 pixels ; il complète le test natif sans le remplacer.
+
+Le premier passage a révélé un nom d’énumération Qt5 utilisé dans le test d’annulation. Le test a été adapté à Qt6 et les deux suites complètes ont ensuite réussi. Aucun contournement ou test ignoré n’a été introduit.
+
 ## Livraison 0.2.0 approuvée
 
 Le code approuvé et publié est `46ab53061d9ed010f9f7f1a2b5cc32eedd458284`. Le code applicatif est identique au premier contrôle `407924c88a13385e598e46d7508a3bb420b5acee` ; le contexte de publication GitHub a été ajusté. Les deux constructions ont réussi **158 tests chacune**, puis les contrôles natifs des dossiers portables et des ZIP extraits :

@@ -18,6 +18,9 @@ Le Planificateur — Service de garde est une application de bureau Python 3 / P
 | `pedagogical_pdf.py` | Grille lettre paysage du modèle fourni, huit lignes par page, géométrie exacte et interruptions vides. |
 | `ui/calendar.py` | Calendrier quotidien, manipulation graphique et repères d'alertes. |
 | `ui/forms.py` | Formulaires simples et réglages détaillés. |
+| `ui/day_selector.py` | Sélection unique, grille accessible, navigation au clavier et respect des limites de dates. |
+| `ui/flow_layout.py` | Réorganisation des contrôles sans réduire les textes ni leurs zones cliquables. |
+| `ui/theme.py` | Palette Atelier commune, styles de sélection et mesure de contraste. |
 | `ui/main_window.py` | Coordination de l'interface, annulation, sauvegarde et commandes. |
 | `ui/visuals.py` | Logo et pictogrammes SVG locaux, rendus pour les écrans à haute densité. |
 | `ui/localization.py` | Locale française et traduction des boutons standard Qt. |
@@ -66,3 +69,11 @@ Les profils d’une nouvelle journée reprennent leurs objectifs journaliers si 
 Le parcours utilisateur expose un export général unique. Les anciennes fonctions d’export restent lisibles par les tests de compatibilité et ne sont plus proposées dans l’interface. Le rendu quotidien utilise Canvas/ReportLab, des éléments vectoriels et des polices embarquées. Arial du système est utilisé s’il est disponible ; sinon une police libre compatible avec ses métriques est incluse, dérivée de Liberation Sans et renommée Planificateur Sans, avec sa licence SIL-OFL.
 
 Les coordonnées reprennent la référence : page 792 × 612 pt, marges de 30 pt, colonne des noms de 163 pt, grille de 569 pt et huit lignes. Les durées entières sont converties en positions PDF uniquement au dessin. `working_intervals` retire toutes les pauses, même rémunérées ; aucun objet de légende ni libellé de pause n’est dessiné. La palette du modèle identifie les groupes sur toutes les pages, indépendamment de la couleur personnelle des éducatrices.
+
+## Interface centrée sur les horaires (0.2.1)
+
+Le bouton Dossier réutilise les commandes transactionnelles existantes. Les activités et les locaux historiques restent dans les photographies ; ils ne sont plus exposés dans la planification quotidienne et n’interviennent plus dans sa validation ou sa génération. Le composant de calendrier conserve son mode historique pour les anciens tests et interfaces internes, mais la fenêtre principale masque ces blocs.
+
+Le sélecteur remplace le QDateEdit principal en conservant une API de date et un signal dateChanged. La sélection ne change qu’à la confirmation d’un jour. La navigation des mois/années ne charge pas de planning ; une erreur de sauvegarde rétablit la date affichée. Les limites 1752–9999 et la sélection simple restent conservées. Les fenêtres réduites utilisent la réorganisation et le défilement plutôt que des polices plus petites.
+
+La présence quotidienne doit rester dans la plage définie par l’ouverture moins son buffer et la fermeture plus son buffer, soit 6 h 50–17 h 35 avec les paramètres demandés. Le calendrier n’arrondit plus ces bornes aux heures entières ; le PDF les affiche explicitement.

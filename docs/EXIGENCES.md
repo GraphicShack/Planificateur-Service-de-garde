@@ -1,5 +1,7 @@
 # Vérification des exigences
 
+La version 0.2.1 se concentre sur les horaires. Les anciennes fonctions d’activités et de locaux citées dans l’historique des contrôles restent des données de compatibilité ; elles ne sont plus proposées dans l’interface quotidienne.
+
 Ce document distingue les contrôles automatisables du contrôle de prise en main sur un poste Windows. Un fichier de test présent dans le projet n'est pas une preuve de réussite : consulter le résultat de `python -m pytest -q` pour l'exécution concernée.
 
 | Demande | Mise en œuvre / contrôle |
@@ -42,7 +44,7 @@ Ce document distingue les contrôles automatisables du contrôle de prise en mai
 | Versions et publication figée | Photographies complètes, déclencheurs empêchant UPDATE/DELETE ; tests de conservation. |
 | Duplication, archive et restauration | Versions nouvelles ; tests d'archivage/duplication/restauration. |
 | Export/import de sauvegardes | Sauvegarde SQLite contrôlée ; test de rejet de corruption et de checksum modifié. |
-| PDF unique selon le modèle fourni (nouvelle priorité) | Lettre paysage, grille 7 h–18 h, huit noms par page, en-tête/date/légende répétés ; coupures et pauses vides, sans compteur ni activités. |
+| PDF unique selon le modèle fourni (nouvelle priorité) | Lettre paysage, grille 6 h 50–17 h 35, huit noms par page, en-tête/date/légende répétés ; coupures et pauses vides, sans compteur ni activités. |
 | Aperçu et impression | Accès dans l'interface ; vérifier la prévisualisation et l'impression sur le poste cible. |
 | Noir et blanc | Horaires et noms restent présents dans les tableaux sans dépendre uniquement des couleurs. |
 | Annuler une action | Commandes d'annulation de la fenêtre principale ; essai de prise en main nécessaire. |

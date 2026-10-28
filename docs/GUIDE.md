@@ -6,9 +6,9 @@ L’équipe reste à gauche et le calendrier occupe le reste de l’écran. Les 
 
 - **Ajouter** propose un quart ou une activité.
 - **Vérifier** ouvre le détail des alertes ; **Fermer** redonne toute la place au calendrier. La validation continue même lorsque ce panneau est fermé.
-- **Menu → Organisation** contient les groupes, locaux, profils et règles.
+- **Menu → Organisation** contient les groupes, profils et règles.
 - **Menu → Affichage** permet de régler le zoom, le magnétisme et la visibilité du panneau de l’équipe.
-- **Menu** regroupe aussi l’annulation, la sauvegarde manuelle, le statut, l’historique et les sauvegardes locales.
+- **Dossier** regroupe l’enregistrement, l’ouverture des journées, la duplication, l’historique et les sauvegardes. **Menu** conserve les règles, le statut, l’affichage et l’annulation.
 
 ## Préparer une journée pédagogique
 
@@ -16,9 +16,9 @@ L’équipe reste à gauche et le calendrier occupe le reste de l’écran. Les 
 2. Cliquez sur le **+ de L’équipe**. Une couleur encore inutilisée est proposée automatiquement ; vous pouvez la changer dans le profil. Choisissez le **rang de 1 à 11** : le rang 1 est le plus ancien, et des rangs peuvent rester libres (1, 4, 9, par exemple). Aucun profil n’est renuméroté automatiquement.
 3. Saisissez les heures cibles, garanties et maximales **pour cette journée**. Une cible de zéro signifie « à définir ». Précisez les disponibilités et absences si nécessaire.
 4. Cliquez sur **Inscriptions** : indiquez le nombre d’enfants, la taille souhaitée des groupes et le nom facultatif de la journée. Les groupes sont préparés pour cette seule date. Le minimum de deux éducatrices et le ratio configuré restent contrôlés.
-5. Ajoutez les locaux depuis l’icône de lieu à gauche si vous prévoyez des activités.
+5. Ajoutez les quarts ou demandez une proposition automatique. L’interface gère uniquement les horaires.
 
-Une nouvelle date reprend les profils et paramètres utiles. Ses inscriptions, quarts et activités restent vides ; les absences de l’ancienne date ne sont pas recopiées. Pour reprendre aussi un horaire complet, utilisez **Menu → Journées et historique → Dupliquer cette journée** et choisissez une date vide.
+Une nouvelle date reprend les profils et paramètres utiles. Ses inscriptions et quarts restent vides ; les absences de l’ancienne date ne sont pas recopiées. Pour reprendre aussi un horaire complet, utilisez **Dossier → Dupliquer cette journée** et choisissez une date vide.
 
 ## Planifier dans le calendrier
 
@@ -36,13 +36,9 @@ Pour une journée ouverte de 7 h à 17 h 30, prévoyez deux éducatrices dès 6 
 
 Pour une relève à 12 h 30, l'éducatrice entrante peut commencer sa présence à 12 h 15 avec quinze minutes de préparation avant sa couverture de 12 h 30. L'éducatrice sortante reste présente pendant ces quinze minutes. Le besoin de couverture du groupe doit rester satisfait, même pendant les pauses et les relèves.
 
-## Activités et locaux
-
-Une activité se planifie séparément des quarts. Changer « Jeux extérieurs » de la cour au parc ne modifie pas les heures des éducatrices. Les conflits de lieu, capacités et disponibilités apparaissent dans les alertes. La responsabilité et la couverture découlent des affectations réellement présentes.
-
 ## Lire et corriger les alertes
 
-Les erreurs empêchent la publication, mais permettent de sauvegarder un brouillon. Elles concernent notamment un manque de personnel, un chevauchement de groupes pour une même éducatrice, une indisponibilité ou un conflit de local. Les avertissements signalent les écarts d'heures ou préférences.
+Les erreurs empêchent la publication, mais permettent de sauvegarder un brouillon. Elles concernent notamment un manque de personnel, un chevauchement de groupes pour une même éducatrice, une indisponibilité ou une limite d’heures. Les avertissements signalent les écarts d'heures ou préférences.
 
 Après une modification, consultez le compteur **Vérifier** et cliquez dessus pour ouvrir la liste des alertes. Les messages indiquent la journée, l'intervalle et le groupe concernés, avec une piste de correction lorsqu'elle est disponible.
 
@@ -52,9 +48,9 @@ Cliquez sur « Générer ». Le moteur respecte les contraintes obligatoires qu'
 
 ## Sauvegarder, revenir en arrière et exporter
 
-Sauvegardez régulièrement et utilisez l'export de sauvegarde locale avant un changement important. Les anciennes versions de chaque journée restent consultables dans **Menu → Journées et historique**. Une restauration crée une nouvelle version ; une duplication permet de réutiliser une journée. Une publication conserve sa photographie historique.
+Sauvegardez régulièrement et utilisez l'export de sauvegarde locale avant un changement important. Les anciennes versions de chaque journée restent consultables dans **Dossier → Historique des versions**. Une restauration crée une nouvelle version ; une duplication permet de réutiliser une journée. Une publication conserve sa photographie historique.
 
-**Exporter PDF** enregistre directement un seul horaire général de la journée, sans choix de formats individuels. Le document reprend le modèle fourni : lettre paysage, titre à gauche, date à droite, colonne des noms puis grille 7 h–18 h avec repères de 30 minutes, huit éducateurs maximum par page. Les blocs indiquent leur groupe et leurs heures exactes ; un même groupe garde la même couleur sur toutes les pages. Les pauses, rémunérées ou non, et les interruptions restent simplement vides. Aucun compteur ni colonne d’activité n’est ajouté. **Menu → Aperçu avant impression** ouvre ce même document. Pour une sauvegarde informatique complète, utilisez la sauvegarde locale SQLite ; un PDF sert à consulter ou imprimer et ne remplace pas la base.
+**Exporter PDF** enregistre directement un seul horaire général de la journée, sans choix de formats individuels. Le document reprend le modèle fourni : lettre paysage, titre à gauche, date à droite, colonne des noms puis grille 6 h 50–17 h 35 avec repères de 30 minutes, huit éducateurs maximum par page. Les blocs indiquent leur groupe et leurs heures exactes ; un même groupe garde la même couleur sur toutes les pages. Les pauses, rémunérées ou non, et les interruptions restent simplement vides. Aucun compteur ni colonne d’activité n’est ajouté. **Menu → Aperçu avant impression** ouvre ce même document. Pour une sauvegarde informatique complète, utilisez la sauvegarde locale SQLite ; un PDF sert à consulter ou imprimer et ne remplace pas la base.
 
 ## Ouvrir la version portable, sans installation
 
@@ -90,4 +86,13 @@ Les anciens objectifs hebdomadaires ne deviennent pas des obligations journaliè
 
 Les points de départ et d’arrivée des blocs sont calculés à la minute, sans arrondi à la demi-heure. Les repères de 30 minutes servent uniquement à lire la grille. Un horaire coupé crée plusieurs blocs distincts sur une seule ligne. De 1 à 8 éducateurs, le document a une page ; de 9 à 16, deux pages ; le même en-tête, la date, la légende et l’échelle sont repris sur chacune.
 
-La grille demandée commence à 7 h. La présence de préparation dès 6 h 50 reste indiquée par son heure exacte dans le bloc et une mention au bas de la page ; elle n’est pas arrondie à 7 h ni perdue. Les plages entièrement hors de la grille sont indiquées au bas de la page. Le PDF d’exemple reprend les données fictives des pièces jointes.
+La grille commence exactement à 6 h 50 et se termine à 17 h 35. Les dix minutes d’ouverture et les cinq minutes de fermeture font partie de la présence rémunérée, sans être confondues avec la couverture des enfants.
+## Choisir la date au clavier
+
+La barre affiche la date complète, par exemple « Lundi 26 octobre 2026 ». Entrée, Espace, F4 ou Alt + Flèche bas ouvrent le calendrier. Ses cases font au moins 44 × 44 pixels et les dates utilisent un texte d’au moins 16 pixels. Le mois et l’année sont modifiables directement.
+
+Dans la grille, les flèches déplacent le focus ; Page précédente/suivante change de mois et Ctrl + Page change d’année. Entrée ou Espace choisit la date ; Échap ferme sans modifier l’horaire. Le bouton Aujourd’hui choisit la date actuelle. La sélection reste simple : une journée à la fois.
+
+Le vert forêt identifie la sélection. Aujourd’hui conserve un contour et un point, même s’il est sélectionné. Les jours voisins portent leur mois abrégé ; les jours indisponibles sont barrés. Sur un petit écran ou à 200 %, les contrôles gardent leur taille et le panneau peut défiler. La barre principale remet ses actions sur plusieurs lignes ; le panneau d’équipe se replie sur une fenêtre étroite et peut être rouvert par son icône.
+
+La sauvegarde automatique est conservée. Si l’enregistrement échoue, le changement de date est annulé pour garder les modifications en cours à l’écran.
