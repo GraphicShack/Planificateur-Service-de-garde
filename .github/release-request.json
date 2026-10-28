@@ -1,6 +1,6 @@
 {
-  "version": "0.2.0",
-  "commit": "46ab53061d9ed010f9f7f1a2b5cc32eedd458284",
+  "version": "0.2.1",
+  "commit": "61aeb0f4664ac55e880857ac90362e811bb4c5b4",
   "approved": true,
-  "authorization": "Accord explicite du responsable du projet pour la version 0.2.0 ; même code applicatif, correction du contexte de publication GitHub."
+  "authorization": "Le responsable du projet demande explicitement la publication en version 0.2.1 après modernisation du sélecteur, simplification des horaires et réécriture du README."
 }
