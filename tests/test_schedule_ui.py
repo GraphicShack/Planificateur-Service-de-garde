@@ -166,7 +166,7 @@ def test_registration_preview_is_live_and_has_no_day_name_field(planner):
     dialog.count.setValue(5)
     assert dialog.preview.text() == "5 enfants → ratio 1/20 → minimum 2 éducatrices simultanées"
     dialog.count.setValue(41)
-    assert "minimum 3" in dialog.preview.text()
+    assert "minimum 6" in dialog.preview.text()
     dialog.count.setValue(0)
     assert "fermée" in dialog.preview.text()
     assert not any(field.accessibleName() == "Nom de la journée" for field in dialog.findChildren(QLineEdit))

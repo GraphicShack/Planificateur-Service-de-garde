@@ -95,12 +95,12 @@ def check_installation(destination: str | Path) -> int:
                 from gardeplan.daily import day_plan
                 week = day_plan(monday)
                 week.educators = [Educator(f"e{i+1}", f"Éducatrice test {i+1}", seniority=i+1,
-                                           target_minutes=0, max_minutes=480) for i in range(4)]
+                                           target_minutes=0, max_minutes=480) for i in range(8)]
                 week.groups = [Group(f"g{i+1}", f"Groupe test {i+1}",
                                      periods=[GroupPeriod(0,420,1050,20)]) for i in range(2)]
                 week.shifts = [Shift(f"s{i+1}", f"e{i+1}", f"g{i%2+1}",0,
-                                     410 if i<2 else 720,735 if i<2 else 1055,
-                                     10 if i<2 else 15,0 if i<2 else 5) for i in range(4)]
+                                     410 if i<4 else 720,735 if i<4 else 1055,
+                                     10 if i<4 else 15,0 if i<4 else 5) for i in range(8)]
                 week.day_names = {0: "Journée pédagogique — Vérification"}
                 if any(issue.severity == "error" for issue in validate(week)):
                     raise RuntimeError("Le jeu de contrôle métier n'est pas valide.")
@@ -156,7 +156,7 @@ def check_installation(destination: str | Path) -> int:
 
                 request = Week.from_dict(restored.to_dict())
                 request.shifts = []
-                generated = generate(request, time_limit=15)
+                generated = generate(request, time_limit=25)
                 if not generated.success or generated.proposal is None:
                     raise RuntimeError(f"La génération CP-SAT a échoué : {generated.message}")
                 if any(issue.severity == "error" for issue in validate(generated.proposal)):

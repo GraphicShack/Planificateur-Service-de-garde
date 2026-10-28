@@ -873,7 +873,7 @@ class SettingsDialog(EditorDialog):
         form.addRow("Préparation avant ouverture", self.opening_buffer)
         form.addRow("Fermeture après le départ", self.closing_buffer)
         form.addRow("Chevauchement de relève", self.handover)
-        form.addRow(note("Journée : une éducatrice minimum avant l’ouverture aux enfants et pendant les quinze dernières minutes de présence (6 h 50–7 h et 17 h 20–17 h 35 avec les heures initiales). Entre ces plages, deux éducatrices minimum. Le ratio enfants/éducatrice reste obligatoire pendant l’accueil. La relève conserve quinze minutes communes." if week.planning_date else "Deux éducatrices en continu et quinze minutes communes à chaque relève."))
+        form.addRow(note("Deux éducatrices minimum par groupe ouvert, y compris pendant les dix minutes de préparation et les cinq minutes de fermeture. Le ratio peut en exiger davantage. Chaque pause est remplacée ; chaque relève conserve quinze minutes communes." if week.planning_date else "Deux éducatrices en continu et quinze minutes communes à chaque relève."))
         form = self.add_page("Pauses automatiques")
         self.break_after = MinuteEdit(getattr(settings, "break_after_minutes", 0), duration=True)
         self.break_minutes = integer(getattr(settings, "break_minutes", 0), 0, 180, " min")

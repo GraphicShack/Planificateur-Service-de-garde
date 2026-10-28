@@ -5,7 +5,7 @@ from .models import format_time
 
 def alert_text(week, issue, *, global_scope=False):
     if issue.code in {"coverage", "ratio", "opening", "closing", "school_coverage"} and issue.start is not None and issue.end is not None:
-        specific = bool(week.planning_date and week.settings.staffing_policy >= 3 and issue.group_id and issue.code in {'coverage','ratio'})
+        specific = bool(week.planning_date and week.settings.staffing_policy >= 3 and issue.group_id and issue.code in {'coverage','ratio','opening','closing'})
         parts = [p for p in coverage_timeline(week, issue.day or 0,
                  issue.group_id if specific or not global_scope else "")
                  if p.start < issue.end and issue.start < p.end and p.required]

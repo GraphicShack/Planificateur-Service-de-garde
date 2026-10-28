@@ -5,10 +5,10 @@ from test_group_generation import grouped_day
 
 
 def short_day():
-    plan=grouped_day()
+    plan=grouped_day(6)
     plan.settings.close_minute=660
     for group in plan.groups:group.periods[0].end=660
-    for person,rank in zip(plan.educators,(1,4,8,11)):person.seniority=rank
+    for person,rank in zip(plan.educators,(1,3,5,7,9,11)):person.seniority=rank
     return plan
 
 
@@ -39,6 +39,6 @@ def test_unavailable_senior_is_named_without_blocking_available_staff():
 
 
 def test_eight_hour_capacity_failure_is_explained_without_a_partial_proposal():
-    result=generate(grouped_day(2),3)
+    result=generate(grouped_day(4),3)
     assert not result.success and result.proposal is None
     assert any('8 h 00' in text and 'équipe' in text for text in result.diagnostics)

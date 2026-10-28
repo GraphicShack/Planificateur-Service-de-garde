@@ -9,7 +9,7 @@ def boundaries(plan):
 def minimum_presence(plan, minute):
     s = plan.settings
     end = s.close_minute+s.closing_buffer
-    if plan.planning_date and s.staffing_policy >= 2:
+    if plan.planning_date and s.staffing_policy == 2:
         if s.open_minute-s.opening_buffer <= minute < s.open_minute or max(s.open_minute,end-15) <= minute < end:
             return 1
     return 2
@@ -23,8 +23,8 @@ def pupil_requirement(plan, minute, students, ratio, minimum=2):
 
 def group_requirement(plan, minute, students, ratio, minimum=2):
     if plan.planning_date and plan.settings.staffing_policy >= 3:
-        # Two is the service-wide floor; each separate group keeps its own ratio.
-        return max(1, minimum if minimum > 2 else 0, (students+ratio-1)//ratio)
+        # Every open group keeps two people, including preparation and closing.
+        return max(2,minimum,(students+ratio-1)//ratio)
     return pupil_requirement(plan,minute,students,ratio,minimum)
 
 
@@ -32,6 +32,19 @@ def requirements(plan, start, end, students=None, ratio=20, minimum=2, *, per_gr
     points = sorted({start,end}|{p for p in boundaries(plan) if start < p < end})
     return [(a,b,minimum_presence(plan,a) if students is None else (group_requirement if per_group else pupil_requirement)(plan,a,students,ratio,minimum))
             for a,b in zip(points,points[1:])]
+
+
+def group_presence_requirements(plan, group, day=0):
+    """Paid preparation/closing need presence rather than pupil coverage."""
+    if not plan.planning_date or plan.settings.staffing_policy < 3:return []
+    s=plan.settings;parts=[]
+    periods=[p for p in group.periods if p.day==day]
+    minimum=max(2,group.min_educators)
+    if any(p.start<=s.open_minute<p.end for p in periods) and s.opening_buffer:
+        parts.append((s.open_minute-s.opening_buffer,s.open_minute,minimum))
+    if any(p.start<s.close_minute<=p.end for p in periods) and s.closing_buffer:
+        parts.append((s.close_minute,s.close_minute+s.closing_buffer,minimum))
+    return parts
 
 
 DAILY_MAXIMUM = 8 * 60

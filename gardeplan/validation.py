@@ -4,7 +4,7 @@ La vérification balaye les minutes exactes puis regroupe les erreurs identiques
 adjacentes en intervalles lisibles. Aucun arrondi ni approximation par tranche.
 """
 from __future__ import annotations
-from .staffing import minimum_presence, pupil_requirement, group_requirement, daily_limit
+from .staffing import minimum_presence, pupil_requirement, group_requirement, group_presence_requirements, daily_limit
 
 from dataclasses import dataclass, field
 from collections import defaultdict
@@ -236,11 +236,24 @@ def validate(week: Week, *, _service=False) -> list[Issue]:
             students = max(p.students for p in present_periods)
             required = group_requirement(week,minute,students,g.ratio,g.min_educators)
             actual = len({s.educator_id for s in staff if any(a <= minute < b for a, b in coverage[s.id])})
-            code = "coverage" if actual < (1 if week.planning_date and week.settings.staffing_policy >= 3 else minimum_presence(week,minute)) else "ratio"
+            code = "coverage" if actual < minimum_presence(week,minute) else "ratio"
             values.append((minute, (code, required, actual) if actual < required else None))
         for a, b, (code, required, actual) in _minute_runs(values):
             affected = [s.id for s in staff if _overlap(s.start, s.end, a, b)]
             add(code, _prefix(day, a, b) + f"le groupe {g.name} nécessite {required} éducatrices, mais seulement {actual} sont disponibles.", day, a, b, group_id, affected, f"Ajouter {required - actual} éducatrice(s) disponible(s) pendant cette période.")
+
+    if valid_settings and week.planning_date and settings.staffing_policy >= 3:
+        for group in week.groups:
+            for day in week.active_days:
+                staff=by_group_day[(group.id,day)]
+                for a,b,required in group_presence_requirements(week,group,day):
+                    values=[]
+                    for minute in range(a,b):
+                        actual=len({s.educator_id for s in staff if any(x<=minute<y for x,y in working[s.id])})
+                        values.append((minute,actual if actual<required else None))
+                    for start,end,actual in _minute_runs(values):
+                        code='opening' if start<settings.open_minute else 'closing'
+                        add(code,_prefix(day,start,end)+f"le groupe {group.name} nécessite {required} éducatrices présentes, mais seulement {actual} sont au travail.",day,start,end,group.id,[s.id for s in staff if _overlap(s.start,s.end,start,end)],'Ajouter une éducatrice disponible à ce groupe.')
 
     # École ouverte : deux personnes au travail en continu, préparation et fermeture incluses.
     if valid_settings:
@@ -249,7 +262,14 @@ def validate(week: Week, *, _service=False) -> list[Issue]:
             staff = [s for s in shifts if s.day == day]
             a, b = settings.open_minute - settings.opening_buffer, settings.close_minute + settings.closing_buffer
             values = []
+            group_ranges=[(p.start,p.end) for (gid,d),ps in valid_periods.items() if d==day for p in ps]
+            group_ranges += [(x,y) for group in week.groups for x,y,n in group_presence_requirements(week,group,day)]
             for minute in range(a, b):
+                if week.planning_date and settings.staffing_policy>=3 and any(x<=minute<y for x,y in group_ranges):
+                    # Two in every open group already imply the school floor.
+                    # Keep one precise group alert instead of a duplicate rule.
+                    values.append((minute,None))
+                    continue
                 actual = len({s.educator_id for s in staff if any(x <= minute < y for x, y in working[s.id])})
                 code = "opening" if minute < settings.open_minute else "closing" if minute >= settings.close_minute else "school_coverage"
                 required = minimum_presence(week,minute)

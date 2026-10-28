@@ -15,7 +15,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any
 
-from .staffing import group_requirement, daily_limit, boundaries, minimum_presence, pupil_requirement, requirements as staffing_requirements
+from .staffing import group_presence_requirements, group_requirement, daily_limit, boundaries, minimum_presence, pupil_requirement, requirements as staffing_requirements
 from .models import (
     Break, Educator, Shift, Week, coverage_intervals, working_intervals,
     paid_minutes, required_educators, subtract_intervals, merge_intervals, new_id,
@@ -189,6 +189,7 @@ def _requirements(week: Week) -> list[str]:
                              if p.day == day and p.start <= a < p.end)
                          for g in week.groups
                          if any(p.day == day and p.start <= a < p.end for p in g.periods))
+            needed += sum(n for g in week.groups for x,y,n in group_presence_requirements(week,g,day) if x<=a and b<=y)
             school_open = (week.settings.open_minute - week.settings.opening_buffer <= a <
                            week.settings.close_minute + week.settings.closing_buffer)
             needed = max(needed, minimum_presence(week,a) if school_open else 0)
@@ -216,7 +217,7 @@ def _requirements(week: Week) -> list[str]:
 
 
 def _cover(model, candidates: list[_Candidate], day: int, required: list[tuple[int, int, int]],
-           group_id: str | None = None, allowed_ids: set[str] | None = None) -> None:
+           group_id: str | None = None, allowed_ids: set[str] | None = None, *, presence=False) -> None:
     """Contraintes sur tous les segments où le besoin ou la présence change.
 
     Un balayage des événements évite d'arrondir une borne à un pas de temps.
@@ -229,7 +230,7 @@ def _cover(model, candidates: list[_Candidate], day: int, required: list[tuple[i
             continue
         if allowed_ids is not None and shift.educator_id not in allowed_ids:
             continue
-        intervals = working_intervals(shift) if group_id is None else coverage_intervals(shift)
+        intervals = working_intervals(shift) if group_id is None or presence else coverage_intervals(shift)
         for start, end in intervals:
             events[start].append((idx, 1))
             events[end].append((idx, -1))
@@ -415,6 +416,9 @@ def generate(week: Week, time_limit: float = 20) -> GenerationResult:
                             for segment in staffing_requirements(snapshot,p.start,p.end,p.students,group.ratio,group.min_educators,per_group=True)]
             if requirements:
                 _cover(model, candidates, day, requirements, group.id)
+            edge_needs=group_presence_requirements(snapshot,group,day)
+            if edge_needs:
+                _cover(model,candidates,day,edge_needs,group.id,presence=True)
     for day in snapshot.active_days:
         if any(p.day == day for group in snapshot.groups for p in group.periods):
             _cover(model, candidates, day,

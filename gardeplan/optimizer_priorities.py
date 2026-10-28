@@ -44,7 +44,7 @@ def solve_daily(model,candidates,by_person,totals,week,time_limit):
         remaining=deadline-monotonic()
         if remaining<=.02:return None
         model.maximize(expression) if maximize else model.minimize(expression)
-        if best is not None:
+        if best is not None and best_status in (cp_model.OPTIMAL,cp_model.FEASIBLE):
             model.clear_hints()
             for candidate in candidates:model.add_hint(candidate.variable,int(best.boolean_value(candidate.variable)))
         solver=cp_model.CpSolver()
@@ -61,6 +61,10 @@ def solve_daily(model,candidates,by_person,totals,week,time_limit):
 
     participation=sum(used.values())
     value=run(participation,True,max(.1,time_limit*.25))
+    if value is None and best_status==cp_model.UNKNOWN:
+        # A large multi-group model may spend the first slice in presolve.
+        # Use the remaining requested time before reporting a timeout.
+        value=run(participation,True,max(.02,deadline-monotonic()))
     if value is None:return best,best_status,False,0
     model.add(participation>=value)
     # Avoid creating unnecessary paid hours merely to satisfy preferences.

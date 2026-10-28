@@ -17,6 +17,7 @@ class EnrolmentPanel(QWidget):
         self.setWindowTitle("Inscriptions de la journée")
         self.setPalette(light_palette())
         self.setStyleSheet(EDITOR_STYLE.replace("QDialog#editorDialog", "QWidget#editorDialog"))
+        self.week = week
         self.ratio = service_ratio(week)
         root = QVBoxLayout(self)
         root.setContentsMargins(14, 14, 14, 14)
@@ -34,7 +35,7 @@ class EnrolmentPanel(QWidget):
         self.preview.setWordWrap(True)
         self.preview.setAccessibleName("Besoin calculé en direct")
         root.addWidget(self.preview)
-        explanation = QLabel("Deux éducatrices minimum en journée. Une seule peut suffire avant l’ouverture aux enfants et pendant les quinze dernières minutes de présence. Le ratio configuré reste applicable pendant l’accueil et peut exiger davantage de personnes. Avec zéro inscription, la journée est fermée.")
+        explanation = QLabel("Deux éducatrices minimum dans chaque groupe ouvert, pendant toute sa plage, préparation et fermeture comprises. Chaque pause doit être remplacée. Le ratio configuré peut exiger davantage de personnes. Avec zéro inscription, la journée est fermée.")
         explanation.setWordWrap(True)
         root.addWidget(explanation)
         root.addStretch()
@@ -60,10 +61,13 @@ class EnrolmentPanel(QWidget):
 
     def update_preview(self):
         count = self.count.value()
-        required = max(2, (count+self.ratio-1)//self.ratio) if count else 0
+        from ..planning import plan_pedagogical_day
+        prepared=plan_pedagogical_day(self.week,0,count,20)
+        required=max((p.required for p in coverage_timeline(prepared)),default=0) if count else 0
         self.preview.setText(f"{count} enfants → ratio 1/{self.ratio} → minimum {required} éducatrices simultanées" if count else "0 enfant → journée fermée → aucune éducatrice requise")
 
     def load_week(self, week):
+        self.week = week
         self.ratio = service_ratio(week)
         self.count.setValue(max((p.students for p in coverage_timeline(week)), default=0))
         self.update_preview()

@@ -125,7 +125,7 @@ def plan_pedagogical_day(
         result.groups.append(Group(
             id=new_id(), name=group_name,
             color=_COLORS[len(result.groups) % len(_COLORS)],
-            ratio=20, min_educators=2,
+            ratio=service_ratio(week) if week.planning_date and week.settings.staffing_policy >= 3 else 20, min_educators=2,
         ))
         used_names.add(group_name.casefold())
 

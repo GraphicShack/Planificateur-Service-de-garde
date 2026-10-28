@@ -1,6 +1,6 @@
 """Minute-exact coverage with merged intervals and legacy quarter-hour views."""
 from dataclasses import dataclass
-from .staffing import boundaries, minimum_presence, pupil_requirement, group_requirement
+from .staffing import boundaries, minimum_presence, pupil_requirement, group_requirement, group_presence_requirements
 from .models import coverage_intervals, working_intervals, required_educators
 from .models import totals, format_duration
 
@@ -68,6 +68,14 @@ def coverage_timeline(week, day=0, group_id=""):
                 needs.append(need)
                 missing += max(0,need-actual_group)
             required = sum(needs) if group_id else max(minimum_presence(week,a),sum(needs))
+        if preparation and week.planning_date and week.settings.staffing_policy >= 3:
+            edge_needs=[(g,n) for g in groups for x,y,n in group_presence_requirements(week,g,day) if x<=a and b<=y]
+            if edge_needs:
+                required=sum(n for g,n in edge_needs)
+                for group,need in edge_needs:
+                    actual_group=len({s.educator_id for s in shifts if s.group_id==group.id and s.educator_id in active
+                                      and any(x<=a and b<=y for x,y in worked[s.id])})
+                    missing+=max(0,need-actual_group)
         actual = len({s.educator_id for s in shifts if s.educator_id in active
                       and any(x <= a and b <= y for x, y in intervals[s.id])})
         item = Coverage(a, b, actual, required, students, missing)
