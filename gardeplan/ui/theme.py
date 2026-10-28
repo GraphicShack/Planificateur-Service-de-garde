@@ -27,6 +27,9 @@ def light_palette():
         (QPalette.ColorRole.ToolTipText, SURFACE),
         (QPalette.ColorRole.PlaceholderText, SECONDARY),
     ):
+        if color == FOREST:
+            from .appearance import accent_color
+            color = accent_color(color)
         palette.setColor(role, QColor(color))
     return palette
 

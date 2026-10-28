@@ -21,6 +21,7 @@ from gardeplan.models import (
 from gardeplan.identity import next_educator_color
 from .theme import EDITOR_STYLE, light_palette
 from .flow_layout import FlowLayout
+from .appearance import set_themed_style
 
 DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"]
 
@@ -364,7 +365,7 @@ class EditorDialog(QDialog):
         self.setObjectName("editorDialog")
         self.setPalette(light_palette())
         self.setAutoFillBackground(True)
-        self.setStyleSheet(EDITOR_STYLE)
+        set_themed_style(self, EDITOR_STYLE)
         self.setWindowTitle(title)
         self.setMinimumWidth(620)
         self.resize(720, 680)

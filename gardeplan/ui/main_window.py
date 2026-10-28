@@ -38,6 +38,7 @@ from .inline_name import InlineDayName
 from .enrolment import EnrolmentPanel
 from .home import HomePage
 from .motion import AnimatedStack, Motion
+from .appearance import Appearance, AppearancePanel, set_themed_style
 from .visuals import icon, logo_icon, logo_pixmap
 from .forms import EducatorDialog, GroupDialog, RoomDialog, ShiftDialog, ActivityDialog, SettingsDialog, integer, note
 
@@ -118,6 +119,7 @@ class MainWindow(QMainWindow):
         self._sidebar_manual_hidden = False
         self.motion = Motion(self)
         self._build_ui()
+        self.appearance = Appearance(self, self.motion, Path(repo.path).parent / "interface.json")
         self._upgrade_working_rules()
         self.refresh()
         if start_home:
@@ -247,7 +249,7 @@ class MainWindow(QMainWindow):
             arrow.setObjectName("dateArrow")
             arrow.setIconSize(QSize(24, 24))
             arrow.setFixedSize(48, 48)
-            arrow.setStyleSheet(DATE_STYLE)
+            set_themed_style(arrow, DATE_STYLE)
         date_row.addWidget(week_navigation)
         self.generate_button = self._button("Générer l’horaire", self.start_generation, "Générer automatiquement une proposition d'horaire", primary=True, icon_name="sparkles")
         self.export_button = self._button("Exporter PDF", self.export_pdf, "Exporter ou imprimer les horaires en PDF", icon_name="download")
@@ -663,7 +665,7 @@ class MainWindow(QMainWindow):
         add = self._add_menu_action
         add(self.add_menu, "add_shift", "Quart de travail…", lambda: self.new_shift())
         self.file_menu = QMenu(self)
-        self.file_menu.setStyleSheet("QMenu {background:white;color:#203D32;font-size:16px;} QMenu::item {padding:12px 16px;} QMenu::item:selected {background:#DFEBE4;color:#203D32;}")
+        set_themed_style(self.file_menu, "QMenu {background:white;color:#203D32;font-size:16px;} QMenu::item {padding:12px 16px;} QMenu::item:selected {background:#DFEBE4;color:#203D32;}")
         self.folder_button.setMenu(self.file_menu)
         add(self.file_menu, "save", "Enregistrer l’horaire", lambda: self.save_week(manual=True), "Ctrl+S")
         undo = add(self.command_menu, "undo", "Annuler", lambda: self.undo(), "Ctrl+Z")
@@ -734,7 +736,17 @@ class MainWindow(QMainWindow):
         dialog.setWindowTitle("Affichage du calendrier")
         dialog.setObjectName("displayOptions")
         dialog.setMinimumWidth(390)
-        layout = QFormLayout(dialog)
+        outer = QVBoxLayout(dialog)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        body = QWidget()
+        layout = QFormLayout(body)
+        layout.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapAllRows)
+        scroll.setWidget(body)
+        outer.addWidget(scroll)
+        screen = self.screen().availableGeometry()
+        dialog.resize(min(560, screen.width()-40), min(760, screen.height()-80))
         layout.addRow("Magnétisme", self.snap_combo)
         layout.addRow("Zoom vertical", self.zoom)
         layout.addRow(self.full_day_button)
@@ -742,16 +754,13 @@ class MainWindow(QMainWindow):
         sidebar.setChecked(not self.sidebar.isHidden())
         sidebar.toggled.connect(self.sidebar.setVisible)
         layout.addRow(sidebar)
-        animations = QCheckBox("Animations discrètes (cette session)")
-        animations.setChecked(self.motion.enabled)
-        animations.toggled.connect(self.motion.set_enabled)
-        layout.addRow(animations)
+        layout.addRow(AppearancePanel(self.appearance))
         layout.addRow(note("Les heures restent exactes à la minute, quel que soit le zoom. Le magnétisme aide uniquement au déplacement des blocs."))
         layout.addRow(note("Au clavier dans la grille : gauche/droite sélectionne un quart, haut/bas le déplace, Maj + haut/bas ajuste la fin et Alt + haut/bas ajuste le début. Entrée ouvre les heures exactes."))
         buttons = QDialogButtonBox()
         buttons.addButton("Fermer", QDialogButtonBox.ButtonRole.AcceptRole)
         buttons.accepted.connect(dialog.accept)
-        layout.addRow(buttons)
+        outer.addWidget(buttons)
         for widget in (self.snap_combo, self.zoom, self.full_day_button):
             widget.show()
         try:

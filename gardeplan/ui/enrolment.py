@@ -3,6 +3,7 @@ from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QDialog, QWidget, QPushButton, QVBoxLayout, QFormLayout, QLabel, QSizePolicy
 from .forms import integer
 from .theme import EDITOR_STYLE, light_palette
+from .appearance import set_themed_style
 from ..planning import service_ratio
 from ..coverage import coverage_timeline
 
@@ -16,7 +17,7 @@ class EnrolmentPanel(QWidget):
         self.setObjectName("editorDialog")
         self.setWindowTitle("Inscriptions de la journée")
         self.setPalette(light_palette())
-        self.setStyleSheet(EDITOR_STYLE.replace("QDialog#editorDialog", "QWidget#editorDialog"))
+        set_themed_style(self, EDITOR_STYLE.replace("QDialog#editorDialog", "QWidget#editorDialog"))
         self.week = week
         self.ratio = service_ratio(week)
         root = QVBoxLayout(self)

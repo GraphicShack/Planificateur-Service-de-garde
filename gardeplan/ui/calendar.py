@@ -20,6 +20,7 @@ from ..models import Educator, format_time, format_duration
 from ..hours import educator_hour_state
 from .coverage_band import CoverageBand
 from .theme import TEXT
+from .appearance import accent_color
 
 DAYS = ("Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi")
 EDUCATOR_MIME = "application/x-gardeplan-educator"
@@ -449,7 +450,7 @@ class _Canvas(QWidget):
             p.setPen(Qt.PenStyle.NoPen)
             p.setBrush(QColor(31, 54, 39, 8 if hovered or moving else 4))
             p.drawRoundedRect(rect.translated(0, 2), 8, 8)
-            p.setPen(QPen(QColor("#38644a") if selected else border, 1.7 if selected else 1,
+            p.setPen(QPen(QColor(accent_color("#173F32")) if selected else border, 1.7 if selected else 1,
                           Qt.PenStyle.DashLine if is_activity else Qt.PenStyle.SolidLine))
             p.setBrush(_light(color, .10 if is_activity else .18 if hovered or moving else .12))
             p.drawRoundedRect(rect, 8, 8)
@@ -579,7 +580,7 @@ class _Canvas(QWidget):
             if block.kind == "shift" and c.mode == "Jour":
                 disabled = getattr(value, "locked", False) or c.read_only
                 p.setBrush(QColor("#FFFFFF"))
-                p.setPen(QPen(QColor("#52655E" if disabled else "#173F32"), 1.5,
+                p.setPen(QPen(QColor("#52655E" if disabled else accent_color("#173F32")), 1.5,
                               Qt.PenStyle.DashLine if disabled else Qt.PenStyle.SolidLine))
                 for handle in resize_handles(_Block(block.kind, value, rect, block.column)):
                     p.drawRoundedRect(handle, 3, 3)
@@ -589,7 +590,7 @@ class _Canvas(QWidget):
             area = QRectF(2, c.y(start), self.width()-4, max(3, (end-start)*c.scale))
             p.fillRect(area, QColor(33, 79, 64, 22))
             p.setBrush(Qt.BrushStyle.NoBrush)
-            p.setPen(QPen(QColor("#173F32"), 2, Qt.PenStyle.DashLine))
+            p.setPen(QPen(QColor(accent_color("#173F32")), 2, Qt.PenStyle.DashLine))
             p.drawRect(area)
 
     def _hit(self, pos):

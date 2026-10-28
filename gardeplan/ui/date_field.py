@@ -2,6 +2,7 @@
 from PySide6.QtCore import QDate, QLocale
 from PySide6.QtWidgets import QDateEdit, QAbstractSpinBox
 from .theme import DATE_STYLE
+from .appearance import set_themed_style
 
 
 class DateField(QDateEdit):
@@ -18,8 +19,8 @@ class DateField(QDateEdit):
         self.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.UpDownArrows)
         self.setMinimumHeight(48)
         self.setAccessibleName("Date de la journée. Modifier le jour, le mois ou l’année au clavier.")
-        self.setStyleSheet(DATE_STYLE+"QDateEdit#dateSelector{font-size:16px;color:#203D32;background:white;border:1px solid #64786D;border-radius:8px;padding:8px 12px;} QDateEdit#dateSelector:focus{border:2px solid #173F32;padding:7px 11px;}")
-        self.setStyleSheet(self.styleSheet()+"QDateEdit#dateSelector::up-button,QDateEdit#dateSelector::down-button{width:0;height:0;} QDateEdit#dateSelector::up-arrow,QDateEdit#dateSelector::down-arrow{image:none;}")
+        set_themed_style(self, DATE_STYLE+"QDateEdit#dateSelector{font-size:16px;color:#203D32;background:white;border:1px solid #64786D;border-radius:8px;padding:8px 12px;} QDateEdit#dateSelector:focus{border:2px solid #173F32;padding:7px 11px;}")
+        set_themed_style(self, self._atelier_css+"QDateEdit#dateSelector::up-button,QDateEdit#dateSelector::down-button{width:0;height:0;} QDateEdit#dateSelector::up-arrow,QDateEdit#dateSelector::down-arrow{image:none;}")
         self.lineEdit().setTextMargins(12,0,12,0)
         self.dateChanged.connect(self._check_date)
         self.ensurePolished()

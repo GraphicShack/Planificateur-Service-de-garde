@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (QWidget,QScrollArea,QFrame,QVBoxLayout,QHBoxLayou
 from ..home_data import recent_days
 from .day_selector import full_date
 from .flow_layout import FlowLayout
+from .appearance import set_themed_style
 
 STYLE='''
 QWidget#homeBody {background:#F7F9F8;color:#203D32;}
@@ -115,7 +116,7 @@ class HomePage(QScrollArea):
         super().__init__(parent)
         self.setWidgetResizable(True);self.setFrameShape(QFrame.Shape.NoFrame)
         self.setAccessibleName('Accueil du service de garde')
-        self.body=QWidget();self.body.setObjectName('homeBody');self.body.setStyleSheet(STYLE)
+        self.body=QWidget();self.body.setObjectName('homeBody');set_themed_style(self.body, STYLE)
         self.setWidget(self.body)
         root=QVBoxLayout(self.body);root.setContentsMargins(28,28,28,28);root.setSpacing(24)
         self.heading=QWidget();flow=QBoxLayout(QBoxLayout.Direction.LeftToRight,self.heading);flow.setContentsMargins(0,0,0,0);flow.setSpacing(20)

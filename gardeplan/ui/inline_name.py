@@ -2,6 +2,7 @@
 from PySide6.QtCore import Qt, QEvent, Signal, QSize
 from PySide6.QtWidgets import QWidget, QPushButton, QLineEdit, QStackedLayout
 from .visuals import icon
+from .appearance import set_themed_style
 
 
 class InlineDayName(QWidget):
@@ -18,13 +19,13 @@ class InlineDayName(QWidget):
         self.button = QPushButton()
         self.button.setIconSize(QSize(16, 16))
         self.button.setMinimumHeight(44)
-        self.button.setStyleSheet("QPushButton{font-size:16px;font-weight:600;color:#203D32;background:transparent;border:0;text-align:left;padding:6px 26px 6px 2px;} QPushButton:hover,QPushButton:focus{background:#DFEBE4;}")
+        set_themed_style(self.button, "QPushButton{font-size:16px;font-weight:600;color:#203D32;background:transparent;border:0;text-align:left;padding:6px 26px 6px 2px;} QPushButton:hover,QPushButton:focus{background:#DFEBE4;}")
         self.editor = QLineEdit()
         self.editor.setMaxLength(160)
         self.editor.setMinimumHeight(44)
         self.editor.setAccessibleName("Nom de la journée")
         self.editor.setPlaceholderText("Nom de la journée (facultatif)")
-        self.editor.setStyleSheet("font-size:16px;color:#203D32;background:white;border:2px solid #214F40;border-radius:6px;")
+        set_themed_style(self.editor, "font-size:16px;color:#203D32;background:white;border:2px solid #214F40;border-radius:6px;")
         self.stack.addWidget(self.button)
         self.stack.addWidget(self.editor)
         self.button.clicked.connect(self.start_editing)

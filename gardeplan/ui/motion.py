@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (
 
 
 class Motion(QObject):
-    """A session preference, shared by navigation and dynamically created buttons."""
+    """Shared preference for navigation and dynamically created buttons."""
     changed = Signal(bool)
 
     def __init__(self, window):
@@ -86,8 +86,9 @@ class ButtonOutline(QWidget):
         return False
 
     def paintEvent(self, event):
-        color = QColor("#D5E3DD" if self.button.objectName() == "railButton"
-                       else "#527B69")
+        from .appearance import accent_color
+        color = QColor(accent_color("#D5E3DD" if self.button.objectName() == "railButton"
+                                    else "#527B69"))
         color.setAlphaF(.65 * self.level)
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)

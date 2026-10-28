@@ -270,8 +270,8 @@ def test_display_options_use_live_calendar_controls(dashboard, monkeypatch):
     snap, zoom = window.snap_combo, window.zoom
     captured = []
     def inspect(dialog):
-        assert snap.parent() is dialog
-        assert zoom.parent() is dialog
+        assert dialog.isAncestorOf(snap)
+        assert dialog.isAncestorOf(zoom)
         if captured:
             assert snap.currentData() == 5
             assert zoom.value() == 70
