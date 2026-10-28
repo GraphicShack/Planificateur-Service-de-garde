@@ -1249,7 +1249,12 @@ class MainWindow(QMainWindow):
                 today = date.today()
                 week = day_plan(today.isoformat())
             if not week.planning_date:
-                week = self.repo.load_day(week.monday)
+                saved_days = self.repo.list_days()
+                if saved_days:
+                    week = self.repo.load_day(saved_days[0]["date"])
+                else:
+                    week = day_plan(date.today().isoformat(), week)
+                    self.repo.save(week)
             self._load(week)
             QMessageBox.information(self, "Importation terminée", f"Sauvegarde importée. La copie de sécurité précédente est conservée ici :\n{safety}")
         except Exception as error:

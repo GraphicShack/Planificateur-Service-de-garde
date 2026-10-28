@@ -3,7 +3,7 @@ from copy import deepcopy
 from datetime import date
 
 import pytest
-from PySide6.QtWidgets import QPushButton, QMessageBox
+from PySide6.QtWidgets import QPushButton, QMessageBox, QFileDialog
 
 from gardeplan.storage import Repository
 from gardeplan.ui.main_window import MainWindow
@@ -104,3 +104,19 @@ def test_publication_and_archive_of_one_date_do_not_change_another(day_window, m
     window.commit(lambda plan: plan.day_names.__setitem__(0, "Modifié"))
     window.save_week(manual=False)
     assert window.repo.load_day("2026-10-29") == second
+
+
+def test_import_weekly_backup_opens_actual_planned_day_when_monday_is_empty(day_window, tmp_path, monkeypatch):
+    from gardeplan.models import Week, Group, GroupPeriod, Educator, Shift
+    source = Repository(tmp_path / "ancienne.sqlite")
+    legacy = Week("2026-10-26", educators=[Educator("e", "Camille Roy")],
+                  groups=[Group("g", "Groupe A", periods=[GroupPeriod(2, 420, 1050, 20)])],
+                  shifts=[Shift("s", "e", "g", 2, 433, 535)], day_names={2: "Mercredi pédagogique"})
+    source.save(legacy)
+    monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *args: (str(source.path), ""))
+    monkeypatch.setattr(QMessageBox, "question", lambda *args: QMessageBox.StandardButton.Yes)
+    day_window.import_backup()
+    assert day_window.week.planning_date == "2026-10-28"
+    assert day_window.week.day_names[0] == "Mercredi pédagogique"
+    assert day_window.week.shifts[0].start == 433
+    assert day_window.repo.load_week("2026-10-26") == legacy
