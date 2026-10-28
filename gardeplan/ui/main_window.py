@@ -176,8 +176,9 @@ class MainWindow(QMainWindow):
         content = QWidget()
         shell.addWidget(content, 1)
         root = QVBoxLayout(content)
-        root.setContentsMargins(28, 24, 28, 14)
-        root.setSpacing(20)
+        self.workspace_layout = root
+        root.setContentsMargins(28, 20, 28, 10)
+        root.setSpacing(14)
         # Less frequent controls keep their original connections and live here
         # until an options dialog needs them. They never create extra windows.
         self._hidden_controls = QWidget(central)
@@ -189,9 +190,11 @@ class MainWindow(QMainWindow):
         brand_column = QVBoxLayout()
         brand_column.setSpacing(5)
         subtitle = QLabel("SERVICE DE GARDE")
+        self.brand_subtitle = subtitle
         subtitle.setObjectName("brandSubtitle")
         brand_column.addWidget(subtitle)
         brand = QLabel("Planification")
+        self.brand_label = brand
         brand.setObjectName("brandTitle")
         brand_column.addWidget(brand)
         heading.addLayout(brand_column)
@@ -208,6 +211,7 @@ class MainWindow(QMainWindow):
         week_navigation = QFrame()
         week_navigation.setObjectName("weekNavigation")
         navigation = QHBoxLayout(week_navigation)
+        self.date_navigation_layout = navigation
         navigation.setContentsMargins(4, 3, 4, 3)
         navigation.setSpacing(2)
         self.previous_day_button = self._button("", lambda: self.navigate_day(-1), "Journée précédente", icon_name="chevron-left")
@@ -307,6 +311,10 @@ class MainWindow(QMainWindow):
         right_layout = QVBoxLayout(right)
         right_layout.setContentsMargins(0, 0, 0, 0)
         right_layout.setSpacing(10)
+        self.schedule_panes = QSplitter(Qt.Orientation.Horizontal)
+        self.schedule_panes.setChildrenCollapsible(False)
+        self.schedule_panes.setHandleWidth(8)
+        right_layout.addWidget(self.schedule_panes,1)
         calendar_surface = QFrame()
         calendar_surface.setObjectName("calendarSurface")
         surface = QVBoxLayout(calendar_surface)
@@ -315,7 +323,8 @@ class MainWindow(QMainWindow):
         day_controls = QWidget()
         day_controls.setObjectName("calendarToolbar")
         day_row = FlowLayout(day_controls, spacing=12)
-        day_row.setContentsMargins(12, 10, 12, 10)
+        self.day_controls_layout = day_row
+        day_row.setContentsMargins(12, 6, 12, 6)
         day_row.setSpacing(8)
         self.day_combo = QComboBox(self._hidden_controls)
         self.day_combo.setObjectName("daySelector")
@@ -360,13 +369,13 @@ class MainWindow(QMainWindow):
             day_row.addWidget(button)
             button.show()
         surface.addWidget(day_controls)
-        surface.addWidget(self.calendar_summary)
         self.version_banner = QLabel()
         self.version_banner.setObjectName("versionBanner")
         self.version_banner.setWordWrap(True)
         surface.addWidget(self.version_banner)
         self.calendar = CalendarWidget()
         self.calendar.single_service = True
+        self.calendar.set_summary_widget(self.calendar_summary)
         self.calendar.show_activities = False
         self.calendar.canvas.setAccessibleName("Calendrier des horaires")
         self.calendar.edit_requested.connect(self.edit_block)
@@ -375,7 +384,8 @@ class MainWindow(QMainWindow):
         self.calendar.day_selected.connect(self.expand_day)
         self.calendar.create_requested.connect(self.calendar_create)
         surface.addWidget(self.calendar, 1)
-        right_layout.addWidget(calendar_surface, 1)
+        self.schedule_panes.addWidget(calendar_surface)
+        self.schedule_panes.setStretchFactor(0,1)
 
         self.snap_combo = QComboBox(self._hidden_controls)
         for label, value in [("Libre · minute", 0), ("1 min", 1), ("5 min", 5), ("15 min", 15)]:
@@ -407,19 +417,23 @@ class MainWindow(QMainWindow):
         alert_layout.addLayout(alert_heading)
         self.alert_list = QListWidget()
         self.alert_list.setObjectName("alertList")
-        self.alert_list.setMaximumHeight(118)
+        self.alert_list.setMaximumHeight(16777215)
         self.alert_list.setMinimumHeight(54)
         self.alert_list.setWordWrap(True)
         self.alert_list.itemClicked.connect(self.navigate_issue)
         self.alert_list.itemActivated.connect(self.navigate_issue)
         alert_layout.addWidget(self.alert_list)
-        right_layout.addWidget(self.alert_panel)
+        self.alert_panel.setMinimumWidth(220)
+        self.alert_panel.setMaximumWidth(320)
+        self.schedule_panes.addWidget(self.alert_panel)
         self.alert_panel.hide()
         self.splitter.addWidget(right)
         self.splitter.setSizes([265, 1100])
 
         self.week_status_label = QLabel(self._hidden_controls)
         self.week_status_label.setObjectName("muted")
+        self.statusBar().hide()
+        self.statusBar().messageChanged.connect(lambda message: self.statusBar().setVisible(bool(message)))
         self._build_command_menus()
 
     def _add_menu_action(self, menu, key, text, callback, shortcut=None):
@@ -532,6 +546,7 @@ class MainWindow(QMainWindow):
             dialog.deleteLater()
 
     def close_alerts(self):
+        self.statusBar().clearMessage()
         self.alert_toggle.setChecked(False)
         self.alert_panel.hide()
 
@@ -550,7 +565,8 @@ class MainWindow(QMainWindow):
         self.day_title.setEnabled(not self.read_only)
         self.day_title.setToolTip(full_title)
         summary, complete = day_summary(self.week, self.day)
-        self.calendar_summary.setText(summary)
+        self._day_summary = summary
+        self.calendar_summary.setText(("" if self.width() < 1000 else "Horaires des éducatrices · ")+summary)
         self.calendar_summary.setStyleSheet(f"font-size:14px;color:{'#214F40' if complete else '#952E28'};")
         self.day_combo.setCurrentIndex(self.day)
         self.snap_combo.setCurrentIndex(max(0, self.snap_combo.findData(self.week.settings.snap_minutes)))
@@ -898,10 +914,41 @@ class MainWindow(QMainWindow):
             elif self.width() >= 960 and self._auto_hidden_sidebar:
                 self.sidebar.show()
                 self._auto_hidden_sidebar = False
+        if hasattr(self,"workspace_layout") and hasattr(self,"day_controls_layout"):
+            compact = self.height() < 800
+            narrow = self.width() < 1000
+            self.workspace_layout.setSpacing(6 if compact else 14)
+            self.workspace_layout.setContentsMargins(18 if compact else 28,8 if compact else 20,18 if compact else 28,8 if compact else 10)
+            self.brand_subtitle.setVisible(not compact)
+            self.brand_label.setStyleSheet("font-size:20px;font-weight:700;" if compact else "font-size:28px;font-weight:700;")
+            self.date_navigation_layout.setContentsMargins(0,0,0,0) if compact else self.date_navigation_layout.setContentsMargins(4,3,4,3)
+            self.day_controls_layout.setContentsMargins(12,2 if compact else 6,12,2 if compact else 6)
+            self.day_title.setMaximumWidth(250 if narrow else 440)
+            self.export_button.setText("" if narrow else "Exporter PDF")
+            self.generate_button.setText("" if narrow else "Générer l’horaire")
+            self.export_button.setMinimumWidth(48)
+            self.generate_button.setMinimumWidth(48)
+            if hasattr(self,"_day_summary"):
+                self.calendar_summary.setText(("" if narrow else "Horaires des éducatrices · ")+self._day_summary)
+            if hasattr(self,"alert_panel"):
+                self._position_alerts()
 
 
     def toggle_alerts(self):
         self.alert_panel.setVisible(self.alert_toggle.isChecked())
+        self._position_alerts()
+
+    def _position_alerts(self):
+        narrow = self.width() < 1000
+        self.schedule_panes.setOrientation(Qt.Orientation.Vertical if narrow else Qt.Orientation.Horizontal)
+        self.alert_panel.setMinimumWidth(0 if narrow else 220)
+        self.alert_panel.setMaximumWidth(16777215 if narrow else 320)
+        self.alert_list.setMaximumHeight(118 if narrow else 16777215)
+        if self.alert_panel.isVisible():
+            if narrow:
+                self.schedule_panes.setSizes([max(250,self.schedule_panes.height()-150),150])
+            else:
+                self.schedule_panes.setSizes([max(330,self.schedule_panes.width()-288),280])
 
     def fit_day(self):
         first = self.calendar.start_minute
@@ -939,6 +986,7 @@ class MainWindow(QMainWindow):
         self.refresh()
         self.alert_toggle.setChecked(True)
         self.alert_panel.show()
+        self._position_alerts()
         self.alert_list.show()
         errors = sum(item.severity == "error" for item in self.issues)
         self.statusBar().showMessage(f"Vérification terminée : {errors} erreur(s) bloquante(s), {len(self.issues) - errors} avertissement(s).", 8000)

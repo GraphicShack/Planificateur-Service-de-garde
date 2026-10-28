@@ -13,7 +13,7 @@ from typing import Any
 from PySide6.QtCore import Qt, QRectF, QSize, Signal, QPointF, QTimer, QEvent
 from PySide6.QtGui import QColor, QFont, QFontMetrics, QPainter, QPen
 from PySide6.QtWidgets import (
-    QWidget, QScrollArea, QGridLayout, QLabel, QMenu, QToolTip,
+    QWidget, QScrollArea, QGridLayout, QHBoxLayout, QLabel, QMenu, QToolTip, QSizePolicy,
 )
 
 from ..models import Educator, format_time, format_duration
@@ -765,6 +765,7 @@ class CalendarWidget(QWidget):
         layout.setContentsMargins(0,0,0,0)
         layout.setSpacing(0)
         corner = QLabel("HEURES")
+        self.corner = corner
         corner.setFixedSize(82,66)
         corner.setAlignment(Qt.AlignmentFlag.AlignCenter)
         corner.setStyleSheet("background:#fafbf8;color:#96a18f;font-size:9px;font-weight:600;"
@@ -814,6 +815,29 @@ class CalendarWidget(QWidget):
             QScrollBar::add-line,QScrollBar::sub-line {width:0;height:0;}
             QScrollBar::add-page,QScrollBar::sub-page {background:transparent;}
         """)
+
+    def set_summary_widget(self, label):
+        """A single full-width heading, instead of title plus summary rows."""
+        self.header_scroll.hide()
+        self.corner.hide()
+        self.layout().removeWidget(self.coverage_header)
+        self.summary_strip = QWidget()
+        self.summary_strip.setMinimumHeight(32)
+        row = QHBoxLayout(self.summary_strip)
+        row.setContentsMargins(12,4,12,4)
+        row.setSpacing(10)
+        label.setContentsMargins(0,0,0,0)
+        label.setMinimumWidth(0)
+        label.setSizePolicy(QSizePolicy.Policy.Ignored,QSizePolicy.Policy.Preferred)
+        row.addWidget(label,1)
+        self.coverage_header.setMinimumSize(0,0)
+        self.coverage_header.setMaximumSize(16777215,16777215)
+        self.coverage_header.setFixedWidth(184)
+        self.coverage_header.setParent(self.summary_strip)
+        row.addWidget(self.coverage_header)
+        self.coverage_header.hide()
+        self.coverage_band.details_changed.connect(lambda _: self.coverage_header.show())
+        self.layout().addWidget(self.summary_strip,0,0,1,3)
 
     def columns(self):
         if not self.week:
@@ -865,6 +889,8 @@ class CalendarWidget(QWidget):
         self.issues=list(issues or [])
         self.coverage_band.set_week(week, self.day)
         self.coverage_header.setText("Couverture")
+        if hasattr(self,"summary_strip"):
+            self.coverage_header.hide()
         self.canvas.drag=None
         starts=[s.start for s in week.shifts]+([a.start for a in week.activities] if self.show_activities else [])
         ends=[s.end for s in week.shifts]+([a.end for a in week.activities] if self.show_activities else [])
