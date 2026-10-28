@@ -13,3 +13,17 @@ def alert_text(week, issue, *, global_scope=False):
             noun = "éducatrice" if worst.actual == 1 else "éducatrices"
             return f"{format_time(issue.start)} – {format_time(issue.end)} : {worst.actual} {noun} au lieu de {worst.required}"
     return issue.message
+
+
+def visible_alerts(week, issues=None):
+    """The single alert count used by both the planner and the home page."""
+    if issues is None:
+        from .validation import validate
+        issues = validate(week)
+    result, seen = [], set()
+    for issue in issues:
+        key = (issue.severity, alert_text(week,issue,global_scope=True))
+        if key not in seen:
+            seen.add(key)
+            result.append(issue)
+    return result

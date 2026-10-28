@@ -25,3 +25,12 @@ def requirements(plan, start, end, students=None, ratio=20, minimum=2):
     points = sorted({start,end}|{p for p in boundaries(plan) if start < p < end})
     return [(a,b,minimum_presence(plan,a) if students is None else pupil_requirement(plan,a,students,ratio,minimum))
             for a,b in zip(points,points[1:])]
+
+
+def adopt_current_draft_rules(plan):
+    """Upgrade only working copies, never published or historical snapshots."""
+    if plan.planning_date and plan.status in {'draft','validated'} and plan.settings.staffing_policy < 2:
+        plan.settings.staffing_policy = 2
+        plan.status = 'draft'
+        return True
+    return False

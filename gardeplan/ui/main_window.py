@@ -24,7 +24,7 @@ from ..models import (
 )
 from ..daily import day_plan
 from ..validation import validate
-from ..alerts import alert_text
+from ..alerts import alert_text, visible_alerts
 from ..coverage import day_summary
 from ..hours import educator_hour_state
 from ..optimizer import generate
@@ -771,12 +771,7 @@ class MainWindow(QMainWindow):
 
     def refresh_alerts(self):
         self.alert_list.clear()
-        displayed, seen = [], set()
-        for issue in self.issues:
-            label = alert_text(self.week, issue, global_scope=True)
-            if (issue.severity, label) not in seen:
-                seen.add((issue.severity, label))
-                displayed.append(issue)
+        displayed = visible_alerts(self.week,self.issues)
         errors = sum(issue.severity == "error" for issue in displayed)
         warnings = len(displayed) - errors
         self.alert_toggle.setText(f"{errors} erreur{'s' if errors != 1 else ''} · {warnings} avertissement{'s' if warnings != 1 else ''}")
@@ -877,11 +872,8 @@ class MainWindow(QMainWindow):
             return False
 
     def _upgrade_working_rules(self):
-        if (self.week.planning_date and self._history_version is None
-                and self.week.status in {"draft", "validated"}
-                and self.week.settings.staffing_policy < 2):
-            self.week.settings.staffing_policy = 2
-            self.week.status = "draft"
+        from ..staffing import adopt_current_draft_rules
+        if self._history_version is None and adopt_current_draft_rules(self.week):
             self.dirty = True
             self._set_save_state(False)
             self.autosave.start()
