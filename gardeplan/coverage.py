@@ -80,6 +80,32 @@ def quarter_hour_coverage(week, day=0):
     return result
 
 
+def merged_coverage(week, day=0):
+    """Merge adjacent equal actual/required values at their exact boundaries."""
+    result = []
+    for part in coverage_timeline(week, day):
+        if result and result[-1].end == part.start and (result[-1].actual, result[-1].required) == (part.actual, part.required):
+            previous = result.pop()
+            part = Coverage(previous.start, part.end, part.actual, part.required,
+                            max(previous.students, part.students))
+        result.append(part)
+    return result
+
+
+def coverage_state(part):
+    if part.actual < part.required:
+        return "shortage", f"Manque {part.required-part.actual}"
+    if part.actual > part.required:
+        return "surplus", f"+{part.actual-part.required}"
+    return ("exact", "OK") if part.required else ("closed", "Fermé")
+
+
+def coverage_counts(part):
+    present = "présente" if part.actual == 1 else "présentes"
+    required = "requise" if part.required == 1 else "requises"
+    return f"{part.actual} {present} / {part.required} {required}"
+
+
 def day_summary(week, day=0):
     parts = coverage_timeline(week, day)
     children = max((p.students for p in parts), default=0)

@@ -14,6 +14,26 @@ def covered_day():
 
 
 class CoverageTests(unittest.TestCase):
+    def test_merged_ratio_preserves_exact_pause_and_merges_equal_neighbors(self):
+        from gardeplan.coverage import merged_coverage, coverage_state, coverage_counts
+        plan = covered_day()
+        parts = merged_coverage(plan)
+        self.assertEqual([(p.start,p.end,p.actual,p.required) for p in parts], [(410,1055,2,2)])
+        plan.shifts[0].breaks = [Break(733,734,True)]
+        parts = merged_coverage(plan)
+        self.assertEqual([(p.start,p.end) for p in parts], [(410,733),(733,734),(734,1055)])
+        self.assertEqual(coverage_state(parts[1]), ('shortage','Manque 1'))
+        self.assertEqual(coverage_counts(parts[1]), '1 présente / 2 requises')
+        plan.educators.append(Educator('third','Troisième',seniority=3))
+        plan.shifts.append(Shift('third','third','g',0,410,1055,10,5))
+        self.assertEqual(coverage_state(merged_coverage(plan)[0]), ('surplus','+1'))
+
+    def test_merged_ratio_ignores_child_count_changes_when_requirement_is_equal(self):
+        from gardeplan.coverage import merged_coverage
+        plan = covered_day()
+        plan.groups[0].periods = [GroupPeriod(0,420,720,5),GroupPeriod(0,720,1050,10)]
+        self.assertEqual(len(merged_coverage(plan)), 1)
+
     @unittest.skipUnless(find_spec("ortools"), "OR-Tools vérifié par les suites natives")
     def test_generator_refuses_invalid_ratio_instead_of_normalizing_it(self):
         from gardeplan.optimizer import generate
