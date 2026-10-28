@@ -1,6 +1,6 @@
 {
   "version": "0.2.0",
-  "commit": "407924c88a13385e598e46d7508a3bb420b5acee",
+  "commit": "46ab53061d9ed010f9f7f1a2b5cc32eedd458284",
   "approved": true,
-  "authorization": "Accord explicite du responsable du projet dans la conversation : tu as le droit de release maintenant."
+  "authorization": "Accord explicite du responsable du projet pour la version 0.2.0 ; même code applicatif, correction du contexte de publication GitHub."
 }
