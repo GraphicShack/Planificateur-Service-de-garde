@@ -14,8 +14,8 @@ import tempfile
 from .models import Week
 from .branding import DISPLAY_NAME
 
-SCHEMA_VERSION = "2"
-SUPPORTED_SCHEMAS = {"1", SCHEMA_VERSION}
+SCHEMA_VERSION = "3"
+SUPPORTED_SCHEMAS = {"1", "2", SCHEMA_VERSION}
 STATUSES = {"draft", "validated", "published", "archived"}
 
 
@@ -56,10 +56,10 @@ class Repository:
             existing = conn.execute("SELECT value FROM metadata WHERE key='schema_version'").fetchone()
             if not existing or existing[0] not in SUPPORTED_SCHEMAS:
                 raise StorageError("Cette base utilise une version non prise en charge. Conservez-la et mettez l’application à jour.")
-            if existing[0] == "1":
+            if existing[0] in {"1","2"}:
                 source_path = Path(conn.execute("PRAGMA database_list").fetchone()[2])
                 stamp = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
-                safety = source_path.with_name(f"{source_path.stem}-avant-format2-{stamp}.sqlite3")
+                safety = source_path.with_name(f"{source_path.stem}-avant-format3-{stamp}.sqlite3")
                 with closing(sqlite3.connect(safety)) as target:
                     conn.backup(target)
         conn.executescript("""
@@ -71,6 +71,10 @@ class Repository:
                 status TEXT NOT NULL CHECK(status IN ('draft','validated','published','archived')),
                 payload TEXT NOT NULL,
                 checksum TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS day_deletions (
+                date TEXT PRIMARY KEY,
+                deleted_at TEXT NOT NULL
             );
             CREATE INDEX IF NOT EXISTS versions_week ON versions(monday,id);
             CREATE TRIGGER IF NOT EXISTS versions_no_update BEFORE UPDATE ON versions
@@ -112,7 +116,7 @@ class Repository:
         except (IndexError, TypeError, KeyError, ValueError) as exc:
             raise StorageError(f"La version sauvegardée ne peut pas être lue : {exc}") from exc
 
-    def save(self, week: Week) -> int:
+    def save(self, week: Week, *, keep_deleted=False) -> int:
         """Append a complete snapshot. Invalid drafts remain saveable."""
         if week.status in {"validated", "published"}:
             from .validation import validate
@@ -122,6 +126,8 @@ class Repository:
         try:
             payload, checksum = self._encode(week)
             with self._connect() as conn:
+                if week.planning_date and not keep_deleted:
+                    conn.execute("DELETE FROM day_deletions WHERE date=?",(week.planning_date,))
                 last = conn.execute("SELECT id,checksum FROM versions WHERE monday=? ORDER BY id DESC LIMIT 1", (week.storage_key,)).fetchone()
                 if last and last["checksum"] == checksum:
                     return last["id"]
@@ -143,6 +149,7 @@ class Repository:
 
     def load_day(self, selected: str) -> Week | None:
         date.fromisoformat(selected)
+        if self.is_day_deleted(selected):return None
         current = self.load_week("day:" + selected)
         if current is not None:
             return current
@@ -156,7 +163,26 @@ class Repository:
             return result
         return None
 
+    def is_day_deleted(self, selected: str) -> bool:
+        date.fromisoformat(selected)
+        with self._connect() as conn:
+            return conn.execute("SELECT 1 FROM day_deletions WHERE date=?",(selected,)).fetchone() is not None
+
+    def delete_day(self, selected: str) -> None:
+        """Hide a date atomically, retaining its append-only version history."""
+        date.fromisoformat(selected)
+        try:
+            if not self.is_day_deleted(selected) and not any(row['date']==selected for row in self.list_days()):
+                raise StorageError("Cette journée n’existe pas.")
+            with self._connect() as conn:
+                conn.execute("INSERT INTO day_deletions(date,deleted_at) VALUES(?,?) ON CONFLICT(date) DO UPDATE SET deleted_at=excluded.deleted_at",
+                             (selected,datetime.now(timezone.utc).isoformat(timespec="microseconds")))
+        except sqlite3.Error as exc:
+            raise StorageError(f"La journée n’a pas pu être supprimée : {exc}") from exc
+
     def list_days(self) -> list[dict]:
+        with self._connect() as conn:
+            deleted={row['date'] for row in conn.execute("SELECT date FROM day_deletions")}
         result = {}
         for row in self.list_weeks():
             if row['monday'].startswith('day:'):
@@ -169,7 +195,7 @@ class Repository:
                 for day in days:
                     selected = (date.fromisoformat(legacy.monday) + timedelta(days=day)).isoformat()
                     result.setdefault(selected, dict(row, date=selected))
-        return sorted(result.values(), key=lambda row: row['date'], reverse=True)
+        return sorted((row for selected,row in result.items() if selected not in deleted), key=lambda row: row['date'], reverse=True)
 
     def duplicate_day(self, source: Week, selected: str) -> Week:
         if self.load_day(selected) is not None:
@@ -272,6 +298,12 @@ class Repository:
                         week = self._decode(row)
                         self._encode(week)
                         target.execute("INSERT INTO versions(id,monday,created_at,status,payload,checksum) VALUES(?,?,?,?,?,?)", tuple(row[key] for key in ("id", "monday", "created_at", "status", "payload", "checksum")))
+                    incoming_tables={row[0] for row in incoming.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+                    if 'day_deletions' in incoming_tables:
+                        for row in incoming.execute("SELECT date,deleted_at FROM day_deletions"):
+                            date.fromisoformat(row['date'])
+                            datetime.fromisoformat(row['deleted_at'])
+                            target.execute("INSERT INTO day_deletions(date,deleted_at) VALUES(?,?)",(row['date'],row['deleted_at']))
                     target.commit()
             stamp = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
             safety = self.path.with_name(f"{self.path.stem}-avant-import-{stamp}.sqlite3")

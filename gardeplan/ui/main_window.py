@@ -510,6 +510,7 @@ class MainWindow(QMainWindow):
         self.home_page = HomePage()
         self.content_stack.addWidget(self.home_page)
         self.home_page.open_day.connect(self.open_home_day)
+        self.home_page.delete_day.connect(self.delete_home_day)
         self.home_page.new_day.connect(self.new_home_day)
         self.home_page.create_today.connect(lambda: self.create_home_day(date.today().isoformat()))
         self.home_page.previous_day.connect(self.choose_week)
@@ -565,6 +566,7 @@ class MainWindow(QMainWindow):
     def create_home_day(self, selected):
         if self._worker is not None or (self.dirty and not self.save_week(manual=False)):
             return False
+
         try:
             existing=self.repo.load_day(selected)
             if existing is not None:
@@ -582,6 +584,26 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self,"Création impossible",str(error))
             return False
 
+
+    def delete_home_day(self, selected):
+        if self._worker is not None or (self.dirty and not self.save_week(manual=False)):
+            return False
+        brief=next((d for d in self.home_page.days if d.date==selected),None)
+        if brief is None:return False
+        answer=QMessageBox.question(self,'Supprimer la journée',
+            f'Supprimer « {brief.name} » ({selected}) de l’accueil ?\n\n'
+            'Les autres journées et les profils sont conservés. L’historique de cette date reste disponible dans les sauvegardes et peut être restauré.',
+            QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.Cancel,QMessageBox.StandardButton.Cancel)
+        if answer!=QMessageBox.StandardButton.Yes:return False
+        try:
+            self.repo.delete_day(selected)
+            if self.week.planning_date==selected:
+                self._load(day_plan(selected,self._home_roster()))
+            self.show_home()
+            return True
+        except Exception as error:
+            QMessageBox.warning(self,'Suppression impossible',str(error))
+            return False
     def new_home_day(self):
         today=date.today().isoformat()
         try:
@@ -608,6 +630,7 @@ class MainWindow(QMainWindow):
         try:
             base=deepcopy(self._home_roster())
             if not base.planning_date:base=day_plan(date.today().isoformat(),base)
+            keep_deleted=self.repo.is_day_deleted(base.planning_date)
             person=next((e for e in base.educators if e.id==identifier),None)
             dialog=EducatorDialog(base,person,self)
             if dialog.exec()!=QDialog.DialogCode.Accepted:return
@@ -615,6 +638,9 @@ class MainWindow(QMainWindow):
             base.status="draft"
             self._load(base)
             self._entity_dialog(dialog,"educators",person,accepted=True)
+            if keep_deleted:
+                if not self.save_week(manual=False,preserve_deleted=True):return
+                self._load(day_plan(base.planning_date,self.week))
             self.show_home()
         except Exception as error:
             QMessageBox.warning(self,"Profil non enregistré",str(error))
@@ -979,12 +1005,12 @@ class MainWindow(QMainWindow):
         self.week.status = "draft"
         self._modified()
 
-    def save_week(self, manual=True):
+    def save_week(self, manual=True, *, preserve_deleted=False):
         if self._history_version is not None:
             return True
         self.autosave.stop()
         try:
-            self.repo.save(self.week)
+            self.repo.save(self.week,keep_deleted=preserve_deleted)
             self.dirty = False
             self._save_error_shown = False
             self._set_save_state(True)

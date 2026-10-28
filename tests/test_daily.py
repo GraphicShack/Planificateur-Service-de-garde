@@ -111,7 +111,7 @@ class DailyTests(unittest.TestCase):
             conn.execute("INSERT INTO versions(monday,created_at,status,payload,checksum) VALUES(?,?,?,?,?)",
                          (old.monday, "2026-10-26T00:00:00Z", "draft", payload, checksum))
         reopened = Repository(self.repo.path)
-        safety = list(self.root.glob("planning-avant-format2-*.sqlite3"))
+        safety = list(self.root.glob("planning-avant-format3-*.sqlite3"))
         self.assertEqual(len(safety), 1)
         with closing(sqlite3.connect(safety[0])) as conn, conn:
             self.assertEqual(conn.execute("SELECT value FROM metadata WHERE key='schema_version'").fetchone()[0], "1")
@@ -123,7 +123,7 @@ class DailyTests(unittest.TestCase):
         self.assertEqual(reopened.load_week(old.monday), old)
         with closing(sqlite3.connect(reopened.path)) as conn, conn:
             self.assertEqual(conn.execute("SELECT payload,checksum FROM versions WHERE monday=?", (old.monday,)).fetchone(), (payload, checksum))
-            self.assertEqual(conn.execute("SELECT value FROM metadata WHERE key='schema_version'").fetchone()[0], "2")
+            self.assertEqual(conn.execute("SELECT value FROM metadata WHERE key='schema_version'").fetchone()[0], "3")
         self.assertIsNone(reopened.load_day("2026-10-29"))
 
     def test_daily_backup_import_preserves_dates_and_archives(self):

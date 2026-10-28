@@ -104,6 +104,7 @@ class DayButton(QPushButton):
 
 class HomePage(QScrollArea):
     open_day=Signal(str)
+    delete_day=Signal(str)
     new_day=Signal()
     create_today=Signal()
     previous_day=Signal()
@@ -166,7 +167,7 @@ class HomePage(QScrollArea):
         self.subtitle.setText(full_date(QDate(today.year,today.month,today.day))+' · Planifiez une journée pédagogique à la fois.')
         self.days=recent_days(repo)
         clear(self.rows);clear(self.today_content);clear(self.team_rows)
-        self.day_buttons=[]
+        self.day_buttons=[];self.day_delete_buttons=[]
         self.previous_button.setEnabled(bool(self.days))
         if not self.days:
             self.rows.addWidget(label("Aucune journée pour l’instant"))
@@ -174,7 +175,13 @@ class HomePage(QScrollArea):
             self.rows.addWidget(self.empty_new_button)
         for brief in self.days:
             item=DayButton(brief,brief.date==self.today,self.open_day.emit)
-            self.rows.addWidget(item);self.day_buttons.append(item)
+            row=QWidget();line=QHBoxLayout(row);line.setContentsMargins(0,0,0,0);line.setSpacing(8)
+            line.addWidget(item,1)
+            remove=button('Supprimer',lambda selected=brief.date:self.delete_day.emit(selected))
+            remove.setAccessibleName(f'Supprimer {brief.name}, {brief.date}')
+            remove.setToolTip('Retirer cette journée de l’accueil. Son historique reste conservé.')
+            line.addWidget(remove)
+            self.rows.addWidget(row);self.day_buttons.append(item);self.day_delete_buttons.append(remove)
         current=next((d for d in self.days if d.date==self.today),None)
         self.today_brief=current
         if current:
