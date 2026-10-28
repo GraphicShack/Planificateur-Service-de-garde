@@ -78,12 +78,12 @@ class _Gutter(QWidget):
     def __init__(self, calendar: "CalendarWidget"):
         super().__init__()
         self.calendar = calendar
-        self.setFixedWidth(65)
+        self.setFixedWidth(82)
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.fillRect(self.rect(), QColor("#fafbf8"))
-        painter.setFont(_font(8.5))
+        painter.setFont(_pixel_font(12))
         c = self.calendar
         offset = c.scroll.verticalScrollBar().value()
         for minute in range((c.start_minute+29)//30*30, c.end_minute+1, 30):
@@ -93,11 +93,10 @@ class _Gutter(QWidget):
                     if c.scale < .4 and minute % 120:
                         continue
                     painter.setPen(QColor("#69766e"))
-                    painter.drawText(QRectF(0, y + 3, 58, 20), Qt.AlignmentFlag.AlignRight,
-                                     f"{minute // 60:02d}:00")
+                    painter.drawText(QRectF(0, y + 3, 76, 20), Qt.AlignmentFlag.AlignRight, format_time(minute))
                 elif c.scale >= 1:
-                    painter.setPen(QColor("#a6afa7"))
-                    painter.drawText(QRectF(0, y + 3, 58, 18), Qt.AlignmentFlag.AlignRight, "30")
+                    painter.setPen(QColor("#52655E"))
+                    painter.drawText(QRectF(0, y + 3, 76, 18), Qt.AlignmentFlag.AlignRight, format_time(minute))
         painter.setPen(QColor("#e5eae3"))
         painter.drawLine(self.width() - 1, 0, self.width() - 1, self.height())
 
@@ -401,7 +400,7 @@ class _Canvas(QWidget):
                 end = self.drag["end"] if self.drag and self.drag["block"] is block else value.end
                 time_range=f"{format_time(start)} – {format_time(end)}"
                 if compact:
-                    subtitle=f"{start//60}:{start%60:02d}\n{end//60}:{end%60:02d}"
+                    subtitle=f"{format_time(start)}\n{format_time(end)}"
                     line_count=2
                     # Preserve every digit in narrow weekly lanes. The full
                     # French range and names remain available in the tooltip.
@@ -658,7 +657,7 @@ class CalendarWidget(QWidget):
         layout.setContentsMargins(0,0,0,0)
         layout.setSpacing(0)
         corner = QLabel("HEURES")
-        corner.setFixedSize(65,66)
+        corner.setFixedSize(82,66)
         corner.setAlignment(Qt.AlignmentFlag.AlignCenter)
         corner.setStyleSheet("background:#fafbf8;color:#96a18f;font-size:9px;font-weight:600;"
                              "border-bottom:1px solid #e5eae3;")

@@ -46,12 +46,12 @@ def test_minute_editor_preserves_713_and_long_weekly_duration(qapp, track_dialog
     clock.lineEdit().setText('07:13')
     clock.interpretText()
     assert clock.value() == 433
-    assert clock.text() == '07:13'
+    assert clock.text() == '7 h 13'
     duration = track_dialog(MinuteEdit(0, duration=True))
     duration.lineEdit().setText('35:42')
     duration.interpretText()
     assert duration.value() == 2142
-    assert duration.text() == '35:42'
+    assert duration.text() == '35 h 42'
     assert clock.validate('07:60', 5)[0] == QValidator.State.Invalid
     assert clock.validate('24:01', 5)[0] == QValidator.State.Invalid
 

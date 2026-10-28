@@ -79,8 +79,8 @@ class PedagogicalPdfTests(unittest.TestCase):
         self.assertAlmostEqual(recorded[1][0], minute_x(840))
         self.assertEqual(plan.to_dict(), before)
         text = PdfReader(self.path).pages[0].extract_text()
-        self.assertIn("07 h 13", text)
-        self.assertIn("08 h 55", text)
+        self.assertIn("7 h 13", text)
+        self.assertIn("8 h 55", text)
         self.assertIn("14 h 00", text)
         self.assertEqual(text.count("Éducateur 01"), 1)
 
@@ -105,7 +105,7 @@ class PedagogicalPdfTests(unittest.TestCase):
         plan.shifts[0].start = 410
         export_general(plan, self.path)
         text = PdfReader(self.path).pages[0].extract_text()
-        self.assertIn("06 h 50", text)
+        self.assertIn("6 h 50", text)
         self.assertIn("17 h 35", text)
         self.assertNotIn("Présence hors", text)
 

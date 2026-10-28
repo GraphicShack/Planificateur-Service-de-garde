@@ -151,6 +151,6 @@ def test_pdf_contains_named_day_and_exact_times(valid_week, tmp_path):
     individual_text = '\n'.join(page.extract_text() for page in pypdf.PdfReader(individual).pages)
     assert 'Halloween' in general_text
     assert 'Halloween' in individual_text
-    assert '06 h 50' in individual_text
+    assert '6 h 50' in individual_text
     assert '17 h 35' in individual_text
     assert '10 h 45' in individual_text

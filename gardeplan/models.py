@@ -23,7 +23,7 @@ def new_id() -> str:
 
 
 def format_time(value: int) -> str:
-    return f"{value // 60:02d} h {value % 60:02d}"
+    return f"{value // 60} h {value % 60:02d}"
 
 
 def format_duration(value: int) -> str:

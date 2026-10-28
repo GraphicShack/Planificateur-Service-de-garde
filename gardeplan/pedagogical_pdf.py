@@ -114,7 +114,7 @@ def draw_day(plan, path):
         _text(canvas, "6 h 50", GRID_LEFT, grid_top-23, bold, 9)
         _text(canvas, "17 h 35", RIGHT, grid_top-23, bold, 9, align="right")
         for minute in range(420, END, 60):
-            _text(canvas, f"{minute//60} h", minute_x(minute), grid_top-8, bold, 9, align="center")
+            _text(canvas, format_time(minute), minute_x(minute), grid_top-8, bold, 9, align="center")
         for row in range(PER_PAGE):
             top = grid_top + row*row_height
             canvas.setFillColor(HexColor("#F4F7F9") if row % 2 == 0 else white)

@@ -102,12 +102,12 @@ class MinuteEdit(QSpinBox):
         self.setAccelerated(True)
         self.setMinimumWidth(112)
         self.setValue(value)
-        self.setToolTip("Saisir heures:minutes, par exemple 07:13. Les flèches ajustent d'une minute.")
+        self.setToolTip("Saisir par exemple 7 h 13. Les flèches ajustent d’une minute.")
 
     def textFromValue(self, value):
         if self.empty_zero and value == 0:
             return ""
-        return f"{value // 60:02d}:{value % 60:02d}"
+        return format_duration(value) if self.duration else format_time(value)
 
     def valueFromText(self, text):
         if self.empty_zero and not text.strip():
@@ -553,9 +553,9 @@ class EducatorDialog(EditorDialog):
         form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.DontWrapRows)
         hours_layout.addLayout(form)
-        form.addRow("Objectif (h:min)", self.target)
+        form.addRow("Objectif d’heures", self.target)
         form.addRow("Heures garanties ⓘ", self.guaranteed)
-        form.addRow("Maximum obligatoire (h:min)", self.maximum)
+        form.addRow("Maximum obligatoire", self.maximum)
         self.target_note = note("")
         self.target.valueChanged.connect(lambda value: self.target_note.setText("Aucun objectif défini" if not value else f"Objectif : {format_duration(value)}"))
         self.target_note.setText("Aucun objectif défini" if not ed.target_minutes else f"Objectif : {format_duration(ed.target_minutes)}")
@@ -742,7 +742,7 @@ class ShiftDialog(EditorDialog):
         form.addRow("Fermeture après la couverture", after_row)
         form.addRow(self.summary)
         form.addRow(self.locked)
-        form.addRow(note("Les heures de présence incluent les buffers. Exemple : présence 06:50–12:00 et préparation 10 min donnent une couverture à partir de 07:00. Les pauses ne couvrent jamais les élèves."))
+        form.addRow(note("Les heures de présence incluent la préparation. Exemple : présence de 6 h 50 à 12 h 00 avec dix minutes de préparation, couverture à partir de 7 h 00. Les pauses ne couvrent jamais les enfants."))
         form = self.add_page("Pauses et dîner")
         self.breaks = BreaksEditor(shift.breaks)
         self.breaks.changed.connect(self.refresh_summary)
@@ -872,12 +872,12 @@ class SettingsDialog(EditorDialog):
         form.addRow("Préparation avant ouverture", self.opening_buffer)
         form.addRow("Fermeture après le départ", self.closing_buffer)
         form.addRow("Chevauchement de relève", self.handover)
-        form.addRow(note("Règles initiales : accueil de 07:00 à 17:30, deux éducatrices dès 06:50 et jusqu'à 17:35. Le service de garde conserve au moins deux éducatrices simultanément pendant l’accueil. La relève nécessite au moins 15 minutes de présence commune."))
+        form.addRow(note("Règles initiales : accueil de 7 h 00 à 17 h 30, deux éducatrices dès 6 h 50 et jusqu’à 17 h 35. Le service de garde conserve au moins deux éducatrices simultanément pendant l’accueil. La relève nécessite au moins quinze minutes de présence commune."))
         form = self.add_page("Pauses automatiques")
         self.break_after = MinuteEdit(getattr(settings, "break_after_minutes", 0), duration=True)
         self.break_minutes = integer(getattr(settings, "break_minutes", 0), 0, 180, " min")
         self.break_paid = check("Les pauses générées sont rémunérées", getattr(settings, "break_paid", False))
-        form.addRow("Couverture continue avant pause (h:min)", self.break_after)
+        form.addRow("Couverture continue avant pause", self.break_after)
         form.addRow("Durée de la pause", self.break_minutes)
         form.addRow(self.break_paid)
         form.addRow(note("Une durée de pause à zéro désactive la règle automatique. Sinon, chaque séquence de couverture entre les pauses doit respecter le délai choisi. Les buffers sont exclus de ce calcul."))
@@ -897,7 +897,7 @@ class SettingsDialog(EditorDialog):
             self.preference_weight.setParent(self)
             self.preference_weight.hide()
         form.addRow("Poids des objectifs d'heures", self.target_weight)
-        form.addRow("Présence quotidienne maximale (h:min)", self.max_daily)
+        form.addRow("Présence quotidienne maximale", self.max_daily)
         form.addRow("Magnétisme du calendrier", self.snap)
         form.addRow(note("Ces poids règlent les préférences de génération. Une valeur plus élevée donne davantage de priorité. Les contraintes obligatoires restent prioritaires dans tous les cas."))
 
