@@ -1,6 +1,6 @@
 {
-  "version": "0.3.2",
-  "commit": "8bb801276a79a9cacee14887776c7cbd31a7453f",
+  "version": "0.3.3",
+  "commit": "6339a4862ac343bd52cc121bc491103dbb129fc1",
   "approved": true,
-  "authorization": "Publication explicitement autorisée dans cette conversation : « fait tout les changement et ensuite push et release le programme » et « Montre moi un aperçu une fois ça fait et ensuite release ». Les changements demandés, avec le dernier minimum strict de deux éducateurs par groupe, sont inclus ; l’aperçu conforme a été montré. La livraison attend les deux constructions natives réussies du SHA exact et leurs contrôles après extraction."
+  "authorization": "Publication autorisée dans cette conversation : « fait tout les changement et ensuite push et release le programme » et « Montre moi un aperçu une fois ça fait et ensuite release ». La correction demandée compte deux personnes au total de 6 h 50 à 7 h et de 17 h à 17 h 35 ; la plage du matin a été confirmée explicitement. L’aperçu conforme a été montré. La publication attend les deux constructions natives réussies du SHA exact et leurs contrôles après extraction."
 }
