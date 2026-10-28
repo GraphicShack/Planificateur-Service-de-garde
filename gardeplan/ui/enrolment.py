@@ -1,6 +1,6 @@
 """A single count with a live explanation of the actual SDG staffing rule."""
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QDialog, QWidget, QPushButton, QVBoxLayout, QFormLayout, QLabel
+from PySide6.QtWidgets import QDialog, QWidget, QPushButton, QVBoxLayout, QFormLayout, QLabel, QSizePolicy
 from .forms import integer
 from .theme import EDITOR_STYLE, light_palette
 from ..planning import service_ratio
@@ -47,6 +47,14 @@ class EnrolmentPanel(QWidget):
         back.setMinimumHeight(44)
         back.clicked.connect(lambda: self.rejected.emit())
         root.addWidget(back)
+        # Qt6 on Windows retains large native size hints in a scroll area.
+        # Let the viewport determine width; wrapped labels retain heightForWidth.
+        for control in self.findChildren(QLabel) + [self.count, self.save_button, back]:
+            policy = control.sizePolicy()
+            policy.setHorizontalPolicy(QSizePolicy.Policy.Ignored)
+            control.setSizePolicy(policy)
+            control.setMinimumWidth(0)
+        self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
         self.count.valueChanged.connect(self.update_preview)
         self.update_preview()
 
