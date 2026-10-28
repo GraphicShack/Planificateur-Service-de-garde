@@ -99,7 +99,7 @@ def _build_candidates(week: Week) -> tuple[list[_Candidate], list[str]]:
         return candidates, diagnostics
 
     for group in week.groups:
-        for day in range(5):
+        for day in week.active_days:
             periods = [p for p in group.periods if p.day == day and p.start < p.end]
             if not periods:
                 continue
@@ -125,7 +125,7 @@ def _build_candidates(week: Week) -> tuple[list[_Candidate], list[str]]:
                     points.add(min(closing, b - settings.closing_buffer))
                     # Ajouter des fins liées à l'objectif quotidien évite de
                     # limiter artificiellement les cibles à des heures rondes.
-                    daily_target = educator.target_minutes // 5
+                    daily_target = educator.target_minutes // len(week.active_days)
                     if daily_target > 0:
                         points.add(opening + daily_target - settings.opening_buffer)
                         points.add(closing - daily_target + settings.closing_buffer)
@@ -149,7 +149,7 @@ def _build_candidates(week: Week) -> tuple[list[_Candidate], list[str]]:
                                 if minutes <= educator.max_minutes and (not settings.max_daily_minutes or minutes <= settings.max_daily_minutes):
                                     add(shift)
                     if len(candidates) > 120000:
-                        diagnostics.append("La recherche dépasse 120 000 quarts candidats. Réduisez le nombre de périodes ou générez une semaine avec moins de groupes simultanés.")
+                        diagnostics.append("La recherche dépasse 120 000 quarts candidats. Réduisez le nombre de périodes ou réduisez les groupes simultanés.")
                         return candidates, diagnostics
     return candidates, diagnostics
 
@@ -162,7 +162,7 @@ def _requirements(week: Week) -> list[str]:
         return ["Aucune éducatrice active n'est disponible."]
     if not any(g.periods for g in week.groups):
         return ["Ajoutez au moins un groupe et ses périodes d'ouverture."]
-    for day in range(5):
+    for day in week.active_days:
         periods = [(g, p) for g in week.groups for p in g.periods if p.day == day]
         if not periods:
             continue
@@ -376,12 +376,12 @@ def generate(week: Week, time_limit: float = 20) -> GenerationResult:
     for intervals in educator_intervals.values():
         model.add_no_overlap(intervals)
     for group in snapshot.groups:
-        for day in range(5):
+        for day in snapshot.active_days:
             requirements = [(p.start, p.end, required_educators(group, p.students))
                             for p in group.periods if p.day == day]
             if requirements:
                 _cover(model, candidates, day, requirements, group.id)
-    for day in range(5):
+    for day in snapshot.active_days:
         if any(p.day == day for group in snapshot.groups for p in group.periods):
             _cover(model, candidates, day,
                    [(settings.open_minute - settings.opening_buffer,
@@ -414,7 +414,7 @@ def generate(week: Week, time_limit: float = 20) -> GenerationResult:
         objective.append(under * (max(0, settings.target_weight) + max(0, settings.seniority_weight) * priority))
         objective.append(over * max(1, settings.target_weight))
         if settings.max_daily_minutes:
-            for day in range(5):
+            for day in snapshot.active_days:
                 model.add(sum(c.paid * c.variable for c in choices if c.shift.day == day) <= settings.max_daily_minutes)
         for candidate in choices:
             if educator.preferred_groups and candidate.shift.group_id not in educator.preferred_groups:

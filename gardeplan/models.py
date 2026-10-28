@@ -158,6 +158,15 @@ class Week:
     settings: Settings = field(default_factory=Settings)
     day_names: dict[int, str] = field(default_factory=dict)
     status: str = "draft"
+    planning_date: str = ""  # Daily records use local day index 0; legacy weeks remain readable.
+
+    @property
+    def active_days(self):
+        return (0,) if self.planning_date else tuple(range(5))
+
+    @property
+    def storage_key(self):
+        return "day:" + self.planning_date if self.planning_date else self.monday
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -167,8 +176,8 @@ class Week:
         return from_dict(data)
 
     def day_label(self, day: int) -> str:
-        current = date.fromisoformat(self.monday) + timedelta(days=day)
-        label = f"{DAYS[day]} {current:%d/%m}"
+        current = date.fromisoformat(self.planning_date or self.monday) + timedelta(days=day)
+        label = f"{(DAYS + ('Samedi', 'Dimanche'))[current.weekday()]} {current:%d/%m}"
         custom = self.day_names.get(day, self.day_names.get(str(day), "")).strip()
         return f"{label} — {custom}" if custom else label
 
@@ -230,6 +239,16 @@ def from_dict(data: dict[str, Any]) -> Week:
         raise ValueError("Date de semaine invalide.") from exc
     if monday.weekday() != 0:
         raise ValueError("La semaine doit commencer un lundi.")
+    planning_date = raw.get("planning_date", "")
+    if planning_date:
+        try:
+            selected = date.fromisoformat(planning_date)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("Date de journée invalide.") from exc
+        if selected - timedelta(days=selected.weekday()) != monday:
+            raise ValueError("La date de la journée ne correspond pas à son calendrier.")
+    elif not isinstance(planning_date, str):
+        raise ValueError("Date de journée invalide.")
     converters = {
         "educators": (Educator, {"availability": Window, "absences": Window}),
         "groups": (Group, {"periods": GroupPeriod}),
@@ -262,6 +281,12 @@ def from_dict(data: dict[str, Any]) -> Week:
     unknown = set(raw) - set(Week.__dataclass_fields__)
     if unknown:
         raise ValueError("Format de semaine inconnu.")
+    if planning_date:
+        periods = [p for g in raw['groups'] for p in g.periods]
+        periods += [p for e in raw['educators'] for p in e.availability + e.absences]
+        periods += [p for r in raw['rooms'] for p in r.availability]
+        if any(p.day != 0 for p in periods + raw['shifts'] + raw['activities']) or any(k != 0 for k in raw['day_names']):
+            raise ValueError("Cet horaire doit contenir uniquement la journée choisie.")
     return Week(**raw)
 
 

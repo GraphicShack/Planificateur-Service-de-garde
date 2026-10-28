@@ -259,7 +259,7 @@ def test_named_menus_call_existing_commands(dashboard, monkeypatch):
         assert action.text().strip()
         action.trigger()
     assert called == ["name", "educator", "groups", "rooms", "shift", "activity", "save"]
-    assert window.more_button.text() == "Menu"
+    assert "Menu" in window.more_button.toolTip()
     assert window.more_button.menu() is window.command_menu
 
 

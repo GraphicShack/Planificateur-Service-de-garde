@@ -22,19 +22,25 @@ from gardeplan.ui.localization import install_french_translations
 
 STYLE = """
 QWidget { font-family:'Segoe UI','SF Pro Text','Noto Sans',sans-serif; font-size:13px; color:#293D34; }
-QMainWindow, QDialog, QWidget#workspace { background:#F6F8F5; }
+QMainWindow, QDialog, QWidget#workspace { background:#F6F8FA; }
 QLabel { background:transparent; }
-QLabel#brandTitle { font-size:22px; font-weight:700; color:#203F30; }
-QLabel#brandSubtitle { font-size:10px; font-weight:600; color:#7F9385; }
+QLabel#brandTitle { font-size:27px; font-weight:700; color:#203F30; }
+QLabel#brandSubtitle { font-size:11px; font-weight:500; color:#8B9893; }
 QLabel#sectionTitle { font-size:17px; font-weight:650; color:#2D4435; }
 QLabel#muted { color:#7A8B7F; font-size:12px; }
 QLabel#smallMuted { color:#7C8C80; font-size:11px; }
-QLabel#saveStatus { color:#6D8271; font-size:12px; }
+QLabel#saveStatus { color:#7A9085; font-size:12px; }
+QLabel#dayTitle { font-size:15px; font-weight:600; }
+QFrame#navigationRail { background:#123F34; border:0; }
+QPushButton#railButton { background:transparent; border:0; border-radius:12px; padding:12px; }
+QPushButton#railButton:hover { background:#2B5549; }
+QPushButton#railButton[active="true"] { background:#2B5549; }
+QPushButton#railButton::menu-indicator { width:0; }
 QDialog#displayOptions { background:#F8FAF6; }
 QDialog#displayOptions QLabel { color:#435C47; }
 QFrame#simpleHeader { background:transparent; border:0; }
 QFrame#weekNavigation { background:#FFFFFF; border:1px solid #E1E8DF; border-radius:12px; }
-QDateEdit#weekDate { background:transparent; border:0; font-weight:600; color:#38533F; padding:4px 5px; }
+QDateEdit#weekDate { background:transparent; border:0; font-size:17px; font-weight:600; color:#38533F; padding:4px 5px; }
 QDateEdit#weekDate::drop-down { border:0; width:20px; }
 QComboBox#statusBadge { background:#ECEEE7; color:#6D7862; border:0; border-radius:15px; padding:9px 15px; font-weight:600; }
 QComboBox#statusBadge[status='validated'] { background:#E2EEDF; color:#426B41; }
@@ -45,7 +51,7 @@ QPushButton, QToolButton { background:#FFFFFF; border:1px solid #DEE7DD; border-
 QPushButton:hover, QToolButton:hover { background:#EEF4EC; border-color:#A9BFA9; }
 QPushButton:pressed, QToolButton:pressed { background:#E2EDDF; }
 QPushButton:disabled { color:#A3AEA3; border-color:#E8EDE6; background:#F3F6F1; }
-QPushButton#primary { background:#355C42; color:#FFFFFF; border:1px solid #355C42; font-weight:600; padding:10px 17px; }
+QPushButton#primary { background:#214F40; color:#FFFFFF; border:1px solid #214F40; font-weight:600; padding:10px 17px; }
 QPushButton#primary:hover { background:#284B35; border-color:#284B35; }
 QPushButton#primary:disabled { background:#AABDAC; color:#F4F7F2; border-color:#AABDAC; }
 QPushButton#iconButton { background:transparent; border:0; border-radius:9px; padding:8px; }
@@ -63,7 +69,7 @@ QPushButton#segment:checked { background:#FFFFFF; color:#355C3F; font-weight:600
 QPushButton#segment:hover:!checked { background:#DFE9DA; }
 QPushButton#alertBadge { background:#EBF2E7; color:#5E7E54; border:0; border-radius:14px; padding:7px 12px; font-size:12px; }
 QPushButton#alertBadge[hasErrors='true'] { background:#FCF0E1; color:#9D6B2F; }
-QFrame#sidebar { background:#F0F4ED; border:1px solid #E4EBDD; border-radius:15px; }
+QFrame#sidebar { background:transparent; border:0; }
 QFrame#divider { background:#DFE8DA; border:0; }
 QLineEdit#educatorSearch { background:#FFFFFF; border:1px solid #E3EADF; border-radius:9px; padding:9px 7px; }
 QCheckBox#quietCheckbox { color:#7C8B79; font-size:11px; }
@@ -71,9 +77,9 @@ QListWidget#educatorList { background:transparent; border:0; }
 QListWidget#educatorList::item { border:1px solid transparent; border-radius:11px; padding:0; }
 QListWidget#educatorList::item:selected { border-color:#A3BCA0; background:#E5EEDC; }
 QListWidget#educatorList::item:hover { border-color:#CEDDC6; }
-QFrame#educatorCard { background:#FFFFFF; border:1px solid #E3EADD; border-radius:11px; }
+QFrame#educatorCard { background:#FFFFFF; border:1px solid #E4E9E7; border-radius:12px; }
 QLabel#educatorName { font-weight:600; font-size:13px; color:#354D3B; }
-QLabel#educatorHours { font-size:14px; font-weight:600; color:#385442; }
+QLabel#educatorHours { font-size:12px; font-weight:600; color:#385442; }
 QFrame#calendarSurface { background:#FFFFFF; border:1px solid #DFE7DC; border-radius:15px; }
 QWidget#calendarToolbar { background:transparent; border-bottom:1px solid #E9EEE5; }
 QComboBox#daySelector { background:transparent; border:0; color:#35513D; font-size:14px; font-weight:600; padding:8px 2px; }
@@ -93,7 +99,7 @@ QListWidget::item { padding:7px; border-bottom:1px solid #F0F3ED; }
 QListWidget::item:selected { background:#E8F0E2; color:#3C6040; }
 QHeaderView::section { background:#F0F5EC; border:0; padding:9px; font-weight:600; color:#5A7453; }
 QProgressBar { background:#EAF0E6; border:0; border-radius:3px; max-height:6px; }
-QProgressBar::chunk { background:#7D9E70; border-radius:3px; }
+QProgressBar::chunk { background:#8CAA9A; border-radius:3px; }
 QTabWidget::pane { border:1px solid #DFE7D8; background:#FFFFFF; border-radius:9px; }
 QTabBar::tab { padding:11px 16px; background:#EDF3E7; color:#72856A; }
 QTabBar::tab:selected { background:#FFFFFF; color:#3D6443; }
@@ -107,7 +113,7 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height:0; }
 QScrollBar:horizontal { background:#F3F6EF; height:9px; }
 QScrollBar::handle:horizontal { background:#CDDAC6; border-radius:4px; min-width:28px; }
 QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal { width:0; }
-QStatusBar { background:#F6F8F5; color:#7A8F78; border-top:1px solid #E6ECE0; }
+QStatusBar { background:#F6F8FA; color:#7A8F78; border-top:1px solid #E6ECE0; }
 QStatusBar::item { border:0; }
 QSplitter::handle { background:transparent; }
 QMenu { background:#FFFFFF; border:1px solid #E0E8D9; border-radius:10px; padding:6px; }
@@ -177,20 +183,17 @@ def main(argv=None):
                     QMessageBox.warning(None, "Copie de sécurité non créée",
                                         f"La base peut être ouverte. Choisissez ensuite un autre dossier pour une sauvegarde.\n\n{exc}")
         today = date.today()
-        monday = (today - timedelta(days=today.weekday())).isoformat()
-        week = repo.load_week(monday)
+        from gardeplan.daily import day_plan
+        latest = repo.latest_week()
+        selected = latest.planning_date if latest and latest.planning_date else today.isoformat()
+        week = repo.load_day(selected)
         if week is None:
             if args.example:
                 from gardeplan.sample import example_week
-                week = example_week(monday)
+                monday = (today - timedelta(days=today.weekday())).isoformat()
+                week = day_plan(today.isoformat(), example_week(monday), extract=True)
             else:
-                previous = repo.latest_week()
-                week = Week(monday)
-                if previous:
-                    week.educators, week.groups, week.rooms, week.settings = deepcopy((
-                        previous.educators, previous.groups, previous.rooms, previous.settings))
-                    for educator in week.educators:
-                        educator.absences = []
+                week = day_plan(selected, latest)
             repo.save(week)
         from gardeplan.ui.main_window import MainWindow
         window = MainWindow(repo, week)

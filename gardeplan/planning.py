@@ -9,7 +9,7 @@ from __future__ import annotations
 from copy import deepcopy
 from .models import Group, GroupPeriod, Week, new_id
 
-_COLORS = ("#298A80", "#6B64BC", "#C27A38", "#4879B0", "#B05F85", "#7B8C36")
+_COLORS = ("#8EA985", "#AB9BCB", "#D5A57D", "#87A6C9", "#BF93A7", "#9DA475")
 
 
 def _letters(index: int) -> str:

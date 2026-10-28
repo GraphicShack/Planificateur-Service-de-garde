@@ -67,6 +67,8 @@ def _prefix(day, start, end):
 def validate(week: Week) -> list[Issue]:
     issues: list[Issue] = []
     def add(code, message, day=None, start=None, end=None, group_id="", shift_ids=None, suggestion="", severity="error"):
+        if week.planning_date and day == 0:
+            message = message.replace("Lundi,", week.day_label(0).split(" — ", 1)[0] + ",", 1)
         issues.append(Issue(severity, code, message, day, start, end, group_id, shift_ids or [], suggestion))
 
     educators = {e.id: e for e in week.educators}
@@ -108,13 +110,15 @@ def validate(week: Week) -> list[Issue]:
                 add("missing_data", f"Une période du groupe {g.name} contient des heures ou un effectif invalides.", group_id=g.id)
                 continue
             valid_periods[(g.id, p.day)].append(p)
-        for day in range(5):
+        for day in week.active_days:
             periods = sorted(valid_periods[(g.id, day)], key=lambda p: p.start)
             for earlier, later in zip(periods, periods[1:]):
                 if earlier.end > later.start:
                     add("missing_data", _prefix(day, later.start, min(earlier.end, later.end)) + f"les périodes d'effectifs du groupe {g.name} se chevauchent.", day, later.start, min(earlier.end, later.end), g.id,
                         suggestion="Utiliser des périodes d'effectifs successives sans chevauchement.")
     for e in week.educators:
+        if week.planning_date and (type(e.seniority) is not int or not 1 <= e.seniority <= 11):
+            add("missing_data", f"Choisissez un rang de 1 à 11 pour {e.name}. Les rangs intermédiaires peuvent rester libres.")
         if not e.name.strip() or any(type(x) is not int or x < 0 for x in (e.target_minutes, e.guaranteed_minutes, e.max_minutes)) or type(e.seniority) is not int or e.seniority < 1:
             add("missing_data", f"La fiche de {e.name or '(sans nom)'} est incomplète ou contient des heures invalides.")
         elif e.guaranteed_minutes > e.max_minutes:
@@ -271,7 +275,7 @@ def validate(week: Week) -> list[Issue]:
             add("max_hours", f"{e.name} totalise {format_duration(minutes)}, au-delà du maximum de {format_duration(e.max_minutes)}.", shift_ids=[s.id for s in week.shifts if s.educator_id == e.id], suggestion="Réaffecter des heures à une autre éducatrice.")
         if minutes < e.guaranteed_minutes:
             add("guarantee", f"Il manque {format_duration(e.guaranteed_minutes - minutes)} aux heures garanties de {e.name}.", suggestion="Attribuer des quarts supplémentaires compatibles avec ses disponibilités.")
-        if minutes != e.target_minutes:
+        if minutes != e.target_minutes and (e.target_minutes or not week.planning_date):
             label = "manquent" if minutes < e.target_minutes else "dépassent la cible"
             add("target", f"{e.name} : {format_duration(abs(minutes - e.target_minutes))} {label} ({format_duration(minutes)} planifiées sur {format_duration(e.target_minutes)} visées).", severity="warning")
     # L'ancienneté conseille, elle ne peut rendre une disponibilité irréalisable obligatoire.
@@ -286,7 +290,7 @@ def validate(week: Week) -> list[Issue]:
             break
     ratios = [actual_totals.get(e.id, 0) * 100 // e.target_minutes for e in active if e.target_minutes > 0]
     if len(ratios) >= 2 and max(ratios) - min(ratios) > 40:
-        add("balance", "Les heures sont réparties de façon déséquilibrée par rapport aux cibles hebdomadaires.", severity="warning")
+        add("balance", "Les heures sont réparties de façon déséquilibrée par rapport aux cibles configurées.", severity="warning")
 
     activities = []
     for activity in week.activities:
@@ -330,7 +334,7 @@ def validate(week: Week) -> list[Issue]:
     for room in week.rooms:
         if room.capacity <= 0:
             continue
-        for day in range(5):
+        for day in week.active_days:
             reservations = [a for a in activities if a.room_id == room.id and a.day == day]
             if not reservations:
                 continue

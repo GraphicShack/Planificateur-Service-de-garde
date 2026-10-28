@@ -100,6 +100,7 @@ def check_installation(destination: str | Path) -> int:
                 week.groups = [Group("g1", "Groupe test", periods=[GroupPeriod(0, 420, 1050, 30)])]
                 week.shifts = [Shift("s1", "e1", "g1", 0, 410, 1055, 10, 5),
                                Shift("s2", "e2", "g1", 0, 410, 1055, 10, 5)]
+                week.planning_date = monday
                 week.day_names = {0: "Journée pédagogique — Vérification"}
                 if any(issue.severity == "error" for issue in validate(week)):
                     raise RuntimeError("Le jeu de contrôle métier n'est pas valide.")
@@ -117,14 +118,12 @@ def check_installation(destination: str | Path) -> int:
                 window = MainWindow(repository, restored)
                 window.show()
                 application.processEvents()
-                window.set_mode("Semaine")
-                application.processEvents()
                 window.set_mode("Jour")
                 window.fit_day()
                 application.processEvents()
                 if window.calendar.canvas.grab().isNull():
                     raise RuntimeError("Le calendrier ne peut pas être dessiné.")
-                report["checks"]["dashboard_day_and_week"] = True
+                report["checks"]["dashboard_day"] = True
 
                 general_pdf = folder / "general.pdf"
                 export_general(restored, general_pdf)

@@ -18,6 +18,7 @@ from gardeplan.models import (
     Activity, Break, Educator, Group, GroupPeriod, Room, Settings, Shift,
     Window, new_id, format_duration, format_time,
 )
+from gardeplan.identity import next_educator_color
 
 DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"]
 
@@ -105,9 +106,11 @@ class ColorButton(QPushButton):
 
 class IntervalsEditor(QWidget):
     """Périodes hebdomadaires éditées par jour, heure exacte et effectif éventuel."""
-    def __init__(self, periods=(), *, students=False, parent=None):
+    def __init__(self, periods=(), *, students=False, parent=None, daily_label=""):
         super().__init__(parent)
         self.students = students
+        self.day_labels = [daily_label] if daily_label else DAYS
+        self.daily_label = daily_label
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         self.table = QTableWidget(0, 4 if students else 3)
@@ -127,6 +130,9 @@ class IntervalsEditor(QWidget):
         row.addWidget(add)
         row.addWidget(remove)
         row.addWidget(copy_days)
+        copy_days.setVisible(not bool(daily_label))
+        if daily_label:
+            self.table.setColumnHidden(0, True)
         layout.addLayout(row)
         for p in periods:
             self.add_row(p.day, p.start, p.end, getattr(p, "students", 20))
@@ -135,7 +141,7 @@ class IntervalsEditor(QWidget):
         row = self.table.rowCount()
         self.table.insertRow(row)
         day_input = QComboBox()
-        day_input.addItems(DAYS)
+        day_input.addItems(self.day_labels)
         day_input.setCurrentIndex(day)
         self.table.setCellWidget(row, 0, day_input)
         self.table.setCellWidget(row, 1, MinuteEdit(start))
@@ -161,7 +167,7 @@ class IntervalsEditor(QWidget):
             end_widget.interpretText()
             start, end = start_widget.value(), end_widget.value()
             if start >= end:
-                raise ValueError(f"{DAYS[day]}, ligne {row + 1} : la fin doit être après le début.")
+                raise ValueError(f"{self.day_labels[day]}, ligne {row + 1} : la fin doit être après le début.")
             if self.students:
                 result.append(GroupPeriod(day, start, end, self.table.cellWidget(row, 3).value()))
             else:
@@ -169,7 +175,7 @@ class IntervalsEditor(QWidget):
         ordered = sorted(result, key=lambda p: (p.day, p.start, p.end))
         for previous, current in zip(ordered, ordered[1:]):
             if previous.day == current.day and current.start < previous.end:
-                raise ValueError(f"{DAYS[current.day]} : deux périodes se chevauchent. Ajustez leurs heures.")
+                raise ValueError(f"{self.day_labels[current.day]} : deux périodes se chevauchent. Ajustez leurs heures.")
         return ordered
 
     def copy_monday(self):
@@ -311,12 +317,17 @@ class EducatorDialog(EditorDialog):
     def __init__(self, week, educator=None, parent=None):
         super().__init__("Modifier l'éducatrice" if educator else "Ajouter une éducatrice", existing=educator is not None, parent=parent)
         self.week = week
-        self.source = deepcopy(educator) if educator else Educator(id=new_id(), name="")
+        self.source = deepcopy(educator) if educator else Educator(id=new_id(), name="", target_minutes=0 if week.planning_date else 2100, max_minutes=(week.settings.max_daily_minutes or 1440) if week.planning_date else 2400)
+        if educator is None:
+            self.source.color = next_educator_color(week.educators)
+            self.source.seniority = min(11, max((person.seniority for person in week.educators), default=0) + 1)
         ed = self.source
         form = self.add_page("Profil")
         self.name = QLineEdit(ed.name)
         self.color = ColorButton(ed.color)
-        self.seniority = integer(ed.seniority, 1, 9999)
+        self.seniority = integer(ed.seniority, 1, 11)
+        self.seniority.setPrefix("Rang ")
+        self.seniority.setToolTip("Choisissez un rang de 1 à 11. Les rangs intermédiaires peuvent rester libres.")
         self.seniority_date = QLineEdit(ed.seniority_date)
         self.seniority_date.setPlaceholderText("Facultative — AAAA-MM-JJ")
         self.active = check("Éducatrice active", ed.active)
@@ -327,15 +338,15 @@ class EducatorDialog(EditorDialog):
         form.addRow("Couleur", self.color)
         form.addRow("Rang d'ancienneté", self.seniority)
         form.addRow("Date d'ancienneté", self.seniority_date)
-        form.addRow("Objectif hebdomadaire (h:min)", self.target)
+        form.addRow("Objectif pour la journée (h:min)" if week.planning_date else "Objectif hebdomadaire (h:min)", self.target)
         form.addRow("Heures garanties (h:min)", self.guaranteed)
         form.addRow("Maximum obligatoire (h:min)", self.maximum)
         form.addRow(self.active)
-        form.addRow(note("Le rang 1 correspond à la plus grande ancienneté. Les durées sont saisies en heures:minutes : 35:00 signifie 35 heures."))
+        form.addRow(note("Rangs de 1 à 11 : le rang 1 est le plus ancien. Vous pouvez laisser des rangs libres (ex. 1, 4, 9). Durées en heures:minutes ; un objectif de zéro reste à définir."))
         form = self.add_page("Disponibilités et absences")
-        self.availability = IntervalsEditor(ed.availability)
-        self.absences = IntervalsEditor(ed.absences)
-        form.addRow(note("Sans période de disponibilité, l'éducatrice est disponible toute la semaine. Les absences ci-dessous sont propres à la semaine affichée."))
+        self.availability = IntervalsEditor(ed.availability, daily_label=week.day_label(0) if week.planning_date else "")
+        self.absences = IntervalsEditor(ed.absences, daily_label=week.day_label(0) if week.planning_date else "")
+        form.addRow(note("Sans période de disponibilité, l'éducatrice est disponible pendant la période planifiée. Les absences ci-dessous sont propres à cet horaire."))
         form.addRow("Disponibilités", self.availability)
         form.addRow("Absences / congés", self.absences)
         form = self.add_page("Préférences")
@@ -367,7 +378,7 @@ class EducatorDialog(EditorDialog):
         ed.guaranteed_minutes = self.guaranteed.value()
         ed.max_minutes = self.maximum.value()
         if max(ed.guaranteed_minutes, ed.target_minutes) > ed.max_minutes:
-            raise ValueError("Les heures garanties et l'objectif ne peuvent pas dépasser le maximum hebdomadaire.")
+            raise ValueError("Les heures garanties et l'objectif ne peuvent pas dépasser le maximum configuré.")
         ed.active = self.active.isChecked()
         ed.availability = self.availability.values()
         ed.absences = self.absences.values()
@@ -386,7 +397,7 @@ class GroupDialog(EditorDialog):
         self.color = ColorButton(group.color)
         self.ratio = integer(group.ratio, 1, 1000, " élèves / éducatrice")
         self.minimum = integer(group.min_educators, 2, 100, " éducatrices")
-        self.periods = IntervalsEditor(group.periods, students=True)
+        self.periods = IntervalsEditor(group.periods, students=True, daily_label=week.day_label(0) if week.planning_date else "")
         form.addRow("Nom du groupe", self.name)
         form.addRow("Couleur", self.color)
         form.addRow("Ratio maximal", self.ratio)
@@ -416,13 +427,13 @@ class RoomDialog(EditorDialog):
         self.capacity.setSpecialValueText("Sans limite configurée")
         self.shared = check("Autoriser plusieurs groupes simultanément", room.shared)
         self.outdoor = check("Lieu extérieur", room.outdoor)
-        self.availability = IntervalsEditor(room.availability)
+        self.availability = IntervalsEditor(room.availability, daily_label=week.day_label(0) if week.planning_date else "")
         form.addRow("Nom du lieu", self.name)
         form.addRow("Capacité maximale", self.capacity)
         form.addRow(self.shared)
         form.addRow(self.outdoor)
         form.addRow("Disponibilités", self.availability)
-        form.addRow(note("Sans période, le lieu est disponible toute la semaine. Pour un lieu partagé, la capacité s'applique à la somme des élèves présents."))
+        form.addRow(note("Sans période, le lieu est disponible pendant toute la journée. Pour un lieu partagé, la capacité s'applique à la somme des élèves présents."))
 
     def build_item(self):
         room = deepcopy(self.source)
@@ -453,7 +464,7 @@ class ShiftDialog(EditorDialog):
             self.group.addItem(group.name, group.id)
         self.group.setCurrentIndex(max(0, self.group.findData(shift.group_id)))
         self.day = QComboBox()
-        self.day.addItems(DAYS)
+        self.day.addItems([week.day_label(0)] if week.planning_date else DAYS)
         self.day.setCurrentIndex(shift.day)
         self.start = MinuteEdit(shift.start)
         self.end = MinuteEdit(shift.end)
@@ -530,7 +541,7 @@ class ActivityDialog(EditorDialog):
             self.group.addItem(group.name, group.id)
         self.group.setCurrentIndex(max(0, self.group.findData(activity.group_id)))
         self.day = QComboBox()
-        self.day.addItems(DAYS)
+        self.day.addItems([week.day_label(0)] if week.planning_date else DAYS)
         self.day.setCurrentIndex(activity.day)
         self.start, self.end = MinuteEdit(activity.start), MinuteEdit(activity.end)
         self.room = QComboBox()

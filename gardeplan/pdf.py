@@ -23,7 +23,7 @@ from reportlab.platypus import (
 from .branding import DISPLAY_NAME
 from .models import Week, coverage_intervals, format_duration, format_time, paid_minutes, totals
 
-DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"]
+DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
 STATUS = {"draft": "Brouillon", "validated": "Validé", "published": "Publié", "archived": "Archivé"}
 
 
@@ -73,9 +73,9 @@ def _table(headers, rows, widths, styles):
 
 
 def _day_label(week, day):
-    current = date.fromisoformat(week.monday) + timedelta(days=day)
+    current = date.fromisoformat(week.planning_date or week.monday) + timedelta(days=day)
     name = week.day_names.get(day, week.day_names.get(str(day), ""))
-    return f"{DAYS[day]} {current.strftime('%d/%m/%Y')}" + (f" — {name}" if name else "")
+    return f"{DAYS[current.weekday()]} {current.strftime('%d/%m/%Y')}" + (f" — {name}" if name else "")
 
 
 def _range(start, end):
@@ -83,6 +83,8 @@ def _range(start, end):
 
 
 def _week_title(week):
+    if week.planning_date:
+        return "Journée pédagogique — " + _day_label(week, 0)
     monday = date.fromisoformat(week.monday)
     friday = monday + timedelta(days=4)
     return f"Semaine du {monday.strftime('%d/%m/%Y')} au {friday.strftime('%d/%m/%Y')}"
@@ -153,8 +155,8 @@ def _general_story(week, styles):
     groups = {g.id: g for g in week.groups}
     rooms = {r.id: r for r in week.rooms}
     width = landscape(A4)[0] - 32 * mm
-    for day in range(5):
-        if day:
+    for day in week.active_days:
+        if day != week.active_days[0]:
             story.append(PageBreak())
         story.append(_p(_day_label(week, day), styles["heading"]))
         shifts = sorted((s for s in week.shifts if s.day == day), key=lambda s: (s.start, groups.get(s.group_id).name if s.group_id in groups else "", s.educator_id))
@@ -200,7 +202,7 @@ def _general_story(week, styles):
 def _individual_story(week, educator_id, styles):
     educator = next((e for e in week.educators if e.id == educator_id), None)
     if educator is None:
-        raise PdfError("Cette éducatrice n’existe pas dans la semaine choisie.")
+        raise PdfError("Cette éducatrice n’existe pas dans la journée choisie.")
     width = A4[0] - 32 * mm
     groups = {g.id: g.name for g in week.groups}
     rooms = {r.id: r for r in week.rooms}
@@ -208,7 +210,7 @@ def _individual_story(week, educator_id, styles):
     total = totals(week).get(educator_id, 0)
     story.append(_p(f"Statut : {STATUS.get(week.status,week.status)} · Total rémunéré : {format_duration(total)} · Cible : {format_duration(educator.target_minutes)}", styles["body"]))
     story.append(Spacer(1, 4 * mm))
-    for day in range(5):
+    for day in week.active_days:
         story.append(_p(_day_label(week, day), styles["heading"]))
         shifts = sorted((s for s in week.shifts if s.educator_id == educator_id and s.day == day), key=lambda s: s.start)
         if not shifts:
@@ -276,5 +278,5 @@ def export_all_individual(week: Week, directory: str | Path) -> list[Path]:
         if not educator.active and educator.id not in scheduled:
             continue
         name = re.sub(r"[^\w -]", "", educator.name, flags=re.UNICODE).strip().replace(" ", "_")[:80] or "educatrice"
-        paths.append(export_individual(week, educator.id, directory / f"{name}_{educator.id[:8]}_{week.monday}.pdf"))
+        paths.append(export_individual(week, educator.id, directory / f"{name}_{educator.id[:8]}_{week.planning_date or week.monday}.pdf"))
     return paths

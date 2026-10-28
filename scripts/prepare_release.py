@@ -18,7 +18,7 @@ def prepare(source: Path, destination: Path, version: str) -> list[Path]:
         raise ValueError("Version invalide")
     required_checks = (
         "qt_application", "coverage_and_exact_minutes", "sqlite_save_reopen_backup",
-        "dashboard_day_and_week", "pdf_export_preview_print_modules",
+        "dashboard_day", "pdf_export_preview_print_modules",
         "ortools_cp_sat_generation", "offline_operations", "portable_data_write",
     )
     validated = []

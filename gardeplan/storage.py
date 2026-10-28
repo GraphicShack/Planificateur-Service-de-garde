@@ -14,7 +14,8 @@ import tempfile
 from .models import Week
 from .branding import DISPLAY_NAME
 
-SCHEMA_VERSION = "1"
+SCHEMA_VERSION = "2"
+SUPPORTED_SCHEMAS = {"1", SCHEMA_VERSION}
 STATUSES = {"draft", "validated", "published", "archived"}
 
 
@@ -53,7 +54,7 @@ class Repository:
             if "metadata" not in tables:
                 raise StorageError(f"Ce fichier SQLite n’est pas une base de {DISPLAY_NAME}. Choisissez une nouvelle base ou une sauvegarde compatible.")
             existing = conn.execute("SELECT value FROM metadata WHERE key='schema_version'").fetchone()
-            if not existing or existing[0] != SCHEMA_VERSION:
+            if not existing or existing[0] not in SUPPORTED_SCHEMAS:
                 raise StorageError("Cette base utilise une version non prise en charge. Conservez-la et mettez l’application à jour.")
         conn.executescript("""
             CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL);
@@ -72,9 +73,9 @@ class Repository:
                 BEGIN SELECT RAISE(ABORT, 'Versions are immutable'); END;
         """)
         existing = conn.execute("SELECT value FROM metadata WHERE key='schema_version'").fetchone()
-        if existing and existing[0] != SCHEMA_VERSION:
+        if existing and existing[0] not in SUPPORTED_SCHEMAS:
             raise StorageError("Cette base utilise une version non prise en charge. Conservez-la et mettez l’application à jour.")
-        conn.execute("INSERT OR IGNORE INTO metadata VALUES ('schema_version', ?)", (SCHEMA_VERSION,))
+        conn.execute("INSERT INTO metadata VALUES ('schema_version', ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", (SCHEMA_VERSION,))
 
     @staticmethod
     def _encode(week: Week) -> tuple[str, str]:
@@ -97,7 +98,7 @@ class Repository:
             if hashlib.sha256(payload.encode("utf-8")).hexdigest() != checksum:
                 raise StorageError("Une version est endommagée. Restaurez une sauvegarde de sécurité.")
             week = Week.from_dict(json.loads(payload))
-            if week.monday != row["monday"] or week.status != row["status"]:
+            if week.storage_key != row["monday"] or week.status != row["status"]:
                 raise ValueError("en-tête différent du contenu")
             return week
         except StorageError:
@@ -115,12 +116,12 @@ class Repository:
         try:
             payload, checksum = self._encode(week)
             with self._connect() as conn:
-                last = conn.execute("SELECT id,checksum FROM versions WHERE monday=? ORDER BY id DESC LIMIT 1", (week.monday,)).fetchone()
+                last = conn.execute("SELECT id,checksum FROM versions WHERE monday=? ORDER BY id DESC LIMIT 1", (week.storage_key,)).fetchone()
                 if last and last["checksum"] == checksum:
                     return last["id"]
                 cur = conn.execute(
                     "INSERT INTO versions(monday,created_at,status,payload,checksum) VALUES(?,?,?,?,?)",
-                    (week.monday, datetime.now(timezone.utc).isoformat(timespec="microseconds"), week.status, payload, checksum),
+                    (week.storage_key, datetime.now(timezone.utc).isoformat(timespec="microseconds"), week.status, payload, checksum),
                 )
                 return cur.lastrowid
         except (OSError, sqlite3.Error, TypeError, ValueError) as exc:
@@ -133,6 +134,44 @@ class Repository:
                 return self._decode(row) if row else None
         except sqlite3.Error as exc:
             raise StorageError(f"Impossible de lire cette semaine : {exc}") from exc
+
+    def load_day(self, selected: str) -> Week | None:
+        date.fromisoformat(selected)
+        current = self.load_week("day:" + selected)
+        if current is not None:
+            return current
+        from .daily import day_plan
+        day = date.fromisoformat(selected)
+        from datetime import timedelta
+        legacy = self.load_week((day - timedelta(days=day.weekday())).isoformat())
+        if legacy is not None and (any(s.day == day.weekday() for s in legacy.shifts + legacy.activities) or any(p.day == day.weekday() for g in legacy.groups for p in g.periods) or day.weekday() in legacy.day_names):
+            result = day_plan(selected, legacy, extract=True)
+            self.save(result)
+            return result
+        return None
+
+    def list_days(self) -> list[dict]:
+        result = {}
+        for row in self.list_weeks():
+            if row['monday'].startswith('day:'):
+                selected = row['monday'][4:]
+                result[selected] = dict(row, date=selected)
+            else:
+                legacy = self.load_version(row['id'])
+                from datetime import timedelta
+                days = {s.day for s in legacy.shifts} | {p.day for g in legacy.groups for p in g.periods} | set(legacy.day_names)
+                for day in days:
+                    selected = (date.fromisoformat(legacy.monday) + timedelta(days=day)).isoformat()
+                    result.setdefault(selected, dict(row, date=selected))
+        return sorted(result.values(), key=lambda row: row['date'], reverse=True)
+
+    def duplicate_day(self, source: Week, selected: str) -> Week:
+        if self.load_day(selected) is not None:
+            raise StorageError("Cette journée existe déjà. Choisissez une date vide pour préserver ses horaires.")
+        from .daily import duplicate_day
+        result = duplicate_day(source, selected)
+        self.save(result)
+        return result
 
     def load_version(self, version_id: int) -> Week:
         try:
@@ -215,7 +254,7 @@ class Repository:
                 if incoming.execute("PRAGMA integrity_check").fetchone()[0] != "ok":
                     raise StorageError("Le fichier choisi est endommagé.")
                 schema = incoming.execute("SELECT value FROM metadata WHERE key='schema_version'").fetchone()
-                if not schema or schema[0] != SCHEMA_VERSION:
+                if not schema or schema[0] not in SUPPORTED_SCHEMAS:
                     raise StorageError(f"Ce fichier n’est pas une sauvegarde compatible avec {DISPLAY_NAME}.")
                 fd, temporary = tempfile.mkstemp(prefix=".gardeplan-import-", suffix=".sqlite3", dir=self.path.parent)
                 os.close(fd)

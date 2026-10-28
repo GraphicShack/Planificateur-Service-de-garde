@@ -6,7 +6,7 @@ contrôleur peut ainsi les enregistrer, les annuler et revalider l'horaire.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 import math
 from typing import Any
 
@@ -74,7 +74,7 @@ class _Gutter(QWidget):
                         continue
                     painter.setPen(QColor("#69766e"))
                     painter.drawText(QRectF(0, y + 3, 58, 20), Qt.AlignmentFlag.AlignRight,
-                                     f"{minute // 60:02d} h")
+                                     f"{minute // 60:02d}:00")
                 elif c.scale >= 1:
                     painter.setPen(QColor("#a6afa7"))
                     painter.drawText(QRectF(0, y + 3, 58, 18), Qt.AlignmentFlag.AlignRight, "30")
@@ -299,7 +299,7 @@ class _Canvas(QWidget):
             value = block.value
             educator = educators.get(getattr(value, "educator_id", ""))
             group = groups.get(value.group_id)
-            color = _color(educator.color if educator else (group.color if group else "#667b9d"))
+            color = _color(group.color if group else (educator.color if educator else "#667b9d"))
             is_activity = block.kind == "activity"
             border = QColor("#c56a60") if value.id in error_ids else _light(color, .28)
             selected = self.selection == (block.kind, value.id)
@@ -315,8 +315,7 @@ class _Canvas(QWidget):
             p.save()
             p.setClipRect(rect.adjusted(1, 1, -1, -1))
             if not is_activity:
-                p.fillRect(QRectF(rect.left()+1, rect.top()+7, 2.5, max(0,rect.height()-14)),
-                           _light(color,.75))
+                p.fillRect(QRectF(rect.left()+1, rect.top()+1, rect.width()-2, 3), _light(color,.75))
                 # Buffers and breaks are presence, never ordinary pupil coverage.
                 start, end = (self.drag["start"], self.drag["end"]) if self.drag and self.drag["block"] is block else (value.start, value.end)
                 if value.buffer_before:
@@ -343,6 +342,18 @@ class _Canvas(QWidget):
                         p.setPen(QColor("#74806e"))
                         p.setFont(_font(7.5))
                         p.drawText(pause_rect.adjusted(9,0,-5,0),Qt.AlignmentFlag.AlignVCenter,"Pause")
+            tall = not is_activity and rect.height() >= 128 and rect.width() >= 90
+            content_offset = 43 if tall else 0
+            if tall:
+                avatar = QRectF(rect.left()+11, rect.top()+15, 26, 26)
+                p.setPen(Qt.PenStyle.NoPen)
+                identity_color = _color(educator.color) if educator else color
+                p.setBrush(_light(identity_color, .16))
+                p.drawEllipse(avatar)
+                p.setPen(identity_color.darker(120))
+                p.setFont(_font(7.5, QFont.Weight.DemiBold))
+                initials = "".join(word[0].upper() for word in educator.name.split()[:2]) if educator else "?"
+                p.drawText(avatar, Qt.AlignmentFlag.AlignCenter, initials)
             p.setPen(color.darker(150))
             compact = rect.width() < 70
             padding = 4 if compact else 10
@@ -355,7 +366,7 @@ class _Canvas(QWidget):
                 title = "· " + title
             text_width=max(0,int(rect.width()-padding-5))
             title=p.fontMetrics().elidedText(title,Qt.TextElideMode.ElideRight,text_width)
-            p.drawText(QRectF(rect.left()+padding,rect.top()+9,text_width,20),
+            p.drawText(QRectF(rect.left()+padding,rect.top()+9+content_offset,text_width,20),
                        Qt.AlignmentFlag.AlignVCenter,title)
             if rect.height() >= 44:
                 p.setFont(_font(6.5 if compact else 8))
@@ -387,7 +398,7 @@ class _Canvas(QWidget):
                     label=room.name if room else "Sans lieu"
                     subtitle += "\n" + p.fontMetrics().elidedText(label,Qt.TextElideMode.ElideRight,text_width)
                     line_count+=1
-                p.drawText(QRectF(rect.left()+padding,rect.top()+32,text_width,min(rect.height()-36,line_count*18)),
+                p.drawText(QRectF(rect.left()+padding,rect.top()+32+content_offset,text_width,min(rect.height()-36-content_offset,line_count*18)),
                            Qt.AlignmentFlag.AlignTop,subtitle)
             p.restore()
             if (not getattr(value,"locked",False) and not c.read_only and c.mode=="Jour"
@@ -658,8 +669,12 @@ class CalendarWidget(QWidget):
                 subtitle=_day_name(self.week,day) or "Cliquer pour ouvrir la journée"
                 result.append((title,subtitle,"#477d6c" if day==self.day else "#90a4b7"))
             return result
-        return [(g.name,f"1/{g.ratio} · {max(2,g.min_educators)} éducatrices min.",g.color)
-                for g in self.week.groups]
+        result = []
+        for group in self.week.groups:
+            people = {s.educator_id for s in self.week.shifts if s.group_id == group.id and s.day == self.day}
+            students = max((p.students for p in group.periods if p.day == self.day), default=0)
+            result.append((group.name, f"{len(people)} éducatrices · {students} enfants", group.color))
+        return result
 
     def y(self,minute):
         return (minute-self.start_minute)*self.scale
@@ -683,7 +698,7 @@ class CalendarWidget(QWidget):
         self._layout_calendar()
 
     def set_mode(self,mode):
-        self.mode="Semaine" if mode=="Semaine" else "Jour"
+        self.mode="Semaine" if mode=="Semaine" and not getattr(self.week, "planning_date", "") else "Jour"
         self.canvas.drag=None
         self._layout_calendar()
 
@@ -710,7 +725,7 @@ class CalendarWidget(QWidget):
 
     def _layout_calendar(self):
         n=max(1,len(self.columns()))
-        minimum=220 if self.mode=="Semaine" else 265
+        minimum=220 if self.mode=="Semaine" else 225
         self.column_width=max(minimum,self.scroll.viewport().width()/n)
         self.canvas.resize(self.canvas.sizeHint())
         # The header has no vertical scrollbar. Its trailing blank area makes

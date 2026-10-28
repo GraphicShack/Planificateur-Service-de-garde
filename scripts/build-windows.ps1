@@ -91,7 +91,7 @@ function Test-FrozenApplication {
         $property = $report.checks.PSObject.Properties['portable_data_write']
         if ($null -eq $property -or $property.Value -ne $true) { throw "L'écriture des données à côté du logiciel portable n'a pas été confirmée : $ReportPath" }
     }
-    foreach ($name in @('qt_application', 'coverage_and_exact_minutes', 'sqlite_save_reopen_backup', 'dashboard_day_and_week', 'pdf_export_preview_print_modules', 'ortools_cp_sat_generation', 'offline_operations')) {
+    foreach ($name in @('qt_application', 'coverage_and_exact_minutes', 'sqlite_save_reopen_backup', 'dashboard_day', 'pdf_export_preview_print_modules', 'ortools_cp_sat_generation', 'offline_operations')) {
         $property = $report.checks.PSObject.Properties[$name]
         if ($null -eq $property -or $property.Value -ne $true) { throw "Contrôle absent ou en échec : $name ($ReportPath)" }
     }

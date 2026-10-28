@@ -115,7 +115,7 @@ if report.get('portable_mode') is not expected_portable:
 if expected_portable and report.get('checks', {}).get('portable_data_write') is not True:
     fail('L’écriture réelle des données à côté du logiciel portable n’a pas été confirmée.')
 required = ('qt_application', 'coverage_and_exact_minutes', 'sqlite_save_reopen_backup',
-            'dashboard_day_and_week', 'pdf_export_preview_print_modules',
+            'dashboard_day', 'pdf_export_preview_print_modules',
             'ortools_cp_sat_generation', 'offline_operations')
 for name in required:
     if report.get('checks', {}).get(name) is not True:
