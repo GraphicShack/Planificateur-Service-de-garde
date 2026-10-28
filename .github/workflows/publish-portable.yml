@@ -1,10 +1,12 @@
 name: Publier les téléchargements portables
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows: ['Vérifier et construire Windows', 'Vérifier et construire macOS']
-    types: [completed]
-    branches: [main]
+    inputs:
+      publish:
+        description: 'Publier uniquement après accord explicite du responsable du projet'
+        type: boolean
+        required: true
+        default: false
 
 permissions:
   actions: read
@@ -16,7 +18,7 @@ concurrency:
 
 jobs:
   publish:
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'workflow_dispatch' && inputs.publish == true
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
