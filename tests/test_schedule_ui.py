@@ -212,3 +212,28 @@ def test_one_save_indicator_reports_local_changes_then_real_save(planner):
     assert planner.save_label.text() == "Hors ligne – modifications locales"
     assert planner.save_week(manual=False)
     assert planner.save_label.text() == "Enregistré"
+
+
+def test_resize_handles_work_without_hover_and_keyboard_resizes_exact_minutes(planner, qapp):
+    from PySide6.QtTest import QTest
+    from PySide6.QtCore import QPoint
+    from gardeplan.ui.calendar import resize_handles
+    canvas = planner.calendar.canvas
+    planner.calendar.set_zoom(2)
+    qapp.processEvents()
+    canvas.hover = canvas.selection = None
+    block = canvas.blocks[0]
+    top, bottom = resize_handles(block)
+    assert canvas._hit(top.center()) is block
+    assert canvas._hit(bottom.center()) is block
+    before = planner.week.shifts[0].start
+    point = QPoint(round(top.center().x()), round(top.center().y()))
+    QTest.mousePress(canvas, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier, point)
+    QTest.mouseMove(canvas, point+QPoint(0, round(planner.calendar.scale)))
+    QTest.mouseRelease(canvas, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier, point+QPoint(0, round(planner.calendar.scale)))
+    assert planner.week.shifts[0].start == before+1
+    canvas.selection = ("shift", planner.week.shifts[0].id)
+    end = planner.week.shifts[0].end
+    QTest.keyClick(canvas, Qt.Key.Key_Down, Qt.KeyboardModifier.ShiftModifier)
+    assert planner.week.shifts[0].end == end+1
+    assert "Entrée" in canvas.accessibleDescription()

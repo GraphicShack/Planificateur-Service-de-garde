@@ -511,6 +511,7 @@ class MainWindow(QMainWindow):
         sidebar.toggled.connect(self.sidebar.setVisible)
         layout.addRow(sidebar)
         layout.addRow(note("Les heures restent exactes à la minute, quel que soit le zoom. Le magnétisme aide uniquement au déplacement des blocs."))
+        layout.addRow(note("Au clavier dans la grille : gauche/droite sélectionne un quart, haut/bas le déplace, Maj + haut/bas ajuste la fin et Alt + haut/bas ajuste le début. Entrée ouvre les heures exactes."))
         buttons = QDialogButtonBox()
         buttons.addButton("Fermer", QDialogButtonBox.ButtonRole.AcceptRole)
         buttons.accepted.connect(dialog.accept)
@@ -912,10 +913,19 @@ class MainWindow(QMainWindow):
 
     def navigate_issue(self, item):
         issue = item.data(Qt.ItemDataRole.UserRole)
-        if issue is not None and issue.day is not None:
+        if issue is not None and issue.day is not None and issue.start is not None:
             self.expand_day(issue.day)
-            if issue.start is not None:
-                self.calendar.highlight_interval(issue.day, issue.start, issue.end or issue.start+1)
+            self.calendar.highlight_interval(issue.day, issue.start, issue.end or issue.start+1)
+        elif issue is not None:
+            related = [s for s in self.week.shifts if s.id in issue.shift_ids]
+            if related:
+                shift = min(related, key=lambda s: (s.day, s.start))
+                self.expand_day(shift.day)
+                self.calendar.highlight_interval(shift.day, min(s.start for s in related), max(s.end for s in related))
+                self.calendar.canvas.selection = ("shift", shift.id)
+            else:
+                self.calendar.highlight_interval(self.day, self.week.settings.open_minute-self.week.settings.opening_buffer,
+                                                  self.week.settings.close_minute+self.week.settings.closing_buffer)
         if issue is not None and issue.suggestion:
             self.statusBar().showMessage(issue.suggestion, 12000)
 

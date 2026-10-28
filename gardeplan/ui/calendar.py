@@ -23,6 +23,7 @@ from .theme import TEXT
 
 DAYS = ("Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi")
 EDUCATOR_MIME = "application/x-gardeplan-educator"
+KEYBOARD_HELP = "Gauche/droite : sélectionner. Haut/bas : déplacer. Maj + haut/bas : ajuster la fin. Alt + haut/bas : ajuster le début. Entrée : modifier."
 
 
 def _color(value: str, fallback: str = "#427b69") -> QColor:
@@ -56,8 +57,17 @@ def shift_palette(educator):
 
 def break_label(pause, delta=0):
     title = "Dîner" if pause.kind == "dinner" else "Pause"
-    paid = "payée" if pause.paid else "non payée"
+    word = "payé" if pause.kind == "dinner" else "payée"
+    paid = word if pause.paid else "non " + word
     return f"{title} · {format_time(pause.start+delta)} – {format_time(pause.end+delta)} · {pause.end-pause.start} min · {paid}"
+
+
+def resize_handles(block):
+    rect = block.rect
+    top_x = rect.left()+12 if rect.height() < 24 else rect.center().x()-12
+    bottom_x = rect.right()-36 if rect.height() < 24 else rect.center().x()-12
+    return (QRectF(top_x, rect.top()-2, 24, 10),
+            QRectF(bottom_x, rect.bottom()-8, 24, 10))
 
 
 def _day_name(week: Any, day: int) -> str:
@@ -186,7 +196,7 @@ class _Canvas(QWidget):
         self.setAccessibleName("Calendrier des affectations et activités")
         self.setAccessibleDescription(
             "Glissez une éducatrice depuis l'équipe ou double-cliquez sur une plage vide pour créer un quart. Déplacez un bloc ou tirez son bord. "
-            "Double-cliquez pour saisir les heures exactes. Les flèches déplacent le bloc sélectionné.")
+            "Double-cliquez pour saisir les heures exactes. " + KEYBOARD_HELP)
 
     def sizeHint(self):
         c = self.calendar
@@ -242,6 +252,9 @@ class _Canvas(QWidget):
                               max(8, width - 4), max(2, (activity.end - activity.start) * c.scale - 2))
                 self.blocks.append(_Block("activity", activity, rect, column, lane, count))
         self.update()
+        selected = next((b for b in self.blocks if self.selection == (b.kind, b.value.id)), None)
+        if selected:
+            self.setAccessibleDescription(self._tip(selected)+"\n"+KEYBOARD_HELP)
 
     def _rect(self, block):
         if self.drag and self.drag["block"] is block:
@@ -388,7 +401,7 @@ class _Canvas(QWidget):
             if compact:
                 title="".join(word[:1].upper() for word in title.replace("—"," ").split()[:3])
             if getattr(value, "locked", False):
-                title = "· " + title
+                title = "Verrouillé · " + title
             text_width=max(0,int(rect.width()-padding-5))
             title=p.fontMetrics().elidedText(title,Qt.TextElideMode.ElideRight,text_width)
             p.drawText(QRectF(rect.left()+padding,rect.top()+9+content_offset,text_width,20),
@@ -442,13 +455,14 @@ class _Canvas(QWidget):
             p.restore()
             if not is_activity:
                 p.fillRect(QRectF(rect.left()+1, rect.top()+1, 4, max(1, rect.height()-2)), color)
-            if (not getattr(value,"locked",False) and not c.read_only and c.mode=="Jour"
-                    and rect.height()>17 and (hovered or selected or moving)):
-                p.setPen(QPen(_light(color,.52),1.5))
-                center = rect.center().x()
-                half = min(11, rect.width()/5)
-                for y in (rect.top()+4, rect.bottom()-4):
-                    p.drawLine(QPointF(center-half, y), QPointF(center+half, y))
+            if block.kind == "shift" and c.mode == "Jour":
+                disabled = getattr(value, "locked", False) or c.read_only
+                p.setBrush(QColor("#FFFFFF"))
+                p.setPen(QPen(QColor("#52655E" if disabled else "#173F32"), 1.5,
+                              Qt.PenStyle.DashLine if disabled else Qt.PenStyle.SolidLine))
+                for handle in resize_handles(_Block(block.kind, value, rect, block.column)):
+                    p.drawRoundedRect(handle, 3, 3)
+                    p.drawLine(QPointF(handle.left()+7, handle.center().y()), QPointF(handle.right()-7, handle.center().y()))
         if not n or (c.single_service and not self.blocks):
             p.setPen(QColor("#324a37"))
             p.setFont(_font(12,QFont.Weight.DemiBold))
@@ -467,7 +481,8 @@ class _Canvas(QWidget):
             p.drawRect(area)
 
     def _hit(self, pos):
-        return next((b for b in reversed(self.blocks) if b.rect.contains(pos)), None)
+        return next((b for b in reversed(self.blocks) if b.rect.contains(pos) or
+                     (b.kind == "shift" and any(handle.contains(pos) for handle in resize_handles(b)))), None)
 
     def _tip(self, block):
         c, value = self.calendar, block.value
@@ -478,19 +493,34 @@ class _Canvas(QWidget):
             return (f"{value.name}\n{group_name}\n{format_time(value.start)} à {format_time(value.end)}"
                     f"\n{room.name if room else 'Aucun lieu'}\n{value.notes}")
         educator = next((e for e in c.week.educators if e.id == value.educator_id), None)
+        state = educator_hour_state(c.week, educator).label if educator else ""
         return (f"{educator.name if educator else 'Éducatrice'}\n{group_name}\n"
                 f"Présence : {format_time(value.start)} à {format_time(value.end)}\n"
                 f"Couverture : {format_time(value.start+value.buffer_before)} à "
                 f"{format_time(value.end-value.buffer_after)} (hors pauses)\n"
                 f"Préparation : {value.buffer_before} min · Fermeture : {value.buffer_after} min\n"
                 + "\n".join(break_label(pause) for pause in value.breaks)
+                + "\n" + state
                 + ("\nQuart verrouillé" if value.locked else "\nDouble-clic : modifier les heures"))
+
+    def focusInEvent(self, event):
+        super().focusInEvent(event)
+        if event.reason() != Qt.FocusReason.MouseFocusReason and self.blocks and not self.selection:
+            self._select_block(self.blocks[0])
+
+    def _select_block(self, block):
+        self.selection = (block.kind, block.value.id)
+        self.setAccessibleDescription(self._tip(block)+"\n"+KEYBOARD_HELP)
+        self.calendar.scroll.ensureVisible(round(block.rect.center().x()), round(block.rect.top()), 40, 30)
+        self.update()
 
     def mousePressEvent(self, event):
         if event.button() != Qt.MouseButton.LeftButton:
             return super().mousePressEvent(event)
         block = self._hit(event.position())
         self.selection = (block.kind, block.value.id) if block else None
+        if block:
+            self.setAccessibleDescription(self._tip(block)+"\n"+KEYBOARD_HELP)
         self.setFocus()
         self.update()
         if (not block or self.calendar.mode != "Jour" or self.calendar.read_only
@@ -498,7 +528,12 @@ class _Canvas(QWidget):
             return
         rect = block.rect
         action = "move"
-        if event.position().y() - rect.top() <= 7:
+        top_handle, bottom_handle = resize_handles(block)
+        if top_handle.contains(event.position()):
+            action = "start"
+        elif bottom_handle.contains(event.position()):
+            action = "end"
+        elif event.position().y() - rect.top() <= 7:
             action = "start"
         elif rect.bottom() - event.position().y() <= 7:
             action = "end"
@@ -558,7 +593,7 @@ class _Canvas(QWidget):
         block = drag["block"]
         c = self.calendar
         if (drag["start"],drag["end"],drag["column"]) != (block.value.start,block.value.end,block.column):
-            group_id = c.week.groups[drag["column"]].id
+            group_id = c.group_id(drag["column"])
             c.change_requested.emit(block.kind, block.value.id, c.day,
                                     drag["start"], drag["end"], group_id)
         self.update()
@@ -592,8 +627,21 @@ class _Canvas(QWidget):
     def keyPressEvent(self, event):
         c = self.calendar
         block = next((b for b in self.blocks if self.selection == (b.kind,b.value.id)),None)
+        if not block and self.blocks:
+            block = self.blocks[0]
+            self._select_block(block)
         if not block or c.mode != "Jour":
             return super().keyPressEvent(event)
+        if c.single_service and event.key() in (Qt.Key.Key_Left, Qt.Key.Key_Right, Qt.Key.Key_Home, Qt.Key.Key_End):
+            index = self.blocks.index(block)
+            if event.key() == Qt.Key.Key_Home:
+                index = 0
+            elif event.key() == Qt.Key.Key_End:
+                index = len(self.blocks)-1
+            else:
+                index = (index+(1 if event.key() == Qt.Key.Key_Right else -1)) % len(self.blocks)
+            self._select_block(self.blocks[index])
+            return
         if event.key() in (Qt.Key.Key_Return,Qt.Key.Key_Enter):
             c.edit_requested.emit(block.kind,block.value.id)
             return
@@ -601,7 +649,13 @@ class _Canvas(QWidget):
             return
         step = c.snap_minutes or 1
         start,end,col = block.value.start,block.value.end,block.column
-        if event.key() == Qt.Key.Key_Up:
+        if event.key() in (Qt.Key.Key_Up, Qt.Key.Key_Down) and event.modifiers() & (Qt.KeyboardModifier.ShiftModifier | Qt.KeyboardModifier.AltModifier):
+            delta = step if event.key() == Qt.Key.Key_Down else -step
+            if event.modifiers() & Qt.KeyboardModifier.AltModifier:
+                start += delta
+            else:
+                end += delta
+        elif event.key() == Qt.Key.Key_Up:
             start,end = start-step,end-step
         elif event.key() == Qt.Key.Key_Down:
             start,end = start+step,end+step
@@ -787,6 +841,7 @@ class CalendarWidget(QWidget):
 
     def highlight_interval(self, day, start, end):
         self.highlighted_interval = (day, start, end)
+        self.coverage_band.highlight_interval(start, end)
         self.scroll_to(max(self.start_minute, start-20))
         self.canvas.setAccessibleDescription(f"Plage sélectionnée : {format_time(start)} à {format_time(end)}. Entrée sur un quart pour le modifier.")
         self.canvas.update()

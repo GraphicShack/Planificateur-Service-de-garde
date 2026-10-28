@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gardeplan"
-version = "0.2.2"
+version = "0.3.0"
 description = "Planification locale du service de garde scolaire, à la minute"
 requires-python = ">=3.11"
 dependencies = ["PySide6>=6.8,<7", "ortools>=9.11,<10", "reportlab>=4.2,<5"]

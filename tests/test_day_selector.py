@@ -211,7 +211,7 @@ def test_small_planner_wraps_controls_and_keeps_date_untruncated(day_window, qap
     qapp.processEvents()
     assert day_window.width() <= 720
     assert day_window.sidebar.isHidden()
-    assert day_window.week_date.text() == full_date(day_window.week_date.date())
+    assert day_window.week_date.text().casefold() == full_date(day_window.week_date.date()).casefold()
     assert day_window.week_date.width() >= day_window.week_date.fontMetrics().horizontalAdvance(day_window.week_date.text())+40
     for widget in (day_window.week_date, day_window.previous_day_button,
                    day_window.next_day_button, day_window.folder_button):

@@ -4,7 +4,7 @@
 
 <h1 align="center">Planificateur — Service de garde</h1>
 
-<p align="center"><strong>Version 0.2.2 · Portable, sans installation</strong></p>
+<p align="center"><strong>Version 0.3.0 · Portable, sans installation</strong></p>
 
 <p align="center">
   <strong>Des horaires clairs pour chaque journée pédagogique.</strong><br>
@@ -12,16 +12,18 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.2.2/Planificateur-SDG-0.2.2-Windows-x64-Portable.zip">Télécharger pour Windows</a>
+  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.3.0/Planificateur-SDG-0.3.0-Windows-x64-Portable.zip">Télécharger pour Windows</a>
   &nbsp;·&nbsp;
-  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.2.2/Planificateur-SDG-0.2.2-macOS-arm64-Portable.zip">Télécharger pour Mac</a>
+  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.3.0/Planificateur-SDG-0.3.0-macOS-arm64-Portable.zip">Télécharger pour Mac</a>
   &nbsp;·&nbsp;
   <a href="docs/GUIDE.md">Guide d’utilisation</a>
 </p>
 
 ![Aperçu du planificateur avec des données fictives](docs/apercu-interface.png)
 
-[Voir le sélecteur de journée accessible](docs/selection-journee.png)
+La **version 0.3.0** propose une seule journée et un effectif global, couverture par tranche de quinze minutes, alertes sélectionnables, pauses et dîner, couleurs individuelles et édition au clavier. [Consulter le relevé des seize corrections](docs/CORRECTIONS_INTERFACE.md).
+
+[Voir la couverture et les alertes](docs/couverture-journee.png)
 
 ## L’histoire du projet
 
@@ -33,13 +35,13 @@ Aujourd’hui, le planificateur se concentre sur une journée pédagogique à la
 
 ## L’essentiel, dans un seul espace
 
-- **Choisir une journée** dans un calendrier lisible, utilisable au clavier, avec la date complète toujours affichée.
+- **Choisir une journée** dans un champ de date lisible, utilisable au clavier, avec des flèches précédent/suivant.
 - **Organiser l’équipe** : une couleur attribuée à chaque nouvelle éducatrice, des heures journalières et un rang de 1 à 11. Les rangs intermédiaires peuvent rester libres.
-- **Préparer les groupes** à partir des inscriptions et de la taille souhaitée des groupes.
+- **Saisir les inscriptions** et lire immédiatement le minimum global d’éducatrices nécessaire.
 - **Ajuster les quarts à la minute** par glisser-déposer, redimensionnement ou saisie exacte, avec pauses et temps de préparation.
 - **Vérifier la couverture** et demander une proposition automatique respectant les contraintes et les quarts verrouillés.
 - **Enregistrer et retrouver les horaires** depuis l’icône Dossier de la barre latérale : ouverture, duplication, historique et sauvegardes locales.
-- **Imprimer un seul PDF général**, au format lettre paysage, avec huit éducateurs maximum par page et une couleur stable par groupe. Les interruptions restent vides.
+- **Imprimer un seul PDF général**, au format lettre paysage, avec huit éducateurs maximum par page. Les interruptions restent vides.
 
 L’interface se consacre aux horaires. Chaque date conserve ses propres inscriptions, affectations, heures et versions. Le dossier de la barre latérale regroupe les fichiers et les sauvegardes ; les profils se remplissent dans une seule fenêtre claire, sans onglets.
 
@@ -53,7 +55,7 @@ L’interface se consacre aux horaires. Chaque date conserve ses propres inscrip
 | Accueil des enfants | **7 h à 17 h 30** |
 | Préparation et fermeture | Deux éducatrices pour ouvrir et deux pour fermer |
 | Relève | Quinze minutes de présence commune |
-| Couverture | Continue, avec au moins deux éducatrices par groupe actif |
+| Couverture | Continue, avec au moins deux éducatrices simultanément |
 | Ratio de départ | Un éducateur pour vingt enfants, configurable |
 
 Les heures sont calculées en minutes entières. La présence, la rémunération et la couverture des enfants sont distinguées : une pause ou un temps de préparation ne constitue pas automatiquement de la surveillance. Le ratio configuré décrit le fonctionnement demandé ; il n’est pas présenté comme une disposition réglementaire.
@@ -76,7 +78,7 @@ Le PDF reprend le modèle de journée pédagogique fourni : titre à gauche, dat
 
 ## Les difficultés rencontrées
 
-**Respecter les heures réelles.** Les besoins dépassaient une simple grille par heure : il fallait conserver chaque minute et distinguer les buffers, les pauses, le temps payé et la couverture effective des groupes.
+**Respecter les heures réelles.** Les besoins dépassaient une simple grille par heure : il fallait conserver chaque minute et distinguer les buffers, les pauses, le temps payé et la couverture effective du service.
 
 **Trouver une interface suffisamment simple.** Le projet a évolué vers une planification quotidienne, un calendrier plus lisible et un menu Dossier centralisé. La taille des textes, les contrastes et les zones cliquables font partie des critères de vérification. Les différences de dimensions entre Windows et Mac ont aussi nécessité des formulaires qui adaptent leurs colonnes à la place disponible.
 

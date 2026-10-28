@@ -1,4 +1,5 @@
 import unittest
+from importlib.util import find_spec
 from gardeplan.daily import day_plan
 from gardeplan.models import Educator, Group, GroupPeriod, Shift, Break, paid_minutes
 from gardeplan.coverage import coverage_timeline, quarter_hour_coverage
@@ -13,6 +14,15 @@ def covered_day():
 
 
 class CoverageTests(unittest.TestCase):
+    @unittest.skipUnless(find_spec("ortools"), "OR-Tools vérifié par les suites natives")
+    def test_generator_refuses_invalid_ratio_instead_of_normalizing_it(self):
+        from gardeplan.optimizer import generate
+        plan = covered_day()
+        plan.groups[0].ratio = 0
+        result = generate(plan, time_limit=1)
+        self.assertFalse(result.success)
+        self.assertEqual(result.status, "invalid_data")
+
     def test_daily_registration_is_one_global_pool(self):
         from gardeplan.planning import plan_service_day
         plan = covered_day()

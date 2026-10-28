@@ -37,6 +37,13 @@ class InlineDayName(QWidget):
     def text(self):
         return self._value
 
+    def sizeHint(self):
+        width = self.button.fontMetrics().horizontalAdvance(self._value or "Journée pédagogique")+40
+        return QSize(min(440, max(190, width)), 44)
+
+    def minimumSizeHint(self):
+        return QSize(190, 44)
+
     def setText(self, value):
         value = value.strip()
         if self.editing and value != self._value:
@@ -46,6 +53,7 @@ class InlineDayName(QWidget):
         self.button.setText(self.button.fontMetrics().elidedText(label, Qt.TextElideMode.ElideRight, max(150, self.width()-36)))
         self.button.setAccessibleName(f"Nom de la journée : {label}. Appuyer sur Entrée pour modifier.")
         self.button.setToolTip(label)
+        self.updateGeometry()
 
     def start_editing(self):
         if not self.isEnabled():

@@ -30,20 +30,36 @@ class CoverageBand(QWidget):
         self.slices = []
 
     def set_week(self, week, day):
-        for cell in self.cells:
+        self.slices = quarter_hour_coverage(week, day)
+        while len(self.cells) > len(self.slices):
+            cell = self.cells.pop()
             self.row.removeWidget(cell)
             cell.deleteLater()
-        self.cells = []
-        self.slices = quarter_hour_coverage(week, day)
-        for part in self.slices:
+        for index, part in enumerate(self.slices):
+            if index == len(self.cells):
+                cell = QPushButton()
+                cell.setMinimumSize(96, 56)
+                cell.clicked.connect(lambda checked=False, i=index: self.interval_selected.emit(self.slices[i].start, self.slices[i].end))
+                self.row.addWidget(cell)
+                self.cells.append(cell)
+            cell = self.cells[index]
             state = "Fermé" if not part.required else "OK" if part.complete else "Manque"
-            text = f"{format_time(part.start)}\n{part.actual}/{part.required} · {state}"
-            cell = QPushButton(text)
-            cell.setMinimumSize(96, 56)
+            text = f"{format_time(part.start)} –\n{format_time(part.end)} · {part.actual}/{part.required}\n{state}"
+            cell.setText(text)
             cell.setAccessibleName(f"{format_time(part.start)} à {format_time(part.end)} : {part.actual} éducatrices présentes pour {part.required} requises. {state}.")
             cell.setToolTip(cell.accessibleName())
             background, foreground = ("#E9F3ED", "#214F40") if part.complete else ("#FCEDEC", "#952E28")
-            cell.setStyleSheet(f"QPushButton{{font-size:12px;background:{background};color:{foreground};border:1px solid {foreground};border-radius:5px;padding:4px;}} QPushButton:focus{{border:3px solid #173F32;padding:2px;}}")
-            cell.clicked.connect(lambda checked=False, a=part.start, b=part.end: self.interval_selected.emit(a, b))
-            self.row.addWidget(cell)
-            self.cells.append(cell)
+            cell.setProperty("selected", False)
+            cell.setStyleSheet(f'QPushButton{{font-size:12px;background:{background};color:{foreground};border:1px solid {foreground};border-radius:5px;padding:4px;}} QPushButton:focus,QPushButton[selected="true"]{{border:3px solid #173F32;padding:2px;}}')
+
+    def highlight_interval(self, start, end):
+        first = None
+        for cell, part in zip(self.cells, self.slices):
+            selected = part.start < end and start < part.end
+            cell.setProperty("selected", selected)
+            cell.style().unpolish(cell)
+            cell.style().polish(cell)
+            if selected and first is None:
+                first = cell
+        if first:
+            self.scroll.horizontalScrollBar().setValue(max(0, first.x()-12))

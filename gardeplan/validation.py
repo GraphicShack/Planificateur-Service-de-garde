@@ -68,8 +68,10 @@ def validate(week: Week, *, _service=False) -> list[Issue]:
     if week.planning_date and not _service:
         from .planning import service_view
         from copy import deepcopy
-        safe = all(g.name.strip() and g.ratio > 0 and g.min_educators >= 2 and
+        safe = len({g.id for g in week.groups}) == len(week.groups) and all(g.name.strip() and g.ratio > 0 and g.min_educators >= 2 and
                    all(0 <= p.start < p.end <= 1440 and p.students >= 0 for p in g.periods)
+                   and all(a.day != b.day or max(a.start, b.start) >= min(a.end, b.end)
+                           for i, a in enumerate(g.periods) for b in g.periods[i+1:])
                    for g in week.groups)
         schedule = service_view(week) if safe else deepcopy(week)
         schedule.activities, schedule.rooms = [], []
@@ -79,7 +81,8 @@ def validate(week: Week, *, _service=False) -> list[Issue]:
         if week.planning_date and day == 0:
             message = message.replace("Lundi,", week.day_label(0).split(" — ", 1)[0] + ",", 1)
         if week.planning_date:
-            message = message.replace("du groupe Service de garde", "du service de garde").replace("le groupe Service de garde", "le service de garde").replace("groupe Service de garde", "service de garde")
+            message = message.replace("du groupe Service de garde", "du service de garde").replace("au groupe Service de garde", "au service de garde").replace("le groupe Service de garde", "le service de garde").replace("groupe Service de garde", "service de garde").replace("ce groupe", "le service de garde").replace("un groupe introuvable", "une affectation introuvable")
+            suggestion = suggestion.replace("rouvrir le groupe", "rouvrir le service de garde")
         issues.append(Issue(severity, code, message, day, start, end, group_id, shift_ids or [], suggestion))
 
     educators = {e.id: e for e in week.educators}
@@ -94,7 +97,7 @@ def validate(week: Week, *, _service=False) -> list[Issue]:
         add("missing_data", "Le statut de l'horaire est invalide.")
     if not week.groups:
         add("missing_data", "Renseignez les inscriptions de la journée." if week.planning_date else "Ajoutez au moins un groupe et ses heures d'ouverture.", suggestion="Ouvrir les inscriptions.")
-    if not week.educators:
+    if not week.educators and (not week.planning_date or any(group.periods for group in week.groups)):
         add("missing_data", "Ajoutez des éducatrices avant de préparer l'horaire.", suggestion="Cliquer sur Ajouter une éducatrice.")
     valid_settings = (
         _interval_ok(settings.open_minute, settings.close_minute)

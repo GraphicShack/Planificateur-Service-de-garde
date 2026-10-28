@@ -776,7 +776,7 @@ class ShiftDialog(EditorDialog):
         shift.educator_id = self.educator.currentData()
         shift.group_id = self.group.currentData()
         if not shift.educator_id or not shift.group_id:
-            raise ValueError("Choisissez une éducatrice pour ce quart.")
+            raise ValueError("Choisissez une éducatrice pour ce quart." if self.week.planning_date else "Choisissez une éducatrice et un groupe.")
         shift.day = self.day.currentIndex()
         shift.start, shift.end = self.start.value(), self.end.value()
         shift.buffer_before, shift.buffer_after = self.before.value(), self.after.value()

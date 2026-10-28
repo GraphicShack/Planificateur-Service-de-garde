@@ -329,6 +329,9 @@ def generate(week: Week, time_limit: float = 20) -> GenerationResult:
     try:
         snapshot = Week.from_dict(week.to_dict())
         if snapshot.planning_date:
+            structural = [issue.message for issue in validate(snapshot) if issue.code == "missing_data"]
+            if structural:
+                return GenerationResult(False, None, "Corrigez les données avant de générer l’horaire.", "invalid_data", structural)
             from .planning import service_view
             snapshot = service_view(snapshot)
     except (TypeError, ValueError) as exc:

@@ -2,20 +2,20 @@
 
 ## Un écran simple
 
-L’équipe reste à gauche et le calendrier occupe le reste de l’écran. Les commandes courantes sont **Générer**, **Exporter PDF**, **Inscriptions**, **Ajouter** et **Vérifier**. La sauvegarde est automatique ; le bas de l’écran confirme son état.
+L’équipe reste à gauche et le calendrier occupe le reste de l’écran. Les commandes courantes sont **Générer**, **Exporter PDF**, **Inscriptions**, **Annuler/Rétablir** et **Vérifier**. La sauvegarde est automatique ; l’indicateur en haut à droite confirme son état.
 
-- **Ajouter un quart** crée un bloc de travail dans le calendrier.
+- **Inscriptions** définit le nombre d’enfants et affiche le minimum d’éducatrices nécessaire. Pour créer un quart, glissez un nom sur la grille ou double-cliquez sur une plage vide. Au clavier, sélectionnez un nom et appuyez sur Entrée.
 - **Vérifier** ouvre le détail des alertes ; **Fermer** redonne toute la place au calendrier. La validation continue même lorsque ce panneau est fermé.
-- **Menu → Organisation** contient les groupes, profils et règles.
+- **Menu → Organisation** contient les profils et les règles d’encadrement.
 - **Menu → Affichage** permet de régler le zoom, le magnétisme et la visibilité du panneau de l’équipe.
 - L’icône **Dossier**, dans la barre latérale verte, regroupe l’enregistrement, l’ouverture des journées, la duplication, l’historique et les sauvegardes. **Menu** conserve les règles, le statut, l’affichage et l’annulation.
 
 ## Préparer une journée pédagogique
 
-1. Choisissez la **date exacte** avec les flèches ou le calendrier. Chaque date possède son propre horaire, même si deux journées tombent dans la même semaine.
+1. Choisissez la **date exacte** avec les flèches ou le champ de date. Chaque date possède son propre horaire, même si deux journées tombent dans la même semaine.
 2. Cliquez sur le **+ de L’équipe**. Une couleur encore inutilisée est proposée automatiquement ; vous pouvez la changer dans le profil. Choisissez le **rang de 1 à 11** : le rang 1 est le plus ancien, et des rangs peuvent rester libres (1, 4, 9, par exemple). Aucun profil n’est renuméroté automatiquement.
-3. Saisissez les heures cibles, garanties et maximales **pour cette journée**. Une cible de zéro signifie « à définir ». Précisez les disponibilités et absences si nécessaire.
-4. Cliquez sur **Inscriptions** : indiquez le nombre d’enfants, la taille souhaitée des groupes et le nom facultatif de la journée. Les groupes sont préparés pour cette seule date. Le minimum de deux éducatrices et le ratio configuré restent contrôlés.
+3. Saisissez les heures cibles, garanties et maximales **pour cette journée**. Un objectif vide signifie « Aucun objectif défini ». Précisez les disponibilités et absences si nécessaire.
+4. Cliquez sur **Inscriptions** et indiquez le nombre d’enfants. Le besoin est calculé pour le service entier. Le nom se modifie directement dans l’en-tête de la grille. Le minimum de deux éducatrices et le ratio configuré restent contrôlés.
 5. Ajoutez les quarts ou demandez une proposition automatique. L’interface gère uniquement les horaires.
 
 Une nouvelle date reprend les profils et paramètres utiles. Ses inscriptions et quarts restent vides ; les absences de l’ancienne date ne sont pas recopiées. Pour reprendre aussi un horaire complet, utilisez **Dossier → Dupliquer cette journée** et choisissez une date vide.
@@ -89,16 +89,22 @@ Les points de départ et d’arrivée des blocs sont calculés à la minute, san
 La grille commence exactement à 6 h 50 et se termine à 17 h 35. Les dix minutes d’ouverture et les cinq minutes de fermeture font partie de la présence rémunérée, sans être confondues avec la couverture des enfants.
 ## Choisir la date au clavier
 
-La barre affiche la date complète, par exemple « Lundi 26 octobre 2026 ». Entrée, Espace, F4 ou Alt + Flèche bas ouvrent le calendrier. Ses cases font au moins 44 × 44 pixels et les dates utilisent un texte d’au moins 16 pixels. Le mois et l’année sont modifiables directement.
+La barre affiche la date complète dans un champ modifiable, sans calendrier mensuel. Sélectionnez le jour, le mois ou l’année pour modifier cette partie au clavier. Les boutons précédent et suivant changent de journée. Une seule journée est ouverte à la fois ; la sauvegarde automatique reste active. Si l’enregistrement échoue, la navigation est annulée et les modifications restent à l’écran.
 
-Dans la grille, les flèches déplacent le focus ; Page précédente/suivante change de mois et Ctrl + Page change d’année. Entrée ou Espace choisit la date ; Échap ferme sans modifier l’horaire. La sélection reste simple : une journée à la fois.
+## Lire la couverture et les alertes
 
-Le vert forêt identifie la sélection. Aujourd’hui conserve un contour et un point, même s’il est sélectionné. Les jours voisins portent leur mois abrégé ; les jours indisponibles sont barrés. Sur un petit écran ou à 200 %, les contrôles gardent leur taille et le panneau peut défiler. La barre principale remet ses actions sur plusieurs lignes ; le panneau d’équipe se replie sur une fenêtre étroite et peut être rouvert par son icône.
+La bande de quinze minutes sous l’en-tête indique les éducatrices présentes et requises. **2/2 · OK** indique une couverture suffisante ; **1/2 · Manque** indique un déficit. Les heures exactes de chaque tranche sont affichées. Les tranches aux bornes du service peuvent être plus courtes ; aucune moyenne ne masque une interruption.
 
-La sauvegarde automatique est conservée. Si l’enregistrement échoue, le changement de date est annulé pour garder les modifications en cours à l’écran.
+**Vérifier (N)** ouvre les alertes. Cliquer sur une alerte ou l’activer au clavier sélectionne sa plage et fait défiler la grille et la bande de ratio. La validation continue même lorsque le panneau est fermé. Avec une journée valide, le panneau indique **Aucune alerte**.
+
+Les deux poignées de chaque quart sont visibles. Les pauses et le dîner indiquent leurs heures, leur durée et leur rémunération. Une pause payée compte dans le total rémunéré mais n’assure jamais la couverture des enfants. Un dépassement d’objectif est orange ; celui d’un maximum obligatoire est rouge. Un libellé précise toujours la situation.
+
+## Annuler et rétablir
+
+Les boutons **Annuler** et **Rétablir** conservent cinquante actions. Les raccourcis sont Cmd+Z et Cmd+Maj+Z sur Mac, Ctrl+Z et Ctrl+Maj+Z sur Windows. Une nouvelle modification après une annulation efface les actions qui restaient à rétablir.
 
 ## Ajouter ou modifier un profil
 
-Le bouton **+** à côté de « L’équipe » ouvre un formulaire clair, sans onglets. Le profil, le rang d’ancienneté, les heures, les disponibilités, les absences, les groupes préférés et les notes se remplissent dans une seule fenêtre. Une couleur distincte est proposée dès la création. Les rangs vont de 1 à 11 et peuvent rester libres.
+Le bouton **+** à côté de « L’équipe » ouvre un formulaire clair, sans onglets. Le profil, le rang d’ancienneté, les heures, les disponibilités, les absences, les notes se remplissent dans une seule fenêtre. Une couleur distincte et le premier rang libre sont proposés dès la création. Les rangs vont de 1 à 11, peuvent rester non consécutifs et ne peuvent pas être attribués à deux profils. Les objectifs non définis sont vides. Les heures garanties sont conservées car la génération les applique comme minimum obligatoire.
 
 Sur un grand écran, les sections apparaissent en deux colonnes. Sur un petit écran, elles s’empilent avec un défilement vertical ; les boutons **Enregistrer** et **Annuler** restent visibles. Les textes et les champs restent lisibles lorsque le système utilise un thème sombre.
