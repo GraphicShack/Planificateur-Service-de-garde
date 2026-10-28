@@ -47,6 +47,18 @@ class CoverageTests(unittest.TestCase):
         self.assertFalse(any(p.severity == "error" for p in validate(plan)))
         self.assertEqual(plan, original)
 
+    def test_mandatory_maximum_takes_priority_over_optional_target(self):
+        from gardeplan.hours import hour_state
+        person = covered_day().educators[0]
+        person.target_minutes, person.max_minutes = 400, 600
+        self.assertEqual(hour_state(person, 450).code, "target")
+        state = hour_state(person, 601)
+        self.assertEqual(state.code, "maximum")
+        self.assertIn("Maximum obligatoire", state.label)
+        person.target_minutes = 0
+        self.assertEqual(hour_state(person, 500).label, "Aucun objectif défini")
+        self.assertEqual(hour_state(person, 700).code, "maximum")
+
     def test_complete_day_and_partial_boundary_slices(self):
         plan = covered_day()
         pieces = quarter_hour_coverage(plan)

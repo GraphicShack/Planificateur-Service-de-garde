@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
 )
 
 from ..models import format_time, format_duration
+from ..hours import educator_hour_state
 from .coverage_band import CoverageBand
 from .theme import TEXT
 
@@ -320,8 +321,9 @@ class _Canvas(QWidget):
             educator = educators.get(getattr(value, "educator_id", ""))
             group = groups.get(value.group_id)
             is_activity = block.kind == "activity"
+            hour_status = educator_hour_state(c.week, educator) if educator and not is_activity else None
             color = _color(group.color if is_activity and group else (educator.color if educator else "#667b9d"))
-            border = QColor("#c56a60") if value.id in error_ids else _light(color, .28)
+            border = QColor(hour_status.color) if hour_status and hour_status.code in {"target", "maximum"} else QColor("#c56a60") if value.id in error_ids else _light(color, .28)
             selected = self.selection == (block.kind, value.id)
             hovered = self.hover == (block.kind, value.id)
             moving = bool(self.drag and self.drag["block"] is block)
@@ -425,10 +427,15 @@ class _Canvas(QWidget):
                     line_count+=1
                 p.drawText(QRectF(rect.left()+padding,rect.top()+32+content_offset,text_width,min(rect.height()-36-content_offset,line_count*18)),
                            Qt.AlignmentFlag.AlignTop,subtitle)
-            if not is_activity and value.breaks:
+            status_lines = []
+            if hour_status and hour_status.code in {"target", "maximum"}:
+                status_lines.append(hour_status.label)
+            if not is_activity and (value.breaks or status_lines):
                 p.setFont(_pixel_font(12))
                 p.setPen(QColor(TEXT))
-                notes = "\n".join(break_label(pause, start-value.start) for pause in value.breaks)
+                notes = "\n".join(status_lines+[break_label(pause, start-value.start) for pause in value.breaks])
+                if status_lines:
+                    p.setPen(QColor(hour_status.color))
                 top = rect.top()+content_offset+70
                 p.drawText(QRectF(rect.left()+10, top, max(1, rect.width()-20), max(1, rect.bottom()-top-8)),
                            Qt.TextFlag.TextWordWrap | Qt.AlignmentFlag.AlignTop, notes)

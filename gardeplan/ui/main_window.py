@@ -26,6 +26,7 @@ from ..daily import day_plan
 from ..validation import validate
 from ..alerts import alert_text
 from ..coverage import day_summary
+from ..hours import educator_hour_state
 from ..optimizer import generate
 from ..pdf import export_general, export_individual, export_combined, export_all_individual
 from .calendar import CalendarWidget, EDUCATOR_MIME
@@ -607,11 +608,13 @@ class MainWindow(QMainWindow):
             if query and query not in self._search_key(educator.name):
                 continue
             minutes = planned.get(educator.id, 0)
+            hour_status = educator_hour_state(self.week, educator)
             remaining = educator.target_minutes - minutes
             item = QListWidgetItem()
             item.setData(Qt.ItemDataRole.UserRole, educator.id)
             item.setData(Qt.ItemDataRole.UserRole + 1, educator.active and not self.read_only)
-            item.setSizeHint(QSize(0, 108))
+            item.setSizeHint(QSize(0, 134 if hour_status.code in {"target", "maximum"} else 108))
+            item.setData(Qt.ItemDataRole.AccessibleTextRole, f"{educator.name}, {format_duration(minutes)} planifiées. {hour_status.label}")
             tooltip = f"{educator.name}\nAncienneté : {educator.seniority}\nPlanifiées : {format_duration(minutes)} · Cible : {format_duration(educator.target_minutes)}\nDouble-cliquez pour modifier le profil."
             item.setToolTip(tooltip)
             card = QFrame()
@@ -651,7 +654,7 @@ class MainWindow(QMainWindow):
             hours.setToolTip("Heures rémunérées planifiées pour cette journée")
             stats.addWidget(hours)
             stats.addStretch()
-            target = QLabel(f"/ {format_duration(educator.target_minutes)}" if educator.target_minutes else "Aucun objectif défini")
+            target = QLabel(f"/ {format_duration(educator.target_minutes)}" if educator.target_minutes else "")
             target.setObjectName("smallMuted")
             stats.addWidget(target)
             layout.addLayout(stats)
@@ -660,11 +663,14 @@ class MainWindow(QMainWindow):
             progress.setValue(min(minutes, educator.target_minutes) if educator.target_minutes else 0)
             progress.setTextVisible(False)
             progress.setFixedHeight(3)
-            progress.setStyleSheet(f"QProgressBar {{border:0;background:#edf2ee;border-radius:1px;}} QProgressBar::chunk {{background:{color.name()};border-radius:1px;}}")
+            progress_color = hour_status.color if hour_status.code in {"target", "maximum"} else color.name()
+            progress.setStyleSheet(f"QProgressBar {{border:0;background:#edf2ee;border-radius:1px;}} QProgressBar::chunk {{background:{progress_color};border-radius:1px;}}")
             layout.addWidget(progress)
             balance = "Objectif atteint" if remaining == 0 else (f"Reste {format_duration(remaining)}" if remaining > 0 else f"Au-delà de la cible : {format_duration(-remaining)}")
-            label = QLabel(balance if educator.target_minutes else "Aucun objectif défini")
-            label.setStyleSheet(f"color:{'#89531A' if remaining < 0 else '#52655E'};font-size:12px;")
+            label = QLabel(hour_status.label)
+            label.setWordWrap(True)
+            label.setStyleSheet(f"color:{hour_status.color};font-size:12px;")
+            card.setAccessibleName(f"{educator.name}. {format_duration(minutes)} planifiées. {hour_status.label}")
             layout.addWidget(label)
             self.educator_list.addItem(item)
             self.educator_list.setItemWidget(item, card)
