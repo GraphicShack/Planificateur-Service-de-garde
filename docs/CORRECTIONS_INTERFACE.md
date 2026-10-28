@@ -1,13 +1,13 @@
 # Corrections de l’interface quotidienne
 
-Les seize demandes correspondent aux commits numérotés 01 à 16. Le style Atelier est conservé. Les constructions et la publication portable portent la version 0.3.0. Un commit de livraison distinct enregistre le code exact vérifié par les deux plateformes.
+Les seize demandes initiales correspondent aux commits numérotés 01 à 16. Les huit corrections de grille suivantes ont chacune leur commit « Grille », en conservant la numérotation reçue (sans étape 03). Le style Atelier est conservé. Les constructions et la publication portable portent la version 0.3.0. Un commit de livraison distinct enregistre le code exact vérifié par les deux plateformes.
 
 | Étape | Résultat |
 | --- | --- |
-| 01 | Bande de couverture sous l’en-tête, valeurs présentes/requises, état textuel et couleur. |
+| 01 | Couverture présente/requise avec état textuel et couleur, désormais affichée verticalement. |
 | 02 | Vérifier (N), liste explicite, sélection au clic ou au clavier, défilement et surlignage. |
 | 03 | Axe dès 6 h 00 et ouverture de la grille à son début. |
-| 04 | Quart teinté selon l’éducatrice, bordure gauche de 4 px et texte d’au moins 12 px. |
+| 04 | Quart teinté selon l’éducatrice, bordure gauche de 4 px ; noms désormais à 14 px et heures à 13 px minimum. |
 | 05 | Pauses et dîner : heures, durée, rémunération, affichage dans le quart et calcul payé exact. |
 | 06 | Boutons Annuler/Rétablir, raccourcis natifs, cinquante actions et abandon de la branche Rétablir après une nouvelle modification. |
 | 07 | Inscriptions à la place d’Ajouter un quart ; glisser-déposer, double-clic vide ou Entrée depuis l’équipe au clavier. |
@@ -21,11 +21,25 @@ Les seize demandes correspondent aux commits numérotés 01 à 16. Le style Atel
 | 15 | Un indicateur de sauvegarde en haut à droite ; aucun statut permanent dans le bas de la fenêtre. |
 | 16 | Poignées visibles à chaque extrémité ; navigation, déplacement et redimensionnement au clavier. |
 
+## Corrections de la grille avant livraison
+
+| Étape | Résultat |
+| --- | --- |
+| Grille 01 | Bande verticale collée à l’axe, même défilement ; plages identiques fusionnées, comptes explicites, Manque N / OK / +N et sélection au clic ou au clavier. |
+| Grille 02 | Une colonne par éducatrice active dans la largeur disponible ; initiales et nom complet en infobulle si nécessaire ; aucune barre de défilement horizontal. |
+| Grille 04 | Noms à 14 px gras minimum, heures à 13 px minimum, texte foncé sur fonds pastel. |
+| Grille 05 | Aide accessible avec le bouton ⓘ du titre L’équipe ; aucune ligne d’aide sous la liste. |
+| Grille 06 | Titre simple Horaires des éducatrices, sans avatar H ni groupe. |
+| Grille 07 | Résumé et titre réunis, en-têtes compactés, alertes latérales sur grand écran ; adaptation des commandes aux petites fenêtres. |
+| Grille 08 | Axe à 13 px minimum et lignes horaires plus marquées. |
+| Grille 09 | Annuler et Rétablir à droite, avant l’indicateur unique de sauvegarde. |
+
 ## Règles retenues
 
 - L’effectif constitue un seul bassin pour la journée. Pendant l’accueil : `max(2, plafond(enfants / ratio))`. Le ratio initial est 1/20 et reste modifiable dans les règles. Avec zéro inscription explicitement appliquée, la journée est fermée.
 - Les dix minutes de préparation et les cinq minutes de fermeture exigent deux personnes au travail. Pendant l’accueil, les buffers et toutes les pauses sont exclus de la couverture ; seules les pauses non payées sont déduites des heures rémunérées.
-- Les tranches suivent les quarts d’heure de l’horloge. Les bornes 6 h 50 et 17 h 35 créent deux tranches partielles. Le compteur affiche le cas le moins favorable de chaque tranche, sans moyenne ni arrondi des quarts. Les alertes conservent leurs limites exactes à la minute.
+- La bande utilise les changements exacts de présence et de besoin, puis fusionne seulement les plages adjacentes dont les comptes sont identiques. Les pauses payées comme non payées interrompent la couverture. Les anciennes fonctions de calcul par quart d’heure restent disponibles en interne pour compatibilité ; l’interface ne les utilise plus.
+- Un besoin exact est vert avec « OK », un déficit rouge avec « Manque N », un surplus gris neutre avec « +N ». Par exemple, huit personnes pour quatre requises donnent « +4 ». Les périodes de préparation et de fermeture restent à deux requises ; elles ne sont pas fusionnées avec une plage exigeant quatre personnes.
 - Les anciens groupes restent dans les snapshots historiques. Leur analyse quotidienne utilise une copie réunie en un service ; modifier les inscriptions regroupe les affectations sans changer leurs heures. Si des ratios historiques diffèrent, le plus restrictif est conservé jusqu’à modification explicite des règles.
 - Les heures garanties sont conservées parce que CP-SAT les applique comme minimum obligatoire. Cette utilisation est expliquée dans le formulaire.
 - Les rangs de 1 à 11 sont uniques parmi les profils de la journée, y compris les profils inactifs. Ils peuvent rester non consécutifs ; aucun rang historique n’est corrigé silencieusement.
@@ -38,6 +52,10 @@ Dans l’équipe, Entrée crée le quart du profil sélectionné. Dans la grille
 ## Vérification
 
 Les tests ajoutés couvrent les tranches et leurs bornes partielles, une pause d’une minute, les pauses payées/non payées, le dîner et sa sérialisation, les effectifs variables sans faux déficit, les alertes et leur sélection, l’historique de cinquante actions, les raccourcis, les sélecteurs et les champs vides, les rangs, le nom de journée et le PDF, ainsi que les poignées.
+
+Pour les dernières corrections de grille, seuls deux tests de calcul directement concernés ont été ajoutés à `test_coverage.py` : fusion des plages sans changement de besoin et interruption exacte par une pause. Les autres tests existants restent exécutés sans refonte.
+
+Les mesures manuelles du code réel donnent 72 % de hauteur utile pour la grille à 1480 × 940, 69 % avec les alertes latérales ouvertes et 66 % à 720 × 600 avec les alertes fermées. Sur une petite fenêtre, le panneau d’alertes passe sous la grille et réduit temporairement cet espace ; les textes gardent leur taille.
 
 Le poste Linux dispose de ReportLab et d’un adaptateur temporaire Qt5 pour inspecter le code réel ; cet adaptateur n’est pas livré. Les suites complètes avec PySide6 et OR-Tools et les contrôles des exécutables portables sont exécutés sur les runners Windows et Mac de GitHub Actions. Les résultats de ces exécutions sont communiqués avec la livraison du code.
 

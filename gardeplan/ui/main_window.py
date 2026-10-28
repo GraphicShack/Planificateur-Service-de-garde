@@ -366,7 +366,7 @@ class MainWindow(QMainWindow):
             button.setIcon(icon(name))
             button.setMinimumHeight(44)
             button.setStyleSheet("font-size:16px;")
-            day_row.addWidget(button)
+            heading.insertWidget(heading.count()-1,button)
             button.show()
         surface.addWidget(day_controls)
         self.version_banner = QLabel()

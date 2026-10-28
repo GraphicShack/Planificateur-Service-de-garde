@@ -21,7 +21,7 @@
 
 ![Aperçu du planificateur avec des données fictives](docs/apercu-interface.png)
 
-La **version 0.3.0** propose une seule journée et un effectif global, couverture par tranche de quinze minutes, alertes sélectionnables, pauses et dîner, couleurs individuelles et édition au clavier. [Consulter le relevé des seize corrections](docs/CORRECTIONS_INTERFACE.md).
+La **version 0.3.0** propose une seule journée et un effectif global, une couverture verticale par plages fusionnées, des alertes sélectionnables, les pauses et le dîner, les couleurs individuelles et l’édition au clavier. Toutes les éducatrices tiennent dans la largeur de la grille ; les en-têtes compacts donnent davantage de place aux horaires. [Consulter le relevé des corrections](docs/CORRECTIONS_INTERFACE.md).
 
 [Voir la couverture et les alertes](docs/couverture-journee.png)
 
