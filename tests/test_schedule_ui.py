@@ -203,3 +203,12 @@ def test_profile_defaults_use_free_rank_and_empty_unset_hours(planner):
     assert clock.value() == 410
     clock.deleteLater()
     dialog.deleteLater()
+
+
+def test_one_save_indicator_reports_local_changes_then_real_save(planner):
+    assert planner.save_label.text() == "Enregistré"
+    assert not planner.week_status_label.isVisible()
+    planner.commit(lambda plan: plan.day_names.__setitem__(0, "Nouvelle journée"))
+    assert planner.save_label.text() == "Hors ligne – modifications locales"
+    assert planner.save_week(manual=False)
+    assert planner.save_label.text() == "Enregistré"

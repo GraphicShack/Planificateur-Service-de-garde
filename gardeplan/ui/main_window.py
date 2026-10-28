@@ -196,7 +196,7 @@ class MainWindow(QMainWindow):
         brand_column.addWidget(brand)
         heading.addLayout(brand_column)
         heading.addStretch()
-        self.save_label = QLabel("● Toutes les modifications enregistrées")
+        self.save_label = QLabel("Enregistré")
         self.save_label.setObjectName("saveStatus")
         self.save_label.setMinimumWidth(0)
         self.save_label.setMaximumWidth(440)
@@ -412,9 +412,8 @@ class MainWindow(QMainWindow):
         self.splitter.addWidget(right)
         self.splitter.setSizes([265, 1100])
 
-        self.week_status_label = QLabel()
+        self.week_status_label = QLabel(self._hidden_controls)
         self.week_status_label.setObjectName("muted")
-        self.statusBar().addPermanentWidget(self.week_status_label)
         self._build_command_menus()
 
     def _add_menu_action(self, menu, key, text, callback, shortcut=None):
@@ -573,7 +572,6 @@ class MainWindow(QMainWindow):
             banner = "Version publiée conservée dans l'historique. Toute modification créera un nouveau brouillon."
         self.version_banner.setText(banner)
         self.version_banner.setVisible(bool(banner))
-        self.week_status_label.setText(f"{STATUS_LABELS[self.week.status]} · Hors ligne")
         self.enrolment_button.setText("Inscriptions")
         self.add_button.setEnabled(not self.read_only)
         self._sync_menu_actions()
@@ -744,9 +742,16 @@ class MainWindow(QMainWindow):
 
     def _modified(self):
         self.dirty = True
-        self.save_label.setText("● Enregistrement en cours…")
+        self._set_save_state(False)
         self.refresh()
         self.autosave.start()
+
+    def _set_save_state(self, saved, error=False):
+        text = "Enregistré" if saved else "Hors ligne – modifications locales"
+        if error:
+            text += " — sauvegarde impossible"
+        self.save_label.setText(text)
+        self.save_label.setAccessibleName("État de sauvegarde : " + text)
 
     def undo(self):
         if not self._undo or self.read_only:
@@ -774,13 +779,11 @@ class MainWindow(QMainWindow):
             self.repo.save(self.week)
             self.dirty = False
             self._save_error_shown = False
-            self.save_label.setText("● Toutes les modifications enregistrées" + (" — brouillon avec alertes" if any(i.severity == "error" for i in self.issues) else ""))
-            if manual:
-                self.statusBar().showMessage("L'horaire est sauvegardé.", 4000)
+            self._set_save_state(True)
             return True
         except Exception as error:
             self.dirty = True
-            self.save_label.setText("Échec de sauvegarde — modifications conservées en mémoire")
+            self._set_save_state(False, error=True)
             if manual or not self._save_error_shown:
                 QMessageBox.critical(self, "Sauvegarde impossible", f"{error}\n\nGardez l'application ouverte et choisissez un dossier accessible ou libérez de l'espace avant de réessayer.")
                 self._save_error_shown = True
@@ -795,7 +798,7 @@ class MainWindow(QMainWindow):
         self._undo.clear()
         self._redo.clear()
         self.dirty = False
-        self.save_label.setText("Version consultée" if version else "● Toutes les modifications enregistrées")
+        self._set_save_state(True)
         self.refresh()
 
     def _date_changed(self, selected):

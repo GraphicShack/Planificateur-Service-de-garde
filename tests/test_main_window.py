@@ -141,7 +141,7 @@ def test_save_failure_keeps_dirty_data_and_blocks_navigation(dashboard, monkeypa
     window.switch_week(date.fromisoformat(window.week.monday) + timedelta(days=7))
     assert window.week == before
     assert window.dirty
-    assert "Échec" in window.save_label.text()
+    assert "sauvegarde impossible" in window.save_label.text()
     assert any("Disque plein" in message for message in window._test_messages)
 
 
