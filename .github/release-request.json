@@ -1,6 +1,6 @@
 {
-  "version": "0.2.2",
-  "commit": "2319f51fb39dd6358a20a8b802650f71bae89e07",
+  "version": "0.3.0",
+  "commit": "8c1863d5396106b97be42877ffe1fe121b81579c",
   "approved": true,
-  "authorization": "Autorisation de publication déjà accordée dans cette conversation (release now), maintenue pour cette mise à jour du planificateur et du formulaire des profils."
+  "authorization": "Autorisation explicite dans cette conversation : « fait tout les changement et ensuite push et release le programme ». Les corrections de grille et la fermeture du ratio sont incluses ; les constructions Windows et Mac du SHA exact ont réussi avant cette demande de publication."
 }

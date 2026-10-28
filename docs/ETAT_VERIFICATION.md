@@ -2,6 +2,25 @@
 
 Les constructions et les contrôles natifs s’exécutent sur GitHub Actions. Les fichiers à remettre sont les ZIP portables d’une exécution réussie correspondant au code voulu. Une sortie compilée dont le contrôle échoue n’est pas livrée.
 
+## Livraison 0.3.0 — grille lisible et ratio escamotable
+
+Le code exact vérifié et approuvé est `8c1863d5396106b97be42877ffe1fe121b81579c`. Les deux constructions natives ont réussi **208 tests chacune**, plus les **six sous-cas de pagination** et les contrôles du programme compilé et du ZIP extrait :
+
+- [Windows — tests, compilation et ZIP portable vérifiés](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40718405454).
+- [Mac Apple Silicon — tests, compilation et ZIP portable vérifiés](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40718405410).
+
+Ces exécutions utilisent PySide6/Qt6 et OR-Tools réels. Les contrôles du binaire confirment le stockage SQLite, sa réouverture, la sauvegarde, les PDF, le solveur, le fonctionnement hors ligne et l’écriture dans le dossier portable après extraction. Aucun test n’est ignoré dans ces suites natives. Un avertissement de dépréciation d’un constructeur Qt utilisé par un ancien test subsiste ; il ne bloque aucun contrôle.
+
+Les seize corrections initiales, les huit étapes de grille et la fermeture du ratio constituent vingt-cinq commits fonctionnels distincts. Un commit administratif supplémentaire enregistre uniquement cette preuve et le manifeste de publication du code testé. [Relevé des changements, hypothèses, fichiers et limites](CORRECTIONS_INTERFACE.md).
+
+La couverture est calculée à la minute puis fusionnée lorsque les comptes présents/requis sont identiques. Les pauses payées ou non payées en sont exclues. Pour les dernières corrections de grille, seuls deux tests ciblés de ce calcul ont été ajoutés ; la suite existante n’a pas été refondue.
+
+Le bouton **− Ratio / + Ratio** masque ou réaffiche la bande et rend ses 184 pixels aux quarts. La bande est visible au lancement ; le choix est conservé pendant la session, y compris après changement de date. La validation reste active lorsqu’elle est masquée. La commande Espace au clavier, le rafraîchissement et la sélection d’une plage masquée ont été vérifiés manuellement sur le code réel. Les PDF produits avec la bande visible ou masquée ont un texte identique : aucune bande de ratio, aucun compte de couverture et aucun panneau d’alertes n’y sont imprimés.
+
+Les aperçus sont des rendus du code réel avec données fictives et un adaptateur Qt5 temporaire non livré. Ils complètent les contrôles natifs Qt6 ci-dessus. Les mesures locales donnent 72 % de hauteur utile pour la grille à 1480 × 940, 69 % avec alertes latérales et 66 % à 720 × 600 avec alertes fermées. Dans une petite fenêtre, les alertes s’empilent sous la grille et réduisent temporairement cette hauteur.
+
+La certification avec un lecteur d’écran, l’impression sur une imprimante physique et un essai sur le poste de l’école restent à faire. Aucune mise à jour automatique ni notarisation DeveloperID Mac n’est ajoutée. Le dossier `donnees` doit être sauvegardé et conservé lors du remplacement du ZIP portable.
+
 ## Livraison 0.2.2 — interface épurée et formulaire clair
 
 La [version 0.2.2](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/tag/v0.2.2) utilise le code `2319f51fb39dd6358a20a8b802650f71bae89e07`. Les deux constructions ont réussi **180 tests chacune**, plus les six sous-cas de pagination et les contrôles du programme compilé et du ZIP extrait :
