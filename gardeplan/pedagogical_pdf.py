@@ -19,7 +19,7 @@ from .models import format_time, working_intervals
 WIDTH, HEIGHT = landscape(letter)
 LEFT, RIGHT, NAME_WIDTH = 30, 762, 163
 GRID_LEFT, GRID_WIDTH = LEFT + NAME_WIDTH, RIGHT - LEFT - NAME_WIDTH
-START, END, PER_PAGE = 420, 1080, 8
+START, END, PER_PAGE = 410, 1055, 8
 INK, MUTED, RULE = "#17364B", "#5C7180", "#CDDAE1"
 GROUP_COLORS = ("#C8E6DF", "#D4E3FA", "#F8D9BA", "#E2D5F0", "#F4D4E2", "#DEE6BD", "#CBE5EC", "#F0DFAD")
 MONTHS = ("janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre")
@@ -111,16 +111,16 @@ def draw_day(plan, path):
         canvas.setFillColor(HexColor(INK))
         canvas.rect(LEFT, HEIGHT-grid_top, NAME_WIDTH, 32, fill=1, stroke=0)
         _text(canvas, "Nom de l’éducateur", LEFT+10, grid_top-12, bold, 11, "#FFFFFF")
-        for minute in range(START, END+1, 60):
-            x = minute_x(minute)
-            align = "left" if minute == START else "right" if minute == END else "center"
-            _text(canvas, f"{minute//60} h", x, grid_top-14, bold, 10, align=align)
+        _text(canvas, "6 h 50", GRID_LEFT, grid_top-23, bold, 9)
+        _text(canvas, "17 h 35", RIGHT, grid_top-23, bold, 9, align="right")
+        for minute in range(420, END, 60):
+            _text(canvas, f"{minute//60} h", minute_x(minute), grid_top-8, bold, 9, align="center")
         for row in range(PER_PAGE):
             top = grid_top + row*row_height
             canvas.setFillColor(HexColor("#F4F7F9") if row % 2 == 0 else white)
             canvas.rect(LEFT, HEIGHT-top-row_height, RIGHT-LEFT, row_height, fill=1, stroke=0)
         canvas.setStrokeColor(HexColor(RULE))
-        for minute in range(START, END+1, 30):
+        for minute in sorted({START, END} | set(range((START+29)//30*30, END, 30))):
             canvas.setLineWidth(.55 if minute % 60 == 0 else .3)
             canvas.setDash([] if minute % 60 == 0 else [1.5, 2])
             x = minute_x(minute)
@@ -158,9 +158,9 @@ def draw_day(plan, path):
         _text(canvas, "REPÈRES", LEFT, 521, bold, 8, MUTED)
         _text(canvas, "Une ligne = un éducateur • Traits pointillés = 30 minutes", 90, 521, regular, 9, MUTED)
         if outside:
-            lines = simpleSplit("Présence hors de l’échelle 7 h–18 h : " + " ; ".join(dict.fromkeys(outside)), regular, 7.5, RIGHT-LEFT)
+            lines = simpleSplit("Présence hors de l’échelle 6 h 50–17 h 35 : " + " ; ".join(dict.fromkeys(outside)), regular, 7.5, RIGHT-LEFT)
             if len(lines) > 3:
-                raise ValueError("Trop de plages hors de l’échelle 7 h–18 h pour ce modèle. Vérifiez les heures de la journée.")
+                raise ValueError("Trop de plages hors de l’échelle 6 h 50–17 h 35 pour ce modèle. Vérifiez les heures de la journée.")
             for index, line in enumerate(lines):
                 _text(canvas, line, LEFT, 533+index*9, regular, 7.5, MUTED)
         else:

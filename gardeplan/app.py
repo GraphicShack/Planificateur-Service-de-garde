@@ -25,11 +25,11 @@ QWidget { font-family:'Segoe UI','SF Pro Text','Noto Sans',sans-serif; font-size
 QMainWindow, QDialog, QWidget#workspace { background:#F6F8FA; }
 QLabel { background:transparent; }
 QLabel#brandTitle { font-size:27px; font-weight:700; color:#203F30; }
-QLabel#brandSubtitle { font-size:11px; font-weight:500; color:#8B9893; }
+QLabel#brandSubtitle { font-size:11px; font-weight:500; color:#52655E; }
 QLabel#sectionTitle { font-size:17px; font-weight:650; color:#2D4435; }
-QLabel#muted { color:#7A8B7F; font-size:12px; }
-QLabel#smallMuted { color:#7C8C80; font-size:11px; }
-QLabel#saveStatus { color:#7A9085; font-size:12px; }
+QLabel#muted { color:#52655E; font-size:12px; }
+QLabel#smallMuted { color:#52655E; font-size:11px; }
+QLabel#saveStatus { color:#52655E; font-size:12px; }
 QLabel#dayTitle { font-size:15px; font-weight:600; }
 QFrame#navigationRail { background:#123F34; border:0; }
 QPushButton#railButton { background:transparent; border:0; border-radius:12px; padding:12px; }

@@ -119,7 +119,7 @@ jobs:
           Path('release-notes.md').write_text(
               'Planification d’une journée pédagogique à la fois, avec une interface épurée.\n\n'
               '- Couleur distincte par éducatrice ; rangs de 1 à 11, avec rangs intermédiaires libres.\n'
-              '- Un seul PDF lettre paysage selon le modèle fourni : huit éducateurs par page, grille 7 h–18 h et interruptions vides.\n'
+              '- Un seul PDF lettre paysage selon le modèle fourni : huit éducateurs par page, grille 6 h 50–17 h 35 et interruptions vides.\n'
               '- Journées, heures, statuts et archives indépendants ; anciennes données préservées avec copie de sécurité.\n\n'
               'Logiciel portable en français, entièrement hors ligne. Aucun installateur ni Python requis.\n\n'
               '- **Windows 64 bits** : téléchargez le ZIP Windows.\n'

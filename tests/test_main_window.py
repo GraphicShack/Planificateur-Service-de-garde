@@ -254,11 +254,11 @@ def test_named_menus_call_existing_commands(dashboard, monkeypatch):
     monkeypatch.setattr(window, "new_shift", lambda: called.append("shift"))
     monkeypatch.setattr(window, "new_activity", lambda: called.append("activity"))
     monkeypatch.setattr(window, "save_week", lambda manual=True: called.append("save"))
-    for key in ("name_day", "add_educator", "groups", "rooms", "add_shift", "add_activity", "save"):
+    for key in ("name_day", "add_educator", "groups", "add_shift", "save"):
         action = window.menu_actions[key]
         assert action.text().strip()
         action.trigger()
-    assert called == ["name", "educator", "groups", "rooms", "shift", "activity", "save"]
+    assert called == ["name", "educator", "groups", "shift", "save"]
     assert "Menu" in window.more_button.toolTip()
     assert window.more_button.menu() is window.command_menu
 
@@ -297,7 +297,7 @@ def test_menu_respects_archive_and_running_generation(dashboard):
     archived = deepcopy(window.week)
     archived.status = "archived"
     window._load(archived)
-    for key in ("add_shift", "add_activity", "name_day", "enrolment", "add_educator", "edit_educator", "settings", "status_published"):
+    for key in ("add_shift", "name_day", "enrolment", "add_educator", "edit_educator", "settings", "status_published"):
         assert not window.menu_actions[key].isEnabled()
     assert window.menu_actions["history"].isEnabled()
     window._load(deepcopy(dashboard.repo.load_version(1)))

@@ -27,6 +27,9 @@ from ..validation import validate
 from ..optimizer import generate
 from ..pdf import export_general, export_individual, export_combined, export_all_individual
 from .calendar import CalendarWidget, EDUCATOR_MIME
+from .day_selector import DaySelector, full_date
+from .flow_layout import FlowLayout
+from .theme import DATE_STYLE
 from .visuals import icon, logo_icon, logo_pixmap
 from .forms import EducatorDialog, GroupDialog, RoomDialog, ShiftDialog, ActivityDialog, SettingsDialog, integer, note
 
@@ -89,7 +92,9 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(DISPLAY_NAME)
         self.setWindowIcon(logo_icon())
         self.resize(1480, 940)
-        self.setMinimumSize(1120, 720)
+        self.setMinimumSize(640, 480)
+        self._auto_hidden_sidebar = False
+        self._sidebar_manual_hidden = False
         self._build_ui()
         self.refresh()
         QTimer.singleShot(0, self.fit_day)
@@ -136,8 +141,7 @@ class MainWindow(QMainWindow):
         for name, tip, callback in (
                 ("calendar", "Planification de la journée", lambda: self.calendar.setFocus()),
                 ("users", "Afficher ou masquer l'équipe", self.toggle_sidebar),
-                ("panel", "Gérer les groupes", lambda: self.manage_entities("groups")),
-                ("map-pin", "Gérer les locaux", lambda: self.manage_entities("rooms"))):
+                ("panel", "Gérer les groupes", lambda: self.manage_entities("groups"))):
             button = self._button("", callback, tip)
             button.setObjectName("railButton")
             button.setProperty("active", name == "calendar")
@@ -172,34 +176,47 @@ class MainWindow(QMainWindow):
         heading.addStretch()
         self.save_label = QLabel("● Toutes les modifications enregistrées")
         self.save_label.setObjectName("saveStatus")
-        self.save_label.setMinimumWidth(300)
+        self.save_label.setMinimumWidth(0)
         self.save_label.setMaximumWidth(440)
         self.save_label.setWordWrap(True)
         heading.addWidget(self.save_label)
         root.addWidget(self.top_controls)
-        date_row = QHBoxLayout()
+        date_row = FlowLayout(push_last=3)
         date_row.setSpacing(12)
         week_navigation = QFrame()
         week_navigation.setObjectName("weekNavigation")
         navigation = QHBoxLayout(week_navigation)
         navigation.setContentsMargins(4, 3, 4, 3)
         navigation.setSpacing(2)
-        navigation.addWidget(self._button("", lambda: self.navigate_day(-1), "Journée précédente", icon_name="chevron-left"))
-        self.week_date = QDateEdit()
-        self.week_date.setObjectName("weekDate")
-        self.week_date.setCalendarPopup(True)
-        self.week_date.setDisplayFormat("dd MMMM yyyy")
-        self.week_date.setMinimumWidth(210)
+        self.previous_day_button = self._button("", lambda: self.navigate_day(-1), "Journée précédente", icon_name="chevron-left")
+        navigation.addWidget(self.previous_day_button)
+        self.week_date = DaySelector()
         self.week_date.dateChanged.connect(self._date_changed)
         navigation.addWidget(self.week_date)
-        navigation.addWidget(self._button("", lambda: self.navigate_day(1), "Journée suivante", icon_name="chevron-right"))
+        self.next_day_button = self._button("", lambda: self.navigate_day(1), "Journée suivante", icon_name="chevron-right")
+        navigation.addWidget(self.next_day_button)
+        for arrow in (self.previous_day_button, self.next_day_button):
+            arrow.setObjectName("dateArrow")
+            arrow.setIconSize(QSize(24, 24))
+            arrow.setFixedSize(48, 48)
+            arrow.setStyleSheet(DATE_STYLE)
         date_row.addWidget(week_navigation)
-        date_row.addWidget(self._button("Aujourd’hui", lambda: self.switch_day(date.today())))
-        date_row.addStretch()
+        self.today_day_button = self._button("Aujourd’hui", lambda: self.switch_day(date.today()))
+        self.today_day_button.setObjectName("dateAction")
+        self.today_day_button.setStyleSheet(DATE_STYLE)
+        self.today_day_button.setMinimumHeight(48)
+        date_row.addWidget(self.today_day_button)
+        self.folder_button = self._button("Dossier", lambda: None, "Enregistrer, ouvrir, dupliquer et sauvegarder les horaires", icon_name="folder")
+        self.folder_button.setObjectName("dateAction")
+        self.folder_button.setStyleSheet(DATE_STYLE)
+        self.folder_button.setMinimumHeight(48)
+        date_row.addWidget(self.folder_button)
         self.generate_button = self._button("Générer le planning", self.start_generation, "Générer automatiquement une proposition d'horaire", primary=True, icon_name="sparkles")
         self.export_button = self._button("Exporter PDF", self.export_pdf, "Exporter ou imprimer les horaires en PDF", icon_name="download")
-        date_row.addWidget(self.export_button)
-        date_row.addWidget(self.generate_button)
+        for action_button in (self.export_button, self.generate_button):
+            action_button.setStyleSheet("font-size:16px;min-height:30px;padding:8px 14px;")
+            action_button.setMinimumHeight(48)
+            date_row.addWidget(action_button)
         self.more_button = self._button("", lambda: None, "Menu : réglages, historique et sauvegardes", icon_name="settings")
         self.more_button.setObjectName("railButton")
         self.more_button.setIcon(icon("settings", color="#D5E3DD"))
@@ -278,7 +295,7 @@ class MainWindow(QMainWindow):
         surface.setSpacing(0)
         day_controls = QWidget()
         day_controls.setObjectName("calendarToolbar")
-        day_row = QHBoxLayout(day_controls)
+        day_row = FlowLayout(day_controls, spacing=12)
         day_row.setContentsMargins(12, 10, 12, 10)
         day_row.setSpacing(8)
         self.day_combo = QComboBox(self._hidden_controls)
@@ -290,7 +307,7 @@ class MainWindow(QMainWindow):
         day_row.addWidget(self.day_title)
         self.calendar_summary = QLabel()
         self.calendar_summary.setObjectName("muted")
-        day_row.addWidget(self.calendar_summary, 1)
+        day_row.addWidget(self.calendar_summary)
         self.enrolment_button = self._button("Inscriptions", self.enrolment, "Répartir les inscriptions d'une journée pédagogique", icon_name="users")
         self.enrolment_button.setObjectName("subtleButton")
         day_row.addWidget(self.enrolment_button)
@@ -307,10 +324,9 @@ class MainWindow(QMainWindow):
             modes.addWidget(button)
         self.day_mode.setChecked(True)
         segmented.setParent(self._hidden_controls)
-        self.add_button = self._button("Ajouter", lambda: None, "Ajouter un quart ou une activité", icon_name="plus")
+        self.add_button = self._button("Ajouter un quart", self.new_shift, "Ajouter un quart de travail", icon_name="plus")
         self.add_button.setObjectName("menuButton")
         self.add_menu = QMenu(self)
-        self.add_button.setMenu(self.add_menu)
         day_row.addWidget(self.add_button)
         self.top_alert_button = self._button("Vérifier l'horaire", self.verify, "Vérifier la couverture, les relèves et les heures", icon_name="check")
         self.top_alert_button.setObjectName("subtleButton")
@@ -322,6 +338,8 @@ class MainWindow(QMainWindow):
         self.version_banner.setWordWrap(True)
         surface.addWidget(self.version_banner)
         self.calendar = CalendarWidget()
+        self.calendar.show_activities = False
+        self.calendar.canvas.setAccessibleName("Calendrier des horaires")
         self.calendar.edit_requested.connect(self.edit_block)
         self.calendar.change_requested.connect(self.change_block)
         self.calendar.educator_dropped.connect(self.educator_drop)
@@ -390,8 +408,10 @@ class MainWindow(QMainWindow):
         self.menu_actions = {}
         add = self._add_menu_action
         add(self.add_menu, "add_shift", "Quart de travail…", lambda: self.new_shift())
-        add(self.add_menu, "add_activity", "Activité…", lambda: self.new_activity())
-        add(self.command_menu, "save", "Sauvegarder", lambda: self.save_week(manual=True), "Ctrl+S")
+        self.file_menu = QMenu(self)
+        self.file_menu.setStyleSheet("QMenu {background:white;color:#203D32;font-size:16px;} QMenu::item {padding:12px 16px;} QMenu::item:selected {background:#DFEBE4;color:#203D32;}")
+        self.folder_button.setMenu(self.file_menu)
+        add(self.file_menu, "save", "Enregistrer l’horaire", lambda: self.save_week(manual=True), "Ctrl+S")
         add(self.command_menu, "undo", "Annuler", lambda: self.undo(), "Ctrl+Z")
         redo = add(self.command_menu, "redo", "Rétablir", lambda: self.redo())
         redo.setShortcuts([QKeySequence("Ctrl+Shift+Z"), QKeySequence("Ctrl+Y")])
@@ -408,24 +428,26 @@ class MainWindow(QMainWindow):
         inactive.setCheckable(True)
         organisation.addSeparator()
         add(organisation, "groups", "Groupes…", lambda: self.manage_entities("groups"))
-        add(organisation, "rooms", "Locaux et extérieur…", lambda: self.manage_entities("rooms"))
         add(organisation, "settings", "Règles de planification…", lambda: self.edit_settings())
         status_menu = self.command_menu.addMenu("Statut de la journée")
         status_commands = {"draft": "Conserver en brouillon", "validated": "Valider l'horaire", "published": "Publier l'horaire", "archived": "Archiver la journée"}
         for status, label in status_commands.items():
             action = add(status_menu, "status_" + status, label, lambda value=status: self._status_selected(self.status_combo.findData(value)))
             action.setCheckable(True)
-        week_menu = self.command_menu.addMenu("Journées et historique")
-        add(week_menu, "choose_week", "Consulter une journée…", lambda: self.choose_week())
+        self.file_menu.addSeparator()
+        week_menu = self.file_menu
+        add(week_menu, "choose_week", "Ouvrir une journée…", lambda: self.choose_week(), "Ctrl+O")
         add(week_menu, "duplicate", "Dupliquer cette journée…", lambda: self.duplicate_week())
         add(week_menu, "history", "Historique des versions…", lambda: self.show_history())
-        backups = self.command_menu.addMenu("Sauvegardes locales")
+        self.file_menu.addSeparator()
+        backups = self.file_menu
         add(backups, "backup", "Exporter une sauvegarde…", lambda: self.backup())
         add(backups, "import", "Importer une sauvegarde…", lambda: self.import_backup())
         self.command_menu.addSeparator()
         add(self.command_menu, "display", "Affichage…", lambda: self.show_display_options())
         self.command_menu.aboutToShow.connect(self._sync_menu_actions)
         self.add_menu.aboutToShow.connect(self._sync_menu_actions)
+        self.file_menu.aboutToShow.connect(self._sync_menu_actions)
 
     def _sync_menu_actions(self):
         if not hasattr(self, "menu_actions"):
@@ -433,7 +455,7 @@ class MainWindow(QMainWindow):
         enabled = {
             "save": self.save_button.isEnabled(), "undo": self.undo_button.isEnabled(),
             "redo": self.redo_button.isEnabled(), "add_shift": not self.read_only,
-            "add_activity": not self.read_only, "name_day": not self.read_only,
+            "name_day": not self.read_only,
             "enrolment": not self.read_only, "add_educator": not self.read_only,
             "edit_educator": self.edit_educator_button.isEnabled(),
             "settings": not self.read_only,
@@ -495,12 +517,17 @@ class MainWindow(QMainWindow):
         full_title = self.week.day_names.get(self.day) or "Journée pédagogique"
         self.day_title.setText(self.day_title.fontMetrics().elidedText(full_title, Qt.TextElideMode.ElideRight, 310))
         self.day_title.setToolTip(full_title)
-        self.calendar_summary.setText(self.week.day_label(self.day).split(" — ", 1)[0])
+        self.calendar_summary.setText(self.week.day_label(self.day).split(" — ", 1)[0] + " · 6 h 50–17 h 35")
         self.day_combo.setCurrentIndex(self.day)
         self.snap_combo.setCurrentIndex(max(0, self.snap_combo.findData(self.week.settings.snap_minutes)))
         self.calendar.set_snap(self.week.settings.snap_minutes)
         self.calendar.set_week(self.week, self.day, self.issues)
         self.calendar.set_read_only(self.read_only)
+        for control in (self.week_date, self.previous_day_button, self.next_day_button, self.today_day_button):
+            control.setEnabled(self._worker is None)
+        self.previous_day_button.setEnabled(self._worker is None and self.week_date.date() > self.week_date.minimumDate())
+        self.next_day_button.setEnabled(self._worker is None and self.week_date.date() < self.week_date.maximumDate())
+        self.today_day_button.setEnabled(self._worker is None and self.week_date.isDateAvailable(QDate.currentDate()))
         self.refresh_educators()
         self.refresh_alerts()
         self.undo_button.setEnabled(bool(self._undo) and not self.read_only)
@@ -736,10 +763,17 @@ class MainWindow(QMainWindow):
             self.switch_day(selected.toPython())
 
     def navigate_day(self, direction):
-        self.switch_day(date.fromisoformat(self.week.planning_date or self.week.monday) + timedelta(days=direction))
+        current = QDate.fromString(self.week.planning_date or self.week.monday, "yyyy-MM-dd")
+        target = current.addDays(direction)
+        while self.week_date.minimumDate() <= target <= self.week_date.maximumDate():
+            if self.week_date.isDateAvailable(target):
+                self.switch_day(target.toPython())
+                return
+            target = target.addDays(1 if direction >= 0 else -1)
 
     def switch_day(self, selected):
         if self._worker is not None:
+            self.refresh()
             return
         if selected.isoformat() == self.week.planning_date and self._history_version is None:
             return
@@ -801,7 +835,20 @@ class MainWindow(QMainWindow):
         self.week_mode.setChecked(mode == "Semaine")
 
     def toggle_sidebar(self):
-        self.sidebar.setVisible(not self.sidebar.isVisible())
+        self._sidebar_manual_hidden = self.sidebar.isVisible()
+        self._auto_hidden_sidebar = False
+        self.sidebar.setVisible(not self._sidebar_manual_hidden)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if hasattr(self, "sidebar"):
+            if self.width() < 960 and not self._sidebar_manual_hidden:
+                self.sidebar.hide()
+                self._auto_hidden_sidebar = True
+            elif self.width() >= 960 and self._auto_hidden_sidebar:
+                self.sidebar.show()
+                self._auto_hidden_sidebar = False
+
 
     def toggle_alerts(self):
         self.alert_panel.setVisible(self.alert_toggle.isChecked())
@@ -898,7 +945,7 @@ class MainWindow(QMainWindow):
         layout.addRow("Taille souhaitée d'un groupe", size)
         layout.addRow("Nom de la journée", day_name)
         layout.addRow(preview)
-        layout.addRow(note("Cette action répartit les enfants entre les groupes et ouvre ceux-ci sur toute la journée. Les quarts et les activités existants sont conservés ; vérifiez les alertes ou générez une proposition ensuite."))
+        layout.addRow(note("Cette action répartit les enfants entre les groupes et ouvre ceux-ci sur toute la journée. Les quarts existants sont conservés ; vérifiez les alertes ou générez une proposition ensuite."))
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         buttons.button(QDialogButtonBox.StandardButton.Ok).setText("Appliquer les inscriptions")
         buttons.button(QDialogButtonBox.StandardButton.Cancel).setText("Annuler")
@@ -924,8 +971,8 @@ class MainWindow(QMainWindow):
                 if collection == "educators" and any(s.educator_id == original.id for s in self.week.shifts):
                     QMessageBox.information(self, "Éducatrice affectée", "Cette éducatrice possède des quarts. Désactivez son profil pour conserver ses affectations, ou retirez ses quarts avant de supprimer le profil.")
                     return
-                if collection == "groups" and (any(s.group_id == original.id for s in self.week.shifts) or any(a.group_id == original.id for a in self.week.activities)):
-                    QMessageBox.information(self, "Groupe utilisé", "Retirez les quarts et activités du groupe avant de le supprimer, ou fermez ses périodes d'ouverture.")
+                if collection == "groups" and (any(s.group_id == original.id for s in self.week.shifts) or (not self.week.planning_date and any(a.group_id == original.id for a in self.week.activities))):
+                    QMessageBox.information(self, "Groupe utilisé", "Retirez les quarts du groupe avant de le supprimer, ou fermez ses périodes d'ouverture.")
                     return
                 if collection == "rooms" and any(a.room_id == original.id for a in self.week.activities):
                     QMessageBox.information(self, "Lieu utilisé", "Changez le lieu des activités concernées avant de supprimer ce lieu.")
@@ -1154,7 +1201,7 @@ class MainWindow(QMainWindow):
         if not weeks:
             QMessageBox.information(self, "Journées", "Aucune autre journée sauvegardée.")
             return
-        labels = [f"{row['date']} — {STATUS_LABELS.get(row['status'], row['status'])}" for row in weeks]
+        labels = [f"{full_date(QDate.fromString(row['date'], 'yyyy-MM-dd'))} — {STATUS_LABELS.get(row['status'], row['status'])}" for row in weeks]
         choice, accepted = QInputDialog.getItem(self, "Consulter une journée", "Journées sauvegardées", labels, 0, False)
         if accepted:
             self.switch_day(date.fromisoformat(weeks[labels.index(choice)]["date"]))
@@ -1165,11 +1212,11 @@ class MainWindow(QMainWindow):
         dialog = QDialog(self)
         dialog.setWindowTitle("Dupliquer la journée")
         layout = QFormLayout(dialog)
-        selected = QDateEdit(QDate.fromString(self.week.planning_date or self.week.monday, "yyyy-MM-dd").addDays(1))
-        selected.setCalendarPopup(True)
-        selected.setDisplayFormat("dd MMMM yyyy")
+        selected = DaySelector(dialog)
+        selected.setDate(QDate.fromString(self.week.planning_date or self.week.monday, "yyyy-MM-dd").addDays(1))
+        layout.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         layout.addRow("Date de la nouvelle journée", selected)
-        layout.addRow(note("Les quarts, activités et inscriptions sont copiés. Une journée existante n'est jamais remplacée."))
+        layout.addRow(note("Les quarts et inscriptions sont copiés. Une journée existante n'est jamais remplacée."))
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         buttons.button(QDialogButtonBox.StandardButton.Ok).setText("Dupliquer")
         buttons.button(QDialogButtonBox.StandardButton.Cancel).setText("Annuler")

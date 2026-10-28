@@ -20,7 +20,7 @@ def schedule(count):
     result.groups = [Group(str(i), "Groupe " + chr(65+i)) for i in range(4)]
     for i in range(count):
         result.educators.append(Educator(str(i), f"Éducateur {i+1:02d}", seniority=min(i+1, 11)))
-        result.shifts.append(Shift(str(i), str(i), str(i % 4), 0, 420, 1080))
+        result.shifts.append(Shift(str(i), str(i), str(i % 4), 0, 410, 1055))
     return result
 
 
@@ -44,7 +44,7 @@ class PedagogicalPdfTests(unittest.TestCase):
                     self.assertIn(f"PAGE {index+1} / {expected}", text)
                     for group in ("Groupe A", "Groupe B", "Groupe C", "Groupe D"):
                         self.assertIn(group, text)
-                    for hour in range(7, 19):
+                    for hour in range(7, 18):
                         self.assertIn(f"{hour} h", text)
                     names = [e.name for e in schedule(count).educators if e.name in text]
                     self.assertLessEqual(len(names), 8)
@@ -53,7 +53,7 @@ class PedagogicalPdfTests(unittest.TestCase):
         for paid in (True, False):
             plan = schedule(1)
             plan.shifts[0].breaks = [Break(600, 630, paid=paid)]
-            self.assertEqual(segments(plan, "0"), [("0", 420, 600), ("0", 630, 1080)])
+            self.assertEqual(segments(plan, "0"), [("0", 410, 600), ("0", 630, 1055)])
             export_general(plan, self.path)
             text = PdfReader(self.path).pages[0].extract_text()
             self.assertNotIn("Pause", text)
@@ -63,7 +63,7 @@ class PedagogicalPdfTests(unittest.TestCase):
 
     def test_split_shift_and_exact_102_minute_geometry(self):
         plan = schedule(1)
-        plan.shifts = [Shift("a", "0", "0", 0, 433, 535), Shift("b", "0", "1", 0, 840, 1080)]
+        plan.shifts = [Shift("a", "0", "0", 0, 433, 535), Shift("b", "0", "1", 0, 840, 1055)]
         recorded = []
         class Capture(Canvas):
             def roundRect(self, x, y, width, height, radius, **kwargs):
@@ -75,7 +75,7 @@ class PedagogicalPdfTests(unittest.TestCase):
             export_general(plan, self.path)
         self.assertEqual(len(recorded), 2)
         self.assertAlmostEqual(recorded[0][0], minute_x(433))
-        self.assertAlmostEqual(recorded[0][1], 102 * 569 / 660)
+        self.assertAlmostEqual(recorded[0][1], 102 * 569 / 645)
         self.assertAlmostEqual(recorded[1][0], minute_x(840))
         self.assertEqual(plan.to_dict(), before)
         text = PdfReader(self.path).pages[0].extract_text()
@@ -100,13 +100,14 @@ class PedagogicalPdfTests(unittest.TestCase):
         self.assertEqual(colours[0], colours[8])
         self.assertEqual(colours[0].lower().replace('0x', '#'), GROUP_COLORS[0].lower())
 
-    def test_opening_before_seven_is_preserved_as_exact_annotation(self):
+    def test_opening_and_closing_are_exact_boundaries_without_annotation(self):
         plan = schedule(1)
         plan.shifts[0].start = 410
         export_general(plan, self.path)
         text = PdfReader(self.path).pages[0].extract_text()
         self.assertIn("06 h 50", text)
-        self.assertIn("Présence hors", text)
+        self.assertIn("17 h 35", text)
+        self.assertNotIn("Présence hors", text)
 
     def test_daily_export_failure_preserves_previous_pdf(self):
         export_general(schedule(1), self.path)

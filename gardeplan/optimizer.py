@@ -386,7 +386,7 @@ def generate(week: Week, time_limit: float = 20) -> GenerationResult:
             _cover(model, candidates, day,
                    [(settings.open_minute - settings.opening_buffer,
                      settings.close_minute + settings.closing_buffer, 2)])
-    for activity in snapshot.activities:
+    for activity in (() if snapshot.planning_date else snapshot.activities):
         if not activity.responsible_ids:
             continue
         group = next((g for g in snapshot.groups if g.id == activity.group_id), None)

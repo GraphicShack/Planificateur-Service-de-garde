@@ -154,6 +154,14 @@ class DailyTests(unittest.TestCase):
         plan.educators[1].seniority = 12
         self.assertTrue(any("rang de 1 à 11" in i.message for i in validate(plan)))
 
+    def test_daily_presence_cannot_extend_beyond_opening_and_closing_buffers(self):
+        plan = prepared_day()
+        self.assertFalse(any(i.code == "service_hours" for i in validate(plan)))
+        plan.shifts[0].start = 409
+        self.assertTrue(any(i.code == "service_hours" for i in validate(plan)))
+        plan.shifts[0].start, plan.shifts[0].end = 410, 1056
+        self.assertTrue(any(i.code == "service_hours" for i in validate(plan)))
+
     def test_colours_remain_distinct_beyond_eleven_and_survive_reopening(self):
         from gardeplan.identity import next_educator_color
         plan = day_plan("2026-10-28")

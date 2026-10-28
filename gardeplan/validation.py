@@ -65,6 +65,11 @@ def _prefix(day, start, end):
 
 
 def validate(week: Week) -> list[Issue]:
+    if week.planning_date and (week.activities or week.rooms):
+        from copy import deepcopy
+        schedule = deepcopy(week)
+        schedule.activities, schedule.rooms = [], []
+        return validate(schedule)
     issues: list[Issue] = []
     def add(code, message, day=None, start=None, end=None, group_id="", shift_ids=None, suggestion="", severity="error"):
         if week.planning_date and day == 0:
@@ -146,6 +151,8 @@ def validate(week: Week) -> list[Issue]:
         if not _day_ok(s.day) or not _interval_ok(s.start, s.end) or any(type(x) is not int or x < 0 for x in (s.buffer_before, s.buffer_after)) or s.buffer_before + s.buffer_after >= s.end - s.start:
             add("missing_data", f"Les heures ou buffers du quart de {e.name} sont invalides.", shift_ids=[s.id])
             continue
+        if week.planning_date and valid_settings and (s.start < settings.open_minute-settings.opening_buffer or s.end > settings.close_minute+settings.closing_buffer):
+            add("service_hours", f"Le quart de {e.name} doit rester entre {format_time(settings.open_minute-settings.opening_buffer)} et {format_time(settings.close_minute+settings.closing_buffer)}.", s.day, s.start, s.end, s.group_id, [s.id])
         breaks_ok = True
         for b in s.breaks:
             if not _interval_ok(b.start, b.end) or not (s.start <= b.start < b.end <= s.end):

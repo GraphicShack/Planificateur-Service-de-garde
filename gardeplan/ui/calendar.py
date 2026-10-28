@@ -66,7 +66,7 @@ class _Gutter(QWidget):
         painter.setFont(_font(8.5))
         c = self.calendar
         offset = c.scroll.verticalScrollBar().value()
-        for minute in range(c.start_minute, c.end_minute + 1, 30):
+        for minute in range((c.start_minute+29)//30*30, c.end_minute+1, 30):
             y = (minute - c.start_minute) * c.scale - offset
             if -10 <= y <= self.height() + 10:
                 if minute % 60 == 0:
@@ -183,7 +183,7 @@ class _Canvas(QWidget):
             group_id = None if c.mode == "Semaine" else c.week.groups[column].id
             shifts = [s for s in c.week.shifts if s.day == day and
                       (group_id is None or s.group_id == group_id)]
-            activities = [a for a in c.week.activities if a.day == day and
+            activities = [a for a in c.week.activities if c.show_activities and a.day == day and
                           (group_id is None or a.group_id == group_id)]
             left = column * c.column_width + 8
             available = c.column_width - 16
@@ -604,6 +604,7 @@ class CalendarWidget(QWidget):
     def __init__(self,parent=None):
         super().__init__(parent)
         self.week = None
+        self.show_activities = True
         self.day = 0
         self.mode = "Jour"
         self.read_only = False
@@ -691,10 +692,12 @@ class CalendarWidget(QWidget):
         self.day=max(0,min(4,int(day)))
         self.issues=list(issues or [])
         self.canvas.drag=None
-        starts=[s.start for s in week.shifts]+[a.start for a in week.activities]
-        ends=[s.end for s in week.shifts]+[a.end for a in week.activities]
-        self.start_minute=max(0,min([360]+starts)//60*60)
-        self.end_minute=min(1440,int(math.ceil(max([1140]+ends)/60)*60))
+        starts=[s.start for s in week.shifts]+([a.start for a in week.activities] if self.show_activities else [])
+        ends=[s.end for s in week.shifts]+([a.end for a in week.activities] if self.show_activities else [])
+        opening = week.settings.open_minute-week.settings.opening_buffer
+        closing = week.settings.close_minute+week.settings.closing_buffer
+        self.start_minute=max(0,min([opening]+starts))
+        self.end_minute=min(1440,max([closing]+ends))
         self._layout_calendar()
 
     def set_mode(self,mode):
