@@ -4,7 +4,7 @@ La vérification balaye les minutes exactes puis regroupe les erreurs identiques
 adjacentes en intervalles lisibles. Aucun arrondi ni approximation par tranche.
 """
 from __future__ import annotations
-from .staffing import minimum_presence, pupil_requirement, group_requirement, group_presence_requirements, daily_limit
+from .staffing import minimum_presence, pupil_requirement, group_requirement, group_presence_requirements, shared_presence, shared_requirement, daily_limit
 
 from dataclasses import dataclass, field
 from collections import defaultdict
@@ -265,17 +265,20 @@ def validate(week: Week, *, _service=False) -> list[Issue]:
             group_ranges=[(p.start,p.end) for (gid,d),ps in valid_periods.items() if d==day for p in ps]
             group_ranges += [(x,y) for group in week.groups for x,y,n in group_presence_requirements(week,group,day)]
             for minute in range(a, b):
-                if week.planning_date and settings.staffing_policy>=3 and any(x<=minute<y for x,y in group_ranges):
+                if week.planning_date and settings.staffing_policy>=3 and not shared_presence(week,minute) and any(x<=minute<y for x,y in group_ranges):
                     # Two in every open group already imply the school floor.
                     # Keep one precise group alert instead of a duplicate rule.
                     values.append((minute,None))
                     continue
-                actual = len({s.educator_id for s in staff if any(x <= minute < y for x, y in working[s.id])})
+                shared=shared_presence(week,minute)
+                intervals=coverage if shared and settings.open_minute<=minute<settings.close_minute else working
+                actual = len({s.educator_id for s in staff if any(x <= minute < y for x, y in intervals[s.id])})
                 code = "opening" if minute < settings.open_minute else "closing" if minute >= settings.close_minute else "school_coverage"
-                required = minimum_presence(week,minute)
+                if shared:code="shared_coverage"
+                required = shared_requirement(week,minute,day) if shared else minimum_presence(week,minute)
                 values.append((minute, (code, actual, required) if actual < required else None))
             for start, end, (code, actual, required) in _minute_runs(values):
-                subject = "l'ouverture des locaux" if code == "opening" else "la fermeture de l'école" if code == "closing" else "la continuité du service de garde"
+                subject = "l’accueil commun à tous les groupes" if code == "shared_coverage" else "l'ouverture des locaux" if code == "opening" else "la fermeture de l'école" if code == "closing" else "la continuité du service de garde"
                 add(code, _prefix(day, start, end) + f"{subject} exige {required} éducatrice(s) présente(s); seulement {actual} sont au travail.", day, start, end, shift_ids=[s.id for s in staff if _overlap(s.start, s.end, start, end)], suggestion=f"Ajuster les quarts pour conserver {required} éducatrice(s) présente(s) simultanément.")
 
         # Une arrivée en cours d'ouverture doit avoir quinze minutes communes
@@ -291,7 +294,7 @@ def validate(week: Week, *, _service=False) -> list[Issue]:
                 # Un changement d'effectif à t n'est pas une réouverture.
                 if not any(p.start <= t - 1 < p.end for p in periods):
                     continue
-                predecessors = [p for p in by_group_day[(s.group_id, s.day)] if p.id != s.id and p.educator_id != s.educator_id and p.coverage_start < t and p.coverage_end >= t]
+                predecessors = [p for p in ([p for p in shifts if p.day==s.day] if shared_presence(week,t) else by_group_day[(s.group_id, s.day)]) if p.id != s.id and p.educator_id != s.educator_id and p.coverage_start < t and p.coverage_end >= t]
                 # Prioriser la personne qui quitte le groupe : une collègue
                 # restant toute la journée ne remplace pas la transmission
                 # avec le quart qui se termine maintenant.

@@ -45,7 +45,7 @@ class StaffingPolicyTests(unittest.TestCase):
         self.assertEqual(historical.settings.staffing_policy,1)
         self.assertEqual(raw,before)
         self.assertTrue(all(p.required>=2 for p in coverage_timeline(historical)))
-        self.assertEqual(duplicate_day(historical,'2026-10-29').settings.staffing_policy,3)
+        self.assertEqual(duplicate_day(historical,'2026-10-29').settings.staffing_policy,4)
         self.assertEqual(Week.from_dict(historical.to_dict()).settings.staffing_policy,1)
 
     def test_invalid_ratio_is_reported_before_staffing_calculations(self):

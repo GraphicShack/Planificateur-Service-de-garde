@@ -358,7 +358,7 @@ def test_undo_redo_share_the_day_name_row(planner):
 def test_old_drafts_adopt_new_rules_but_historical_versions_stay_frozen(planner):
     legacy=deepcopy(planner.week);legacy.settings.staffing_policy=1
     planner._load(legacy)
-    assert planner.week.settings.staffing_policy==3 and planner.dirty
+    assert planner.week.settings.staffing_policy==4 and planner.dirty
     assert legacy.settings.staffing_policy==1
     legacy.status='archived'
     planner._load(legacy,version=123)

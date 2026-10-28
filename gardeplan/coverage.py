@@ -1,6 +1,6 @@
 """Minute-exact coverage with merged intervals and legacy quarter-hour views."""
 from dataclasses import dataclass
-from .staffing import boundaries, minimum_presence, pupil_requirement, group_requirement, group_presence_requirements
+from .staffing import boundaries, minimum_presence, pupil_requirement, group_requirement, group_presence_requirements, shared_presence, shared_requirement
 from .models import coverage_intervals, working_intervals, required_educators
 from .models import totals, format_duration
 
@@ -13,6 +13,7 @@ class Coverage:
     required: int
     students: int
     missing: int = 0
+    shared: bool = False
 
     @property
     def complete(self):
@@ -30,14 +31,15 @@ def coverage_timeline(week, day=0, group_id=""):
     periods = [(g, p) for g in groups for p in g.periods if p.day == day]
     start = max(0, week.settings.open_minute-week.settings.opening_buffer)
     end = min(1440, week.settings.close_minute+week.settings.closing_buffer)
-    shifts = [s for s in week.shifts if s.day == day and (not group_id or s.group_id == group_id)]
+    all_shifts = [s for s in week.shifts if s.day==day]
+    shifts = [s for s in all_shifts if not group_id or s.group_id==group_id]
     active = {e.id for e in week.educators if e.active}
-    covered = {s.id: coverage_intervals(s) for s in shifts}
-    worked = {s.id: working_intervals(s) for s in shifts}
+    covered = {s.id: coverage_intervals(s) for s in all_shifts}
+    worked = {s.id: working_intervals(s) for s in all_shifts}
     points_set = {start, end, week.settings.open_minute, week.settings.close_minute, *boundaries(week)}
     for _, period in periods:
         points_set.update((period.start, period.end))
-    for s in shifts:
+    for s in all_shifts:
         for intervals in (covered[s.id], worked[s.id]):
             for a, b in intervals:
                 points_set.update((a, b))
@@ -76,12 +78,19 @@ def coverage_timeline(week, day=0, group_id=""):
                     actual_group=len({s.educator_id for s in shifts if s.group_id==group.id and s.educator_id in active
                                       and any(x<=a and b<=y for x,y in worked[s.id])})
                     missing+=max(0,need-actual_group)
-        actual = len({s.educator_id for s in shifts if s.educator_id in active
+        shared=shared_presence(week,a)
+        counted=shifts
+        if shared:
+            required=shared_requirement(week,a,day) if periods else 0
+            missing=0
+            counted=all_shifts
+            students=sum(max((p.students for p in g.periods if p.day==day and p.start<=a<p.end),default=0) for g in week.groups)
+        actual = len({s.educator_id for s in counted if s.educator_id in active
                       and any(x <= a and b <= y for x, y in intervals[s.id])})
-        item = Coverage(a, b, actual, required, students, missing)
-        if result and (result[-1].actual, result[-1].required, result[-1].students,result[-1].missing) == (actual, required, students,missing):
+        item = Coverage(a, b, actual, required, students, missing,shared)
+        if result and (result[-1].actual, result[-1].required, result[-1].students,result[-1].missing,result[-1].shared) == (actual, required, students,missing,shared):
             previous = result.pop()
-            item = Coverage(previous.start, b, actual, required, students,missing)
+            item = Coverage(previous.start, b, actual, required, students,missing,shared)
         result.append(item)
     return result
 
@@ -97,7 +106,7 @@ def quarter_hour_coverage(week, day=0):
         candidates = [p for p in timeline if p.start < stop and start < p.end]
         worst = min(candidates, key=lambda p: (-max(p.required-p.actual,p.missing), -p.required))
         result.append(Coverage(start, stop, worst.actual, worst.required,
-                               max(p.students for p in candidates),worst.missing))
+                               max(p.students for p in candidates),worst.missing,worst.shared))
         start = stop
     return result
 
@@ -106,10 +115,10 @@ def merged_coverage(week, day=0):
     """Merge adjacent equal actual/required values at their exact boundaries."""
     result = []
     for part in coverage_timeline(week, day):
-        if result and result[-1].end == part.start and (result[-1].actual, result[-1].required,result[-1].missing) == (part.actual, part.required,part.missing):
+        if result and result[-1].end == part.start and (result[-1].actual, result[-1].required,result[-1].missing,result[-1].shared) == (part.actual, part.required,part.missing,part.shared):
             previous = result.pop()
             part = Coverage(previous.start, part.end, part.actual, part.required,
-                            max(previous.students, part.students), part.missing)
+                            max(previous.students, part.students), part.missing,part.shared)
         result.append(part)
     return result
 
@@ -125,7 +134,7 @@ def coverage_state(part):
 def coverage_counts(part):
     present = "présente" if part.actual == 1 else "présentes"
     required = "requise" if part.required == 1 else "requises"
-    return f"{part.actual} {present} / {part.required} {required}"
+    return f"{part.actual} {present} / {part.required} {required}"+(" · Tous les groupes" if part.shared else "")
 
 
 def day_summary(week, day=0):

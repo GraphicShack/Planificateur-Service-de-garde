@@ -6,6 +6,7 @@ from test_group_generation import grouped_day
 
 def covered_groups():
     plan=grouped_day(8)
+    plan.settings.staffing_policy=3
     plan.shifts=[Shift(str(i),str(i),'A' if i%2==0 else 'B',0,
                       410 if i<4 else 720,735 if i<4 else 1055,
                       10 if i<4 else 15,0 if i<4 else 5) for i in range(8)]

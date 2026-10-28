@@ -4,7 +4,7 @@ from .models import format_time
 
 
 def alert_text(week, issue, *, global_scope=False):
-    if issue.code in {"coverage", "ratio", "opening", "closing", "school_coverage"} and issue.start is not None and issue.end is not None:
+    if issue.code in {"coverage", "ratio", "opening", "closing", "school_coverage", "shared_coverage"} and issue.start is not None and issue.end is not None:
         specific = bool(week.planning_date and week.settings.staffing_policy >= 3 and issue.group_id and issue.code in {'coverage','ratio','opening','closing'})
         parts = [p for p in coverage_timeline(week, issue.day or 0,
                  issue.group_id if specific or not global_scope else "")
@@ -13,7 +13,7 @@ def alert_text(week, issue, *, global_scope=False):
             worst = min(parts, key=lambda p: p.actual-p.required)
             noun = "éducatrice" if worst.actual == 1 else "éducatrices"
             group = next((g.name for g in week.groups if g.id == issue.group_id),'') if specific else ''
-            prefix = f'{group} · ' if group else ''
+            prefix = 'Tous les groupes · ' if issue.code=='shared_coverage' else f'{group} · ' if group else ''
             return prefix+f"{format_time(issue.start)} – {format_time(issue.end)} : {worst.actual} {noun} au lieu de {worst.required}"
     return issue.message
 

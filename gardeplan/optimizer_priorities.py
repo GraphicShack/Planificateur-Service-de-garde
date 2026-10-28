@@ -4,7 +4,7 @@ Each solve keeps the previous feasible proposal. A time limit never turns an
 unfinished preference search into an invalid or silently empty schedule.
 """
 from time import monotonic
-from .staffing import daily_limit
+from .staffing import daily_limit, shared_presence, shared_requirement
 
 
 def cohort_hint(week,candidates,ranked):
@@ -29,10 +29,19 @@ def cohort_hint(week,candidates,ranked):
         if not shift.breaks:
             index[(shift.educator_id,shift.group_id,shift.start,shift.end,shift.buffer_before,shift.buffer_after)]=candidate
     chosen=[];opening_count=2*len(groups)
+    pooled=shared_presence(week,s.open_minute-s.opening_buffer)
+    stay=shared_requirement(week,max(s.open_minute,s.close_minute-30)) if pooled else opening_count
     for i,person in enumerate(ranked):
         group=groups[(i%opening_count)//2]
-        key=(person.id,group.id,s.open_minute-s.opening_buffer,middle,s.opening_buffer,0) if i<opening_count else (
-            person.id,group.id,middle-s.handover_minutes,s.close_minute+s.closing_buffer,s.handover_minutes,s.closing_buffer)
+        lane=i%opening_count
+        # The first two open the school. Other groups join at pupil opening.
+        begin=s.open_minute-s.opening_buffer if not pooled or lane<2 else s.open_minute
+        lane_middle=begin+limit
+        if i<opening_count:
+            key=(person.id,group.id,begin,lane_middle,s.open_minute-begin,0)
+        else:
+            end=s.close_minute+s.closing_buffer if not pooled or lane<stay else max(s.open_minute,s.close_minute-30)
+            key=(person.id,group.id,lane_middle-s.handover_minutes,end,s.handover_minutes,s.closing_buffer if end>s.close_minute else 0)
         candidate=index.get(key)
         if candidate is None:return set()
         chosen.append(candidate)

@@ -146,7 +146,7 @@ class Settings:
     break_minutes: int = 0
     break_paid: bool = False
     max_daily_minutes: int = 720
-    staffing_policy: int = 3  # Version 1 remains attached to older snapshots.
+    staffing_policy: int = 4  # Version 1 remains attached to older snapshots.
 
 
 @dataclass
@@ -226,7 +226,7 @@ def _construct(cls, raw: Any, children: dict[str, Any] | None = None):
         if key in {"preferred_groups", "responsible_ids"} and (not isinstance(val, list) or not all(isinstance(x, str) for x in val)):
             raise ValueError(f"Liste invalide : {key}.")
     if cls is Settings:
-        if result.staffing_policy not in (1,2,3):
+        if result.staffing_policy not in (1,2,3,4):
             raise ValueError("Version des règles de personnel non prise en charge.")
         if type(result.zoom) not in (int, float) or not math.isfinite(result.zoom) or not 0.25 <= result.zoom <= 4:
             raise ValueError("Le zoom du calendrier doit être un nombre compris entre 0,25 et 4.")

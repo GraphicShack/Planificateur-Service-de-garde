@@ -15,7 +15,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any
 
-from .staffing import group_presence_requirements, group_requirement, daily_limit, boundaries, minimum_presence, pupil_requirement, requirements as staffing_requirements
+from .staffing import shared_presence, shared_requirements, service_need, group_presence_requirements, group_requirement, daily_limit, boundaries, minimum_presence, pupil_requirement, requirements as staffing_requirements
 from .models import (
     Break, Educator, Shift, Week, coverage_intervals, working_intervals,
     paid_minutes, required_educators, subtract_intervals, merge_intervals, new_id,
@@ -193,6 +193,7 @@ def _requirements(week: Week) -> list[str]:
             school_open = (week.settings.open_minute - week.settings.opening_buffer <= a <
                            week.settings.close_minute + week.settings.closing_buffer)
             needed = max(needed, minimum_presence(week,a) if school_open else 0)
+            if week.settings.staffing_policy>=4 and week.planning_date:needed=service_need(week,a,day)
             available = sum(any(start <= a and b <= end for start, end in _windows(e, day)) for e in active)
             if available < needed:
                 result.append(f"Jour {day + 1}, {format_time(a)} à {format_time(b)} : {needed} éducatrices requises, seulement {available} disponibles.")
@@ -204,7 +205,7 @@ def _requirements(week: Week) -> list[str]:
         for a,b in zip(points,points[1:]):
             needs=[group_requirement(week,a,max(p.students for p in g.periods if p.day==0 and p.start<=a<p.end),g.ratio,g.min_educators)
                    for g in week.groups if any(p.day==0 and p.start<=a<p.end for p in g.periods)]
-            if needs:needed_minutes+=(b-a)*max(minimum_presence(week,a),sum(needs))
+            if needs:needed_minutes+=(b-a)*(service_need(week,a) if week.settings.staffing_policy>=4 else max(minimum_presence(week,a),sum(needs)))
         capacity=sum(min(e.max_minutes,daily_limit(week),sum(b-a for a,b in _windows(e,0))) for e in active)
         if needed_minutes>capacity:
             from .models import format_duration
@@ -217,7 +218,7 @@ def _requirements(week: Week) -> list[str]:
 
 
 def _cover(model, candidates: list[_Candidate], day: int, required: list[tuple[int, int, int]],
-           group_id: str | None = None, allowed_ids: set[str] | None = None, *, presence=False) -> None:
+           group_id: str | None = None, allowed_ids: set[str] | None = None, *, presence=False, coverage_only=False) -> None:
     """Contraintes sur tous les segments où le besoin ou la présence change.
 
     Un balayage des événements évite d'arrondir une borne à un pas de temps.
@@ -230,7 +231,7 @@ def _cover(model, candidates: list[_Candidate], day: int, required: list[tuple[i
             continue
         if allowed_ids is not None and shift.educator_id not in allowed_ids:
             continue
-        intervals = working_intervals(shift) if group_id is None or presence else coverage_intervals(shift)
+        intervals = coverage_intervals(shift) if coverage_only else working_intervals(shift) if group_id is None or presence else coverage_intervals(shift)
         for start, end in intervals:
             events[start].append((idx, 1))
             events[end].append((idx, -1))
@@ -298,7 +299,8 @@ def _handovers(model, candidates: list[_Candidate], week: Week) -> None:
                 profiles[_handover_profile(incoming, length)].append(incoming)
         for (educator_id, point, intervals), arrivals in profiles.items():
             previous_choices, bad_choices = [], []
-            for previous in choices:
+            predecessors=[c for c in candidates if c.shift.day==day] if shared_presence(week,point) else choices
+            for previous in predecessors:
                 older = previous.shift
                 if (older.educator_id == educator_id or
                     not older.coverage_start < point <= older.coverage_end):
@@ -424,6 +426,10 @@ def generate(week: Week, time_limit: float = 20) -> GenerationResult:
             _cover(model, candidates, day,
                    staffing_requirements(snapshot,settings.open_minute-settings.opening_buffer,
                                          settings.close_minute+settings.closing_buffer))
+    for day in snapshot.active_days:
+        if any(p.day==day for group in snapshot.groups for p in group.periods):
+            for a,b,need,pupils in shared_requirements(snapshot,day):
+                _cover(model,candidates,day,[(a,b,need)],coverage_only=pupils)
     for activity in (() if snapshot.planning_date else snapshot.activities):
         if not activity.responsible_ids:
             continue

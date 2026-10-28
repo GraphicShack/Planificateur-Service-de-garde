@@ -49,7 +49,7 @@ def test_new_days_and_copies_use_eight_hours_without_mutating_archives():
     assert duplicate_day(legacy,'2026-10-29').settings.max_daily_minutes == 480
     legacy.status='draft'
     assert adopt_current_draft_rules(legacy)
-    assert legacy.settings.staffing_policy == 3 and daily_limit(legacy) == 480
+    assert legacy.settings.staffing_policy == 4 and daily_limit(legacy) == 480
 
 
 def test_profile_and_settings_reject_more_than_eight_hours(qapp):
