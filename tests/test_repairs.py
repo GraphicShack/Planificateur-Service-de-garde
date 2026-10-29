@@ -79,6 +79,17 @@ def test_repair_can_add_two_people_to_fix_a_ratio_deficit_without_hiding_other_e
     assert any(i.code=='ratio' for i in validate(result.proposal))
 
 
+@pytest.mark.parametrize('start,end',[(410,420),(820,855)])
+def test_shared_opening_and_closing_repairs_include_valid_buffers(start,end):
+    plan=gap_day();plan.shifts[0].breaks=[Break(start,end)]
+    issue=next(i for i in validate(plan) if i.code=='shared_coverage' and i.start==start)
+    result=repair(plan,issue)
+    assert result.success,result.message
+    assert not [i for i in validate(result.proposal) if i.severity=='error']
+    added=compare(plan,result.proposal)[0].after
+    assert added.start<=start and added.end>=end
+
+
 @pytest.mark.parametrize('accept',[False,True])
 def test_correction_button_uses_real_background_worker_and_preview_before_apply(qapp,tmp_path,monkeypatch,accept):
     from PySide6.QtCore import Qt

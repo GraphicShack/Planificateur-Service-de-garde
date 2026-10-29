@@ -9,7 +9,7 @@ from time import monotonic
 
 from .attendance import is_absent
 from .coverage import coverage_timeline
-from .models import Shift,new_id,paid_minutes,subtract_intervals,format_time
+from .models import Shift,new_id,paid_minutes,subtract_intervals,merge_intervals,format_time
 from .optimizer import GenerationResult,_windows,_fits,_candidate_breaks
 from .preferences import preference_cost
 from .staffing import daily_limit
@@ -65,10 +65,10 @@ def _edits(plan,issue):
             daily=sum(paid_minutes(s) for s in own if s.day==issue.day)
             cap=min(person.max_minutes-total,(daily_limit(plan) or 1440)-daily)
             for group in groups:
-                if not any(p.day==issue.day and p.start<b and a<p.end for p in group.periods) and settings.open_minute<=a<settings.close_minute:
-                    continue
                 coverage_start=max(settings.open_minute,min(a,settings.close_minute-1))
                 coverage_end=min(settings.close_minute,max(b,settings.open_minute+1))
+                opened=merge_intervals([(p.start,p.end) for p in group.periods if p.day==issue.day])
+                if not any(x<=coverage_start and coverage_end<=y for x,y in opened):continue
                 before=settings.opening_buffer if coverage_start==settings.open_minute else settings.handover_minutes
                 after=settings.closing_buffer if b>settings.close_minute else 0
                 # Extending a nearby assignment avoids a new arrival. Breaks keep
@@ -77,9 +77,9 @@ def _edits(plan,issue):
                     if old.locked or old.day!=issue.day or old.group_id!=group.id:continue
                     if old.end<a-settings.handover_minutes or old.start>b+settings.handover_minutes:continue
                     shift=deepcopy(old)
-                    if coverage_start<old.coverage_start:
+                    if coverage_start<old.coverage_start or (a<settings.open_minute and coverage_start-before<old.start):
                         shift.start=coverage_start-before;shift.buffer_before=before
-                    if coverage_end>old.coverage_end:
+                    if coverage_end>old.coverage_end or (after and coverage_end+after>old.end):
                         shift.end=coverage_end+after;shift.buffer_after=after
                     if shift==old:continue
                     extra=paid_minutes(shift)-paid_minutes(old)
