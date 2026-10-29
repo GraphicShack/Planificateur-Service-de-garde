@@ -29,6 +29,7 @@ from ..coverage import day_summary
 from ..hours import educator_hour_state
 from ..attendance import is_absent, set_day_absence
 from ..optimizer import generate
+from ..repairs import repair,repairable
 from ..pdf import export_general, export_individual, export_combined, export_all_individual
 from .calendar import CalendarWidget, EDUCATOR_MIME
 from .day_selector import full_date
@@ -94,6 +95,18 @@ class GenerationThread(QThread):
             self.completed.emit(generate(self.snapshot, time_limit=20))
         except Exception as error:
             self.failed.emit(f"La génération a échoué : {error}")
+
+
+class RepairThread(GenerationThread):
+    def __init__(self,week,issue,parent=None):
+        super().__init__(week,parent)
+        self.issue=deepcopy(issue)
+
+    def run(self):
+        try:
+            self.completed.emit(repair(self.snapshot,self.issue))
+        except Exception as error:
+            self.failed.emit(f"La correction n’a pas pu être préparée : {error}")
 
 
 class MainWindow(QMainWindow):
@@ -491,6 +504,15 @@ class MainWindow(QMainWindow):
         self.alert_list.itemClicked.connect(self.navigate_issue)
         self.alert_list.itemActivated.connect(self.navigate_issue)
         alert_layout.addWidget(self.alert_list)
+        self.repair_button=self._button("Proposer une correction",self.start_repair)
+        self.repair_button.setMinimumHeight(44)
+        self.repair_button.setEnabled(False)
+        alert_layout.addWidget(self.repair_button)
+        self.repair_hint=QLabel("Sélectionnez une alerte de couverture pour proposer une correction.")
+        self.repair_hint.setWordWrap(True)
+        self.repair_hint.setStyleSheet("font-size:14px;")
+        alert_layout.addWidget(self.repair_hint)
+        self.alert_list.currentItemChanged.connect(lambda *_:self._sync_repair_button())
         self.alert_panel.setMinimumWidth(220)
         self.alert_panel.setMaximumWidth(320)
         self.management_stack.addWidget(self.alert_panel)
@@ -976,6 +998,16 @@ class MainWindow(QMainWindow):
             self.alert_list.addItem(item)
         if not self.issues:
             self.alert_list.addItem("Aucune alerte")
+        self._sync_repair_button()
+
+    def _sync_repair_button(self):
+        item=self.alert_list.currentItem()
+        issue=item.data(Qt.ItemDataRole.UserRole) if item else None
+        enabled=repairable(issue) and not self.read_only
+        self.repair_button.setEnabled(enabled)
+        self.repair_hint.setText("La correction conserve les autres quarts et sera comparée avant application." if enabled else
+            "Cette alerte demande un ajustement manuel du quart ou des paramètres." if issue and not repairable(issue) else
+            "Sélectionnez une alerte de couverture pour proposer une correction.")
 
     def _can_edit(self):
         if self.read_only:
@@ -1475,6 +1507,24 @@ class MainWindow(QMainWindow):
         self.autosave.stop()
         self._worker = GenerationThread(self.week, self)
         self._progress = GenerationLoading(self.motion, self)
+        self._progress.show()
+        self._worker.completed.connect(self._generation_result)
+        self._worker.failed.connect(self._generation_error)
+        self._worker.finished.connect(self._generation_finished)
+        self.refresh()
+        self._worker.start()
+
+    def start_repair(self):
+        if not self._can_edit():return
+        item=self.alert_list.currentItem()
+        issue=item.data(Qt.ItemDataRole.UserRole) if item else None
+        if not repairable(issue):return
+        if self.dirty and not self.save_week(manual=False):return
+        self.autosave.stop()
+        self._worker=RepairThread(self.week,issue,self)
+        self._progress=GenerationLoading(self.motion,self,title="Correction de la plage choisie",
+            message="Recherche d’un remplacement compatible, en conservant les autres quarts et les verrous.")
+        self._progress.setWindowTitle("Correction ciblée")
         self._progress.show()
         self._worker.completed.connect(self._generation_result)
         self._worker.failed.connect(self._generation_error)

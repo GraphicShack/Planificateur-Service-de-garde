@@ -56,7 +56,8 @@ class LoadingSpinner(QWidget):
 
 class GenerationLoading(QDialog):
     """Closing is controlled by the real worker, whose calculation continues offline."""
-    def __init__(self, motion, parent=None):
+    def __init__(self, motion, parent=None, *, title="Création de votre horaire",
+                 message="Recherche d’une proposition respectant les disponibilités, les rangs et la couverture des groupes."):
         super().__init__(parent)
         self._done = False
         self.setWindowTitle("Génération de l’horaire")
@@ -76,15 +77,15 @@ class GenerationLoading(QDialog):
         layout.setSpacing(16)
         self.spinner = LoadingSpinner(motion, self)
         layout.addWidget(self.spinner, 0, Qt.AlignmentFlag.AlignHCenter)
-        title = QLabel("Création de votre horaire")
-        title.setObjectName("loadingTitle")
-        title.setWordWrap(True)
-        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(title)
-        message = QLabel("Recherche d’une proposition respectant les disponibilités, les rangs et la couverture des groupes.")
-        message.setWordWrap(True)
-        message.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(message)
+        heading = QLabel(title)
+        heading.setObjectName("loadingTitle")
+        heading.setWordWrap(True)
+        heading.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(heading)
+        description = QLabel(message)
+        description.setWordWrap(True)
+        description.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(description)
         self.elapsed_label = QLabel("Calcul en cours…")
         self.elapsed_label.setObjectName("loadingElapsed")
         self.elapsed_label.setAlignment(Qt.AlignmentFlag.AlignCenter)

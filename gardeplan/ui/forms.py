@@ -729,8 +729,9 @@ class ShiftDialog(EditorDialog):
         self.educator = QComboBox()
         self.educator.addItem("Choisir une éducatrice", "")
         for ed in sorted(week.educators, key=lambda ed: (not ed.active, ed.seniority, ed.name)):
-            if ed.active or ed.id == shift.educator_id:
-                self.educator.addItem(ed.name + (" (inactive)" if not ed.active else ""), ed.id)
+            from ..attendance import is_absent
+            if (ed.active and not is_absent(week,ed.id)) or ed.id == shift.educator_id:
+                self.educator.addItem(ed.name + (" (absente pour cette journée)" if is_absent(week,ed.id) else " (inactive)" if not ed.active else ""), ed.id)
         self.educator.setCurrentIndex(max(0, self.educator.findData(shift.educator_id)))
         self.group = QComboBox()
         self.group.addItem("Choisir un groupe", "")
