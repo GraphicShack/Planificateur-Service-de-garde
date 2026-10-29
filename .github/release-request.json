@@ -1,6 +1,6 @@
 {
-  "version": "0.3.5",
-  "commit": "b9dd650ccd41a77f3d4cc075edc43d25eb3465bb",
+  "version": "0.4.0",
+  "commit": "934f2094836ddb536d21ac1b5ba8471ff4330473",
   "approved": true,
-  "authorization": "Publication autorisée dans cette conversation : « fait tout les changement et ensuite push et release le programme » et « Montre moi un aperçu une fois ça fait et ensuite release ». La demande courante ajoute une animation de chargement pendant la génération. L’aperçu Qt capturé pendant un vrai calcul a été montré ; 281 tests et six sous-cas réussissent localement, ainsi que les dix tests des scripts de publication. La publication attend les deux constructions natives réussies du SHA exact et leurs contrôles après extraction."
+  "authorization": "Publication autorisée dans cette conversation : « fait tout les changement et ensuite push et release le programme » et « Montre moi un aperçu une fois ça fait et ensuite release ». La demande courante vise la version 0.4.0 avec les trois améliorations prioritaires et le point 4 : absences à la journée, corrections ciblées, comparaison avant/après et préférences individuelles. Les aperçus Qt réels ont été montrés. Les 307 tests, six sous-cas et dix tests des scripts de publication réussissent localement, avec contrôle hors ligne des nouvelles fonctionnalités. La publication attend les deux constructions natives réussies du SHA exact et leurs contrôles après extraction."
 }
