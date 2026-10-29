@@ -54,7 +54,7 @@ def cohort_hint(week,candidates,ranked):
 def solve_daily(model,candidates,by_person,totals,week,time_limit):
     from ortools.sat.python import cp_model
     ranked=sorted((e for e in week.educators if e.active and not is_absent(week,e.id)),key=lambda e:(e.seniority,e.id))
-    used={};scores={};pieces={};last={}
+    used={};scores={};pieces={};last={};ties={}
     # No educator can have more than 1,440 disjoint positive-minute shifts.
     cut_weight=(daily_limit(week)+1)*1441
     participation_weight=1441*cut_weight+(daily_limit(week)+1)*1441
@@ -66,7 +66,9 @@ def solve_daily(model,candidates,by_person,totals,week,time_limit):
         pieces[person.id]=sum(c.variable for c in choices)
         last[person.id]=model.new_int_var(0,1440,'fin_'+person.id)
         model.add_max_equality(last[person.id],[c.shift.end*c.variable for c in choices] or [0])
-        scores[person.id]=used[person.id]*participation_weight-pieces[person.id]*cut_weight+totals[person.id]*1441-last[person.id]
+        scores[person.id]=used[person.id]*participation_weight-pieces[person.id]*cut_weight+totals[person.id]*1441
+        from .preferences import cp_preference
+        ties[person.id]=cp_preference(model,choices,used[person.id],last[person.id],week,person)*1441+last[person.id]
 
     # Interchangeable profiles can always exchange entire schedules. Breaking
     # this symmetry makes rank order mandatory even when optimization times out.
@@ -78,8 +80,14 @@ def solve_daily(model,candidates,by_person,totals,week,time_limit):
         signature=(tuple(_windows(person,0,week)),min(person.max_minutes,daily_limit(week)),person.guaranteed_minutes,
                    person.target_minutes,tuple(sorted(person.preferred_groups)))
         if signature in equivalent:
-            model.add(scores[equivalent[signature]]>=scores[person.id])
-        equivalent[signature]=person.id
+            previous=equivalent[signature]
+            model.add(scores[previous.id]>=scores[person.id])
+            if (previous.shift_preference,previous.avoid_split,previous.preferred_end)==(person.shift_preference,person.avoid_split,person.preferred_end):
+                equal=model.new_bool_var('meme_qualite_'+person.id)
+                model.add(scores[previous.id]==scores[person.id]).only_enforce_if(equal)
+                model.add(scores[previous.id]!=scores[person.id]).only_enforce_if(equal.Not())
+                model.add(ties[previous.id]<=ties[person.id]).only_enforce_if(equal)
+        equivalent[signature]=person
 
     seed=cohort_hint(week,candidates,ranked)
     if seed:
@@ -128,8 +136,12 @@ def solve_daily(model,candidates,by_person,totals,week,time_limit):
     for index,person in enumerate(ranked):
         remaining=deadline-monotonic()
         if remaining<=.02:optimal=False;break
-        value=run(scores[person.id],True,remaining/(len(ranked)-index))
+        value=run(scores[person.id],True,remaining/(2*(len(ranked)-index)))
         if value is not None:
             model.add(scores[person.id]>=value)
-            completed+=1
+            remaining=deadline-monotonic()
+            preference=run(ties[person.id],False,remaining/max(1,2*(len(ranked)-index)-1))
+            if preference is not None:
+                model.add(ties[person.id]<=preference)
+                completed+=1
     return best,best_status,optimal,completed

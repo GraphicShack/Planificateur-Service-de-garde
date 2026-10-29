@@ -576,6 +576,28 @@ class EducatorDialog(EditorDialog):
                 action.setAutoDefault(False)
             editor.table.setSizeAdjustPolicy(QAbstractItemView.SizeAdjustPolicy.AdjustIgnored)
         self.profile_columns.right_layout.addWidget(availability)
+        preference_card,preference_layout=profile_section("Préférences d’horaire")
+        preference_form=QFormLayout()
+        preference_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapAllRows)
+        self.shift_preference=QComboBox()
+        from ..preferences import LABELS
+        for key,label in LABELS.items():self.shift_preference.addItem(label,key)
+        self.shift_preference.setCurrentIndex(max(0,self.shift_preference.findData(ed.shift_preference)))
+        self.shift_preference.setAccessibleName("Préférence d’ouverture ou de fermeture")
+        self.shift_preference.setMinimumHeight(44)
+        self.avoid_split=check("Éviter les horaires coupés",ed.avoid_split)
+        self.preferred_end_enabled=check("Heure de départ souhaitée",ed.preferred_end is not None)
+        self.preferred_end=ClockEdit(ed.preferred_end if ed.preferred_end is not None else 900)
+        self.preferred_end.setAccessibleName("Heure de départ souhaitée")
+        self.preferred_end.setMinimumHeight(44)
+        self.preferred_end.setEnabled(ed.preferred_end is not None)
+        self.preferred_end_enabled.toggled.connect(self.preferred_end.setEnabled)
+        preference_form.addRow("Début ou fin de journée",self.shift_preference)
+        preference_form.addRow(self.avoid_split)
+        preference_form.addRow(self.preferred_end_enabled,self.preferred_end)
+        preference_layout.addLayout(preference_form)
+        preference_layout.addWidget(note("Facultatives : la couverture, les limites et la priorité des rangs passent d’abord. Pour un départ impératif, renseignez les disponibilités."))
+        self.profile_columns.right_layout.addWidget(preference_card)
         self.preferences = QListWidget()
         self.preferences.setMinimumHeight(80)
         self.preferences.setMaximumHeight(112)
@@ -633,6 +655,9 @@ class EducatorDialog(EditorDialog):
         ed.absences = self.absences.values()
         ed.preferred_groups = [self.preferences.item(i).data(Qt.ItemDataRole.UserRole) for i in range(self.preferences.count()) if self.preferences.item(i).checkState() == Qt.CheckState.Checked]
         ed.restrictions = self.restrictions.toPlainText().strip()
+        ed.shift_preference=self.shift_preference.currentData()
+        ed.avoid_split=self.avoid_split.isChecked()
+        ed.preferred_end=self.preferred_end.value() if self.preferred_end_enabled.isChecked() else None
         return ed
 
 

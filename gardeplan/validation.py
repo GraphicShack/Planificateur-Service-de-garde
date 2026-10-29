@@ -133,6 +133,9 @@ def validate(week: Week, *, _service=False) -> list[Issue]:
                     add("missing_data", _prefix(day, later.start, min(earlier.end, later.end)) + f"les périodes d'effectifs du groupe {g.name} se chevauchent.", day, later.start, min(earlier.end, later.end), g.id,
                         suggestion="Utiliser des périodes d'effectifs successives sans chevauchement.")
     for e in week.educators:
+        if (e.shift_preference not in ("none","opening","closing") or type(e.avoid_split) is not bool
+            or (e.preferred_end is not None and (type(e.preferred_end) is not int or not 0<=e.preferred_end<=1440))):
+            add("missing_data",f"Les préférences d’horaire de {e.name} sont invalides.")
         if week.planning_date and any(other.id != e.id and other.seniority == e.seniority for other in week.educators):
             add("missing_data", f"Le rang {e.seniority} de {e.name} est déjà utilisé. Choisissez un rang libre de 1 à 11.")
         if week.planning_date and (type(e.seniority) is not int or not 1 <= e.seniority <= 11):
@@ -326,6 +329,15 @@ def validate(week: Week, *, _service=False) -> list[Issue]:
         if minutes != e.target_minutes and (e.target_minutes or not week.planning_date):
             label = "manquent" if minutes < e.target_minutes else "dépassent la cible"
             add("target", f"{e.name} : {format_duration(abs(minutes - e.target_minutes))} {label} ({format_duration(minutes)} planifiées sur {format_duration(e.target_minutes)} visées).", severity="warning")
+        from .preferences import unmet_preferences
+        for day in week.active_days:
+            own=[s for s in week.shifts if s.educator_id==e.id and s.day==day]
+            valid_preference=(e.shift_preference in ("none","opening","closing") and
+                              (e.preferred_end is None or type(e.preferred_end) is int and 0<=e.preferred_end<=1440))
+            for message in unmet_preferences(week,e,own) if valid_preference else []:
+                add("shift_preference",f"{e.name} : {message}.",day,
+                    min(s.start for s in own),max(s.end for s in own),shift_ids=[s.id for s in own],
+                    suggestion="Préférence facultative : les disponibilités, la couverture et les rangs restent prioritaires.",severity="warning")
     # L'ancienneté conseille, elle ne peut rendre une disponibilité irréalisable obligatoire.
     active = sorted([e for e in week.educators if e.active and not is_absent(week,e.id)], key=lambda e: e.seniority)
     for index, senior in enumerate(active):

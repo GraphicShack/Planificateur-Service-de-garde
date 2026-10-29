@@ -122,6 +122,9 @@ def _build_candidates(week: Week) -> tuple[list[_Candidate], list[str]]:
                     continue
                 for a, b in _windows(educator, day,week):
                     points = set(base_points)
+                    if educator.preferred_end is not None:
+                        points.add(educator.preferred_end)
+                        points.add(educator.preferred_end-settings.closing_buffer)
                     # Une arrivée peut conserver la minute exacte de sa
                     # disponibilité tout en incluant la relève rémunérée.
                     points.add(max(opening, a + settings.handover_minutes))
@@ -130,6 +133,8 @@ def _build_candidates(week: Week) -> tuple[list[_Candidate], list[str]]:
                     # Ajouter des fins liées à l'objectif quotidien évite de
                     # limiter artificiellement les cibles à des heures rondes.
                     limit = min(educator.max_minutes, daily_limit(week) or 1440)
+                    if educator.preferred_end is not None:
+                        points.update(educator.preferred_end-limit+buffer for buffer in (0,settings.opening_buffer,settings.handover_minutes))
                     if week.planning_date and settings.staffing_policy >= 3:
                         for buffer in (0,settings.opening_buffer,settings.handover_minutes):
                             points.add(opening + limit - buffer)
@@ -520,11 +525,11 @@ def generate(week: Week, time_limit: float = 20) -> GenerationResult:
     notes = ["La recherche utilise des bornes métier exactes et des départs intermédiaires espacés d'une heure.",
              "Les quarts non verrouillés seront remplacés uniquement après votre confirmation."]
     if daily_priorities:
-        notes.append("Priorités : attribuer des heures au plus de personnes possible, limiter les heures inutiles, puis privilégier les rangs 1, 2, etc. : quarts continus, davantage d’heures et fin plus tôt.")
+        notes.append("Priorités : attribuer des heures au plus de personnes disponibles possible, limiter les heures inutiles, puis privilégier les rangs 1, 2, etc. : quarts continus, davantage d’heures, préférences individuelles et fin plus tôt à égalité.")
         if not priority_complete:
             notes.append(f"La recherche a atteint son délai : les préférences ne sont pas toutes prouvées optimales ({completed_ranks} rangs examinés).")
         scheduled = {s.educator_id for s in proposal.shifts if paid_minutes(s)>0}
-        omitted = [e.name for e in ranked if e.id not in scheduled]
+        omitted = [e.name for e in ranked if e.id not in scheduled and not is_absent(snapshot,e.id)]
         if omitted:
             notes.append("Sans heures dans cette proposition (contraintes ou délai de recherche) : "+", ".join(omitted)+". Vérifiez leurs disponibilités et maximums avant de confirmer.")
     return GenerationResult(True, proposal,

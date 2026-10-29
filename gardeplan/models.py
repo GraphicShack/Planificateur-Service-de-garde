@@ -54,6 +54,9 @@ class Educator:
     color: str = "#476FD0"
     active: bool = True
     seniority_date: str = ""
+    shift_preference: str = "none"
+    avoid_split: bool = False
+    preferred_end: int | None = None
 
 
 @dataclass
@@ -215,7 +218,7 @@ def _construct(cls, raw: Any, children: dict[str, Any] | None = None):
         "snap_minutes", "seniority_weight", "preference_weight", "target_weight", "break_after_minutes",
         "break_minutes", "max_daily_minutes", "staffing_policy",
     }
-    bool_fields = {"active", "shared", "outdoor", "paid", "before_paid", "after_paid", "locked", "compatible", "break_paid"}
+    bool_fields = {"active", "shared", "outdoor", "paid", "before_paid", "after_paid", "locked", "compatible", "break_paid", "avoid_split"}
     for key in cls.__dataclass_fields__:
         val = getattr(result, key)
         if key in integer_fields and type(val) is not int:
@@ -235,6 +238,11 @@ def _construct(cls, raw: Any, children: dict[str, Any] | None = None):
             raise ValueError("Le magnétisme doit être désactivé ou réglé sur 1, 5 ou 15 minutes.")
     if cls is Break and (not isinstance(result.kind, str) or result.kind not in {"pause", "dinner"}):
         raise ValueError("Choisissez une pause ou un dîner.")
+    if cls is Educator:
+        if result.shift_preference not in ("none","opening","closing"):
+            raise ValueError("Choisissez une préférence d’ouverture, de fermeture ou aucune.")
+        if result.preferred_end is not None and (type(result.preferred_end) is not int or not 0<=result.preferred_end<=1440):
+            raise ValueError("L’heure de départ souhaitée doit être une minute de la journée.")
     return result
 
 
