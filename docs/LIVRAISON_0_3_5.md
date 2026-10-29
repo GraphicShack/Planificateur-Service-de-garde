@@ -6,7 +6,7 @@ Le fil de génération existant reste indépendant de l’interface. La fenêtre
 
 ## Vérification
 
-Cinq tests ciblés couvrent l’animation active, sa désactivation, les trois issues de génération, la conservation de l’horaire et le nettoyage des minuteurs. Les tests existants d’acceptation/refus de proposition et d’annulation restent applicables. L’aperçu est capturé pendant une génération réelle dans l’application Qt6, avec des données fictives. Les résultats de la suite complète et des contrôles Windows/Mac sont consignés dans [État des vérifications](ETAT_VERIFICATION.md).
+Cinq tests ciblés couvrent l’animation active, sa désactivation, les trois issues de génération, la conservation de l’horaire et le nettoyage des minuteurs. Les tests existants d’acceptation/refus de proposition et d’annulation restent applicables. L’aperçu est capturé pendant une génération réelle dans l’application Qt6, avec des données fictives. Les suites locale, Windows et Mac réussissent chacune 281 tests et six sous-cas de pagination. Les dix tests des scripts de publication réussissent également. Les trois contrôles de chaque exécutable natif, dont le lancement après extraction du ZIP, réussissent. Les résultats du SHA exact sont consignés dans [État des vérifications](ETAT_VERIFICATION.md). La version 0.3.5 est publiée avec ses notes sur GitHub.
 
 ## Hypothèses et limites
 

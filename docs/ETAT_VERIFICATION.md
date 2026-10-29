@@ -2,6 +2,16 @@
 
 Les constructions et les contrôles natifs s’exécutent sur GitHub Actions. Les fichiers à remettre sont les ZIP portables d’une exécution réussie correspondant au code voulu. Une sortie compilée dont le contrôle échoue n’est pas livrée.
 
+## Livraison 0.3.5 — chargement de la génération
+
+Le code exact testé est `b9dd650ccd41a77f3d4cc075edc43d25eb3465bb`. Les suites locale, Windows et Mac réussissent **281 tests chacune**, plus **six sous-cas de pagination**, sans test ignoré. Cinq tests supplémentaires couvrent l’animation de chargement, la préférence de mouvements réduits, les signaux de proposition/impossibilité/erreur et la conservation de l’horaire.
+
+- [Windows — 133,45 s de tests, compilation et trois contrôles de l’exécutable, dont le ZIP extrait](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40807342066).
+- [Mac Apple Silicon — 136,80 s de tests, compilation et trois contrôles de l’exécutable, dont le ZIP extrait](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40807342072).
+- Local : 281 tests et six sous-cas en 120,81 s, dix tests des scripts de publication et contrôle hors ligne Qt6/SQLite/PDF/OR-Tools réussis.
+
+[Release publique 0.3.5 et notes de version](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/tag/v0.3.5). Les deux ZIP, les rapports, le PDF d’exemple et les sommes SHA-256 sont présents, publiés et non vides. L’aperçu du chargement est capturé pendant un vrai calcul Qt6 avec des données fictives. Aucune règle métier ni sortie PDF n’est modifiée ; aucun faux pourcentage ou mécanisme d’annulation du solveur n’est ajouté. Les essais physiques sur le poste de l’école restent à faire.
+
 ## Livraison 0.3.4 — animations et thèmes
 
 Le code exact testé est `5ab50980f4e72acab884a5c620348216a5811d38`. Les suites locale, Windows et Mac réussissent **276 tests chacune**, plus **six sous-cas de pagination**, sans test ignoré. Neuf tests supplémentaires couvrent les transitions et les préférences de thème, le contraste et les erreurs de saisie/écriture, sans modification des données de planification.
