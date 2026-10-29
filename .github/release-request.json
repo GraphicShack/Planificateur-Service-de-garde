@@ -1,6 +1,6 @@
 {
-  "version": "0.4.0",
-  "commit": "934f2094836ddb536d21ac1b5ba8471ff4330473",
+  "version": "0.5.0",
+  "commit": "5d65e0a9a6212cca0b62cc7a18c0ba4f61181dc9",
   "approved": true,
-  "authorization": "Publication autorisée dans cette conversation : « fait tout les changement et ensuite push et release le programme » et « Montre moi un aperçu une fois ça fait et ensuite release ». La demande courante vise la version 0.4.0 avec les trois améliorations prioritaires et le point 4 : absences à la journée, corrections ciblées, comparaison avant/après et préférences individuelles. Les aperçus Qt réels ont été montrés. Les 307 tests, six sous-cas et dix tests des scripts de publication réussissent localement, avec contrôle hors ligne des nouvelles fonctionnalités. La publication attend les deux constructions natives réussies du SHA exact et leurs contrôles après extraction."
+  "authorization": "Publication autorisée dans cette conversation : « fait tout les changement et ensuite push et release le programme » et « Montre moi un aperçu une fois ça fait et ensuite release ». La version 0.5.0 comprend l’assistant de mise à jour portable, le bilan des propositions, l’accueil selon le nom de session et la demande complémentaire d’éviter les trous inutiles entre quarts. Les aperçus Qt réels ont été montrés. Les 339 tests et six sous-cas, dix tests de publication et le diagnostic hors ligne passent localement. La publication attend les deux constructions natives réussies du SHA exact et le contrôle du vrai ZIP avec préparation, lancement de la copie et retour aux données sauvegardées."
 }
