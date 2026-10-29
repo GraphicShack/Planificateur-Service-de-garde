@@ -19,7 +19,7 @@ def prepare(source: Path, destination: Path, version: str) -> list[Path]:
     required_checks = (
         "qt_application", "home_dashboard", "coverage_and_exact_minutes", "sqlite_save_reopen_backup",
         "dashboard_day", "pdf_export_preview_print_modules",
-        "ortools_cp_sat_generation", "daily_groups_seniority_eight_hours", "shared_opening_closing", "offline_operations", "portable_data_write",
+        "ortools_cp_sat_generation", "daily_groups_seniority_eight_hours", "shared_opening_closing", "daily_improvements", "offline_operations", "portable_data_write",
     )
     validated = []
     for folder, platform, report_name, archive_name, executable in (

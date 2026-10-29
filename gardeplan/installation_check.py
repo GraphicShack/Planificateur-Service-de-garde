@@ -133,6 +133,36 @@ def check_installation(destination: str | Path) -> int:
                     raise RuntimeError("Le sélecteur de journée ne respecte pas les dimensions lisibles.")
                 report["checks"]["readable_date_selector"] = True
 
+                # Exercise the new daily data and UI in the frozen application,
+                # with the same network prohibition as the scheduling controls.
+                from gardeplan.attendance import set_day_absence,is_absent
+                from gardeplan.comparison import compare
+                from gardeplan.models import Break
+                from gardeplan.repairs import repair
+                from gardeplan.ui.proposal import ProposalDialog
+                exercise=Week.from_dict(restored.to_dict())
+                exercise.educators[0].shift_preference='closing'
+                exercise.educators[0].avoid_split=True
+                exercise.educators[0].preferred_end=917
+                absent=set_day_absence(exercise,'e1',True)
+                feature_repo=Repository(folder/'features.sqlite')
+                feature_repo.save(absent)
+                loaded=feature_repo.load_day(absent.planning_date)
+                if not is_absent(loaded,'e1') or loaded.educators[0].preferred_end!=917:
+                    raise RuntimeError("Les absences et préférences ne se conservent pas.")
+                exercise=Week.from_dict(restored.to_dict())
+                exercise.shifts[0].breaks=[Break(600,615)]
+                issue=next(i for i in validate(exercise) if i.code in {'coverage','ratio'} and i.start==600)
+                repaired=repair(exercise,issue,time_limit=5)
+                if not repaired.success or not compare(exercise,repaired.proposal) or any(i.severity=='error' for i in validate(repaired.proposal)):
+                    raise RuntimeError("La correction ciblée ne produit pas un horaire sûr.")
+                comparison=ProposalDialog(exercise,repaired,window)
+                comparison.show();application.processEvents()
+                if comparison.changes_table.rowCount()<1 or comparison.grab().isNull():
+                    raise RuntimeError("La comparaison avant/après ne peut pas être affichée.")
+                comparison.reject();comparison.deleteLater()
+                report["checks"]["daily_improvements"] = True
+
                 general_pdf = folder / "general.pdf"
                 export_general(restored, general_pdf)
                 individual_pdf = folder / "individuel.pdf"

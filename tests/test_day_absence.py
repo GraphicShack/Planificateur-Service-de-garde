@@ -32,6 +32,17 @@ def test_absence_is_saved_and_does_not_propagate_to_other_dates(tmp_path):
     assert Week.from_dict(plan.to_dict())==plan
 
 
+def test_older_snapshots_load_with_optional_fields_missing():
+    from test_group_generation import grouped_day
+    raw=grouped_day().to_dict()
+    raw.pop('absent_educator_ids')
+    for person in raw['educators']:
+        for key in ('shift_preference','avoid_split','preferred_end'):person.pop(key)
+    loaded=Week.from_dict(raw)
+    assert not loaded.absent_educator_ids
+    assert all(e.shift_preference=='none' and not e.avoid_split and e.preferred_end is None for e in loaded.educators)
+
+
 def test_absent_guarantees_and_targets_do_not_force_hours_or_warnings():
     from test_generation_priorities import short_day
     from gardeplan.optimizer import generate
