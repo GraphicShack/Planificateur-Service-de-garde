@@ -40,6 +40,7 @@ def test_changed_locked_assignment_is_identified_and_cannot_be_applied(qapp):
     try:
         assert not dialog.apply_button.isEnabled()
         assert dialog.tabs.tabText(0)=='Bilan'
+        assert dialog.tabs.currentWidget() is dialog.calendars[1]
     finally:dialog.close();dialog.deleteLater();qapp.processEvents()
 
 

@@ -100,6 +100,8 @@ class ProposalDialog(QDialog):
         self.apply_button.setEnabled(self.report.report['locks_preserved']==self.report.report['locks_total'])
         for button in buttons.buttons():button.setMinimumHeight(44)
         buttons.accepted.connect(self.accept);buttons.rejected.connect(self.reject);layout.addWidget(buttons)
+        # Show the proposed schedule immediately; the report remains one tab away.
+        self.tabs.setCurrentWidget(self.calendars[1])
 
     def eventFilter(self,watched,event):
         if self.isVisible() and event.type()==QEvent.Type.Resize:self.row_timer.start(0)
@@ -108,6 +110,7 @@ class ProposalDialog(QDialog):
     def showEvent(self,event):
         super().showEvent(event)
         self.row_timer.start(0)
+        QTimer.singleShot(0,self.fit_calendar)
 
     def hideEvent(self,event):
         self.row_timer.stop()

@@ -279,7 +279,7 @@ Gardez les dossiers de départ jusqu’au premier démarrage de la version prép
 
 ### Bilan des propositions
 
-Le premier onglet **Bilan** compare l’horaire actuel et la proposition : couverture des groupes, erreurs, avertissements, heures rémunérées, personnes avec un horaire coupé, interruptions entre quarts, souhaits respectés, personnes actives sans heures et quarts verrouillés conservés. Les personnes concernées et les préférences non satisfaites sont nommées. Une pause à l’intérieur d’un quart n’est pas comptée comme un horaire coupé. Les personnes absentes à la journée sont exclues des personnes sans heures. Les préférences sont comptées par souhait, pour les personnes planifiées.
+La fenêtre s’ouvre directement sur la grille **Proposition**, avant toute application. L’onglet **Bilan** compare l’horaire actuel et la proposition : couverture des groupes, erreurs, avertissements, heures rémunérées, personnes avec un horaire coupé, interruptions entre quarts, souhaits respectés, personnes actives sans heures et quarts verrouillés conservés. Les personnes concernées et les préférences non satisfaites sont nommées. Une pause à l’intérieur d’un quart n’est pas comptée comme un horaire coupé. Les personnes absentes à la journée sont exclues des personnes sans heures. Les préférences sont comptées par souhait, pour les personnes planifiées.
 
 Les onglets Changements, Heures, Actuel, Proposition et Détails restent disponibles. Aucune modification n’est appliquée sans confirmation. Un quart verrouillé modifié ou retiré empêche l’application.
 

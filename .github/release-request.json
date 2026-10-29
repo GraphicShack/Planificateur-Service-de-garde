@@ -1,6 +1,6 @@
 {
   "version": "0.5.0",
   "commit": "5d65e0a9a6212cca0b62cc7a18c0ba4f61181dc9",
-  "approved": true,
-  "authorization": "Publication autorisée dans cette conversation : « fait tout les changement et ensuite push et release le programme » et « Montre moi un aperçu une fois ça fait et ensuite release ». La version 0.5.0 comprend l’assistant de mise à jour portable, le bilan des propositions, l’accueil selon le nom de session et la demande complémentaire d’éviter les trous inutiles entre quarts. Les aperçus Qt réels ont été montrés. Les 339 tests et six sous-cas, dix tests de publication et le diagnostic hors ligne passent localement. La publication attend les deux constructions natives réussies du SHA exact et le contrôle du vrai ZIP avec préparation, lancement de la copie et retour aux données sauvegardées."
+  "approved": false,
+  "authorization": "Publication différée pour intégrer la dernière demande : afficher la grille Proposition dès la fin de génération. L’autorisation de publication reste acquise ; un nouveau SHA testé remplacera celui-ci."
 }

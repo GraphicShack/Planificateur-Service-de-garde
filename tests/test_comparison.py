@@ -33,6 +33,9 @@ def test_proposal_displays_hours_changes_and_keyboard_location_without_modifying
     dialog=ProposalDialog(before,GenerationResult(True,after,'Proposition à vérifier','feasible'))
     dialog.show();qapp.processEvents()
     try:
+        assert dialog.tabs.currentWidget() is dialog.calendars[1]
+        assert dialog.tabs.tabText(dialog.tabs.currentIndex())=='Proposition'
+        assert dialog.report.metrics.rowCount()>=8
         assert dialog.changes_table.rowCount()==1
         assert dialog.changes_table.item(0,1).text().startswith('Modifié')
         assert dialog.hours_table.rowCount()==len(after.educators)
