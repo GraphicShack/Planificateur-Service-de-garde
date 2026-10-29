@@ -152,7 +152,9 @@ PLANIFICATEUR — SERVICE DE GARDE : VERSION PORTABLE
 2. Ouvrez Planificateur-SDG.app depuis ce dossier. Aucun déplacement vers Applications.
 3. Vos horaires restent dans le sous-dossier donnees. Gardez aussi portable.mode et tous les fichiers.
 
-Pour une mise à jour, sauvegardez puis conservez le sous-dossier donnees.
+Depuis 0.4.0 ou avant : fermez, sauvegardez puis transférez le sous-dossier donnees dans ce dossier.
+Depuis 0.5.0 : Dossier → Mettre à jour depuis un ZIP prépare la version suivante à côté de l’ancienne.
+Gardez les deux dossiers pour permettre le retour aux données d’avant mise à jour.
 GUIDE
 codesign --verify --deep --strict "$STAGE/Planificateur-SDG.app"
 "$PYTHON" -m gardeplan.portable_package manifest "$STAGE" "$VERSION"

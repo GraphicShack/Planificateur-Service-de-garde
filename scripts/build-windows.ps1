@@ -177,7 +177,9 @@ PLANIFICATEUR - SERVICE DE GARDE : VERSION PORTABLE
 2. Ouvrir Planificateur-SDG.exe depuis ce dossier. Aucune installation.
 3. Vos horaires sont conserves dans le sous-dossier donnees. Conserver le dossier complet.
 
-Ne pas lancer depuis le ZIP. Pour une mise a jour, sauvegarder puis conserver le sous-dossier donnees.
+Ne pas lancer depuis le ZIP. Depuis 0.4.0 ou avant : fermer, sauvegarder puis transferer le sous-dossier donnees.
+Depuis 0.5.0 : Dossier > Mettre a jour depuis un ZIP prepare la version suivante a cote de l'ancienne.
+Garder les deux dossiers pour permettre le retour aux donnees d'avant mise a jour.
 '@ | Set-Content -LiteralPath (Join-Path $stage 'LIRE-MOI.txt') -Encoding UTF8
     Invoke-Checked -FilePath $python -Arguments @('-m', 'gardeplan.portable_package', 'manifest', $stage, $version) -Failure 'Inventaire portable impossible'
     Test-FrozenApplication -Executable (Join-Path $stage 'Planificateur-SDG.exe') -ReportPath (Join-Path $verificationDirectory 'portable.json') -ExpectedVersion $version -ExpectedPortable $true

@@ -64,7 +64,7 @@ Aucun programme d’installation, Python, compte ou téléchargement complément
 
 Vos horaires, éducatrices, archives et sauvegardes locales restent dans **donnees**, à côté de l’application. Fermez le logiciel avant de déplacer le dossier ou de retirer la clé USB. Le poste doit autoriser l’exécution de l’application et l’écriture dans le dossier choisi.
 
-Pour une mise à jour, sauvegardez vos données, décompressez la nouvelle version dans un autre dossier et conservez votre ancien sous-dossier **donnees** dans le nouveau dossier portable. Ne remplacez jamais vos données par un dossier vide. Pour transférer une planification entre Windows et Mac, utilisez l’export et l’import de sauvegarde locale.
+Pour le premier passage depuis 0.4.0 ou avant, sauvegardez vos données, décompressez la nouvelle version dans un autre dossier et transférez votre ancien sous-dossier **donnees** dans le nouveau dossier portable, après fermeture du logiciel. Ne remplacez jamais vos données par un dossier vide. À partir de 0.5.0, utilisez l’assistant décrit plus bas. Pour transférer une planification entre Windows et Mac, utilisez l’export et l’import de sauvegarde locale.
 
 ### Si macOS ouvre une copie temporaire
 
@@ -261,3 +261,28 @@ L’onglet **Changements** liste les quarts ajoutés, retirés ou modifiés et l
 ### Mise à jour et données
 
 Conservez une copie de votre dossier `donnees` avant la mise à jour, puis transférez-le dans la version 0.4.0 extraite. Les anciens horaires se lisent sans conversion obligatoire de leurs profils et les versions figées restent conservées. Une ancienne version du programme peut refuser les nouveaux champs enregistrés en 0.4.0 : pour revenir à l’ancien logiciel, utilisez la copie des données faite avant la mise à jour.
+
+
+## Nouveautés de la version 0.5.0
+
+### Assistant de mise à jour
+
+1. Téléchargez le ZIP portable officiel correspondant à votre ordinateur depuis les Releases GitHub. Le planificateur n’a pas besoin d’Internet : le ZIP peut être apporté sur une clé USB.
+2. Dans **Dossier → Mettre à jour depuis un ZIP**, choisissez un ZIP plus récent. L’assistant vérifie son manifeste, sa version, sa plateforme et son architecture. Les ZIP antérieurs à 0.5.0 ne possèdent pas le manifeste nécessaire.
+3. Choisissez un dossier accessible en écriture, à l’extérieur du dossier du logiciel actuel. Cliquez **Préparer la mise à jour**. Les fichiers sont contrôlés, la base SQLite est sauvegardée puis copiée avec ses versions, ses préférences et ses dossiers de sauvegarde connus. La version actuellement utilisée n’est pas remplacée.
+4. Cliquez **Fermer et démarrer la version…**. La dernière sauvegarde est reprise avant le lancement. Si vous choisissez **Garder la version actuelle**, le dossier préparé reste disponible ; son premier démarrage recopiera les dernières données enregistrées après fermeture de l’ancienne version.
+5. Conservez les deux dossiers, y compris `retour-avant-maj`. Dans la nouvelle version, **Dossier → Revenir à la version précédente** prépare un troisième dossier : ancien programme et données d’avant mise à jour. Les données plus récentes restent dans la version actuelle et dans une copie `donnees/sauvegardes/avant-retour.sqlite`.
+
+Le premier passage depuis 0.4.0 ou avant demeure manuel : fermez, sauvegardez puis transférez `donnees` dans le dossier 0.5.0 extrait. L’assistant accompagnera les versions suivantes. Il refuse une version égale ou plus ancienne ; le retour est une action séparée.
+
+Gardez les dossiers de départ jusqu’au premier démarrage de la version préparée. Deux versions ne doivent pas planifier séparément la même journée : leurs bases sont indépendantes après activation. Le retour reprend l’état d’avant mise à jour ; il ne fusionne pas les changements plus récents. Les empreintes détectent une altération ou une copie incomplète ; elles ne remplacent pas une signature de l’éditeur. Aucun téléchargement automatique, installateur, abonnement ou compte n’est requis.
+
+### Bilan des propositions
+
+Le premier onglet **Bilan** compare l’horaire actuel et la proposition : couverture des groupes, erreurs, avertissements, heures rémunérées, personnes avec un horaire coupé, interruptions entre quarts, souhaits respectés, personnes actives sans heures et quarts verrouillés conservés. Les personnes concernées et les préférences non satisfaites sont nommées. Une pause à l’intérieur d’un quart n’est pas comptée comme un horaire coupé. Les personnes absentes à la journée sont exclues des personnes sans heures. Les préférences sont comptées par souhait, pour les personnes planifiées.
+
+Les onglets Changements, Heures, Actuel, Proposition et Détails restent disponibles. Aucune modification n’est appliquée sans confirmation. Un quart verrouillé modifié ou retiré empêche l’application.
+
+### Bonjour, selon votre session
+
+L’accueil lit le nom de votre session Windows ou Mac et affiche **Bonjour [nom] !**. Sur Mac, le nom complet du compte local est utilisé lorsqu’il existe ; sinon le nom de connexion est repris. Aucun nom n’est transmis, aucun compte supplémentaire n’est créé et les données ne changent pas. Si le système ne fournit pas de nom, le message reste **Bonjour, bienvenue**.

@@ -29,8 +29,11 @@ puis ouvrez Planificateur-SDG.exe ou Planificateur-SDG.app. Gardez tous les fich
 Si Mac demande le dossier portable d’origine, sélectionnez le dossier extrait
 qui contient Planificateur-SDG.app et portable.mode.
 
-**Mise à jour** : fermez le logiciel, sauvegardez votre ancien dossier `donnees`,
+**Depuis 0.4.0 ou avant** : fermez le logiciel, sauvegardez votre ancien dossier `donnees`,
 puis transférez ce dossier dans la nouvelle version extraite. Ne le remplacez pas par un dossier vide.
+**Depuis 0.5.0** : utilisez Dossier → Mettre à jour depuis un ZIP pour préparer une version
+plus récente dans un dossier séparé. L’ancienne version et sa sauvegarde restent conservées.
+Le retour proposé par l’assistant reprend les données d’avant mise à jour, sans supprimer les plus récentes.
 
 Les ZIP proviennent des constructions natives réussies du même code, avec contrôle après extraction.
 [Contrôle Windows](https://github.com/{repository}/actions/runs/{windows_run}) · [Contrôle Mac](https://github.com/{repository}/actions/runs/{macos_run}).
