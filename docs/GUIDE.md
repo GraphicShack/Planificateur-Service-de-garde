@@ -273,7 +273,7 @@ Conservez une copie de votre dossier `donnees` avant la mise à jour, puis trans
 4. Cliquez **Fermer et démarrer la version…**. La dernière sauvegarde est reprise avant le lancement. Si vous choisissez **Garder la version actuelle**, le dossier préparé reste disponible ; son premier démarrage recopiera les dernières données enregistrées après fermeture de l’ancienne version.
 5. Conservez les deux dossiers, y compris `retour-avant-maj`. Dans la nouvelle version, **Dossier → Revenir à la version précédente** prépare un troisième dossier : ancien programme et données d’avant mise à jour. Les données plus récentes restent dans la version actuelle et dans une copie `donnees/sauvegardes/avant-retour.sqlite`.
 
-Le premier passage depuis 0.4.0 ou avant demeure manuel : fermez, sauvegardez puis transférez `donnees` dans le dossier 0.5.0 extrait. L’assistant accompagnera les versions suivantes. Il refuse une version égale ou plus ancienne ; le retour est une action séparée.
+Le premier passage depuis 0.4.0 ou avant demeure manuel : fermez, sauvegardez puis transférez `donnees` dans le dossier de la nouvelle version extraite. L’assistant accompagnera les versions suivantes. Il refuse une version égale ou plus ancienne ; le retour est une action séparée.
 
 Gardez les dossiers de départ jusqu’au premier démarrage de la version préparée. Deux versions ne doivent pas planifier séparément la même journée : leurs bases sont indépendantes après activation. Le retour reprend l’état d’avant mise à jour ; il ne fusionne pas les changements plus récents. Les empreintes détectent une altération ou une copie incomplète ; elles ne remplacent pas une signature de l’éditeur. Aucun téléchargement automatique, installateur, abonnement ou compte n’est requis.
 
@@ -293,3 +293,8 @@ L’accueil lit le nom de votre session Windows ou Mac et affiche **Bonjour [nom
 La génération de toute la journée cherche d’abord à faire travailler le plus de personnes disponibles, puis à réduire le nombre de personnes avec un horaire coupé et la durée des interruptions. Un petit trou n’est donc plus préféré simplement parce qu’il économise quelques minutes rémunérées. Ensuite, les heures superflues et les priorités de rang départagent les solutions. Cette continuité est recherchée pour tout le monde, même sans cocher « Éviter les horaires coupés » dans le profil.
 
 Une coupure reste possible si les disponibilités, les quarts verrouillés, la couverture, les heures garanties ou le plafond de huit heures l’imposent. Les pauses ne sont pas supprimées et ne sont pas comptées comme une interruption entre deux quarts. Une recherche limitée en temps peut encore présenter une solution comportant une coupure ; le bilan la rend visible et le logiciel indique que les préférences ne sont pas toutes prouvées optimales. La correction ciblée conserve son périmètre local et ne réorganise pas les autres quarts.
+
+
+### Correctif 0.5.1 : documents à côté du programme
+
+Un PDF ou une sauvegarde exportée dans le dossier du logiciel ne bloque plus l’assistant. Les éléments connus du programme restent vérifiés ; les documents personnels supplémentaires restent à leur emplacement d’origine. L’assistant copie les données applicatives prévues, pas ces documents supplémentaires. Le retour conserve la même règle. Les ZIP proposés à l’assistant restent contrôlés strictement.

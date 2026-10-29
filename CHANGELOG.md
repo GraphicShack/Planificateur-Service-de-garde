@@ -4,6 +4,13 @@ Chaque release reprend la section correspondant à sa version. Une section doit
 être ajoutée ici avant de publier ; le contrôle de publication refuse une
 version sans notes. Les téléchargements sont dans les [Releases GitHub](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases).
 
+## [0.5.1] — 2026-10-29
+
+- **Mise à jour compatible avec vos exports existants** : les PDF et autres documents enregistrés à côté du programme ne bloquent plus la préparation ni le retour à une version conservée. Ils restent dans leur dossier d’origine et ne sont jamais intégrés au nouveau logiciel.
+- Les fichiers, dossiers et liens déclarés du programme restent tous contrôlés. Une modification de l’exécutable ou d’un élément de son inventaire bloque toujours la copie ; les ZIP distribués restent soumis à une vérification stricte, sans fichiers inattendus.
+- Test supplémentaire couvrant un PDF personnel dans le dossier portable, sa conservation lors d’une mise à jour et d’un retour, son exclusion des nouveaux dossiers et le refus d’un exécutable altéré.
+- La grille Proposition reste affichée en premier ; l’assistant, le bilan détaillé, l’accueil par nom de session et la réduction des trous inutiles de la 0.5.0 sont conservés. Une demande de publication seule ne relance plus les compilations des deux plateformes.
+
 ## [0.5.0] — 2026-10-29
 
 - **Assistant de mise à jour hors ligne**, dans Dossier → Mettre à jour depuis un ZIP. Il contrôle la version, le système, l’architecture, les chemins et les empreintes des fichiers, puis prépare un dossier portable séparé, sans installation ni droits administrateur. Les données SQLite, historiques, préférences et sauvegardes connues sont copiés ; le dossier actuel reste conservé.

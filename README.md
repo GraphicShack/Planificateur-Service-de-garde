@@ -4,7 +4,7 @@
 
 <h1 align="center">Planificateur — Service de garde</h1>
 
-<p align="center"><strong>Version 0.5.0 · Portable, sans installation</strong></p>
+<p align="center"><strong>Version 0.5.1 · Portable, sans installation</strong></p>
 
 <p align="center">
   <strong>Des horaires clairs pour chaque journée pédagogique.</strong><br>
@@ -12,20 +12,20 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.5.0/Planificateur-SDG-0.5.0-Windows-x64-Portable.zip">Télécharger pour Windows</a>
+  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.5.1/Planificateur-SDG-0.5.1-Windows-x64-Portable.zip">Télécharger pour Windows</a>
   &nbsp;·&nbsp;
-  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.5.0/Planificateur-SDG-0.5.0-macOS-arm64-Portable.zip">Télécharger pour Mac</a>
+  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.5.1/Planificateur-SDG-0.5.1-macOS-arm64-Portable.zip">Télécharger pour Mac</a>
   &nbsp;·&nbsp;
   <a href="docs/GUIDE.md">Guide d’utilisation</a>
 </p>
 
 ![Accueil personnalisé et journées récentes](docs/accueil-0.5.0.png)
 
-La **version 0.5.0** ajoute un assistant de mise à jour portable, un bilan lisible des propositions et un accueil qui reprend le nom de la session locale. Les données restent sur votre ordinateur et chaque proposition attend votre confirmation. [Voir le bilan](docs/bilan-0.5.0.png) · [Voir l’assistant](docs/mise-a-jour-0.5.0.png).
+La **branche 0.5** ajoute un assistant de mise à jour portable, un bilan lisible des propositions et un accueil qui reprend le nom de la session locale. La **0.5.1** permet aussi de conserver des PDF à côté du programme sans bloquer les mises à jour. Les données restent sur votre ordinateur et chaque proposition attend votre confirmation. [Voir le bilan](docs/bilan-0.5.0.png) · [Voir l’assistant](docs/mise-a-jour-0.5.0.png).
 
 Le logiciel s’ouvre sur un accueil réunissant les journées récentes, le résumé d’aujourd’hui et l’équipe. La création d’une journée mène directement aux inscriptions. La grille reste organisée par groupes et sous-colonnes d’éducatrices. Les icônes Équipe, Inscriptions et Vérification partagent le panneau gauche ; le ratio est masquable et les alertes sont comptées dans un badge. Annuler et Rétablir sont alignés avec le nom de la journée. Les dîners restent calculés, sans être affichés dans les blocs.
 
-De **6 h 50 à 7 h** et de **17 h à 17 h 35**, le service exige **deux personnes au total, tous groupes confondus**. De **7 h à 17 h**, chaque groupe ouvert exige au moins deux éducateurs. Les pauses doivent être remplacées et les relèves conserver quinze minutes communes. Le ratio configuré (initialement 1/20) peut en exiger davantage. La génération attribue des heures au plus grand nombre de personnes possible, évite les trous inutiles entre leurs quarts, puis privilégie le rang 1 et les suivants : quarts continus, davantage d’heures et fin plus tôt, en limitant les heures inutiles. Le plafond quotidien est de **8 h rémunérées**, buffers compris et pauses non rémunérées déduites. Les anciennes versions publiées et archivées conservent leurs règles. [Détails de la livraison](docs/LIVRAISON_0_5_0.md) · [Notes de version](CHANGELOG.md).
+De **6 h 50 à 7 h** et de **17 h à 17 h 35**, le service exige **deux personnes au total, tous groupes confondus**. De **7 h à 17 h**, chaque groupe ouvert exige au moins deux éducateurs. Les pauses doivent être remplacées et les relèves conserver quinze minutes communes. Le ratio configuré (initialement 1/20) peut en exiger davantage. La génération attribue des heures au plus grand nombre de personnes possible, évite les trous inutiles entre leurs quarts, puis privilégie le rang 1 et les suivants : quarts continus, davantage d’heures et fin plus tôt, en limitant les heures inutiles. Le plafond quotidien est de **8 h rémunérées**, buffers compris et pauses non rémunérées déduites. Les anciennes versions publiées et archivées conservent leurs règles. [Détails de la livraison](docs/LIVRAISON_0_5_1.md) · [Notes de version](CHANGELOG.md).
 
 L’interface propose des transitions discrètes et quatre thèmes de couleur : Forêt, Bleu, Prune et Ardoise. Dans **Réglages → Affichage**, choisissez aussi un accent personnalisé, ajusté automatiquement pour préserver le contraste. Les préférences restent locales et suivent le dossier `donnees`. Les animations peuvent être désactivées. [Voir les options d’apparence](docs/themes-interface.png).
 
@@ -76,7 +76,7 @@ Les heures sont calculées en minutes entières. La présence, la rémunération
 
 Aucune installation de Python, aucun compte et aucun abonnement ne sont nécessaires sur le poste utilisateur. La version Mac proposée cible **Apple Silicon et macOS 15 ou plus récent**.
 
-Vos données restent dans le sous-dossier **donnees**, à côté du programme. Gardez le dossier complet et fermez le logiciel avant de le déplacer. Depuis la version 0.5.0, **Dossier → Mettre à jour depuis un ZIP** vérifie un ZIP plus récent et prépare le nouveau dossier en conservant l’ancien. Pour passer de 0.4.0 ou avant à 0.5.0, fermez le logiciel, sauvegardez puis transférez votre dossier **donnees** dans la nouvelle version extraite. [Procédure et retour à la version précédente](docs/GUIDE.md#assistant-de-mise-à-jour).
+Vos données restent dans le sous-dossier **donnees**, à côté du programme. Gardez le dossier complet et fermez le logiciel avant de le déplacer. Depuis la version 0.5.0, **Dossier → Mettre à jour depuis un ZIP** vérifie un ZIP plus récent et prépare le nouveau dossier en conservant l’ancien. Pour passer de 0.4.0 ou avant à 0.5.1, fermez le logiciel, sauvegardez puis transférez votre dossier **donnees** dans la nouvelle version extraite. [Procédure et retour à la version précédente](docs/GUIDE.md#assistant-de-mise-à-jour).
 
 ## Un horaire prêt à imprimer
 

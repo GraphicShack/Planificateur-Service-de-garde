@@ -2,6 +2,18 @@
 
 Les constructions et les contrôles natifs s’exécutent sur GitHub Actions. Les fichiers à remettre sont les ZIP portables d’une exécution réussie correspondant au code voulu. Une sortie compilée dont le contrôle échoue n’est pas livrée.
 
+## Livraison 0.5.0 — mise à jour portable, bilan et session
+
+Le code exact testé et publié est `4171ee67b1afe8956ec8197813a8fc1aaf072332`. Les suites locale, Windows et Mac réussissent **339 tests et six sous-cas**, sans test ignoré. Les douze tests directement touchés par l’ouverture de la grille Proposition ont également été vérifiés localement après le dernier ajustement. Les dix contrôles de publication et le diagnostic hors ligne réussissent.
+
+- [Windows — 203,56 s de tests et trois contrôles natifs](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40892967277).
+- [Mac Apple Silicon — 125,62 s de tests et trois contrôles natifs](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40892966811).
+- Local : suite complète en 126,89 s ; diagnostic Qt6 hors ligne réussi.
+
+Les contrôles obligatoires `session_greeting`, `proposal_report` et `portable_update_archive` sont exigés avant publication. Le vrai ZIP est préparé dans un nouveau dossier, puis sa copie compilée est lancée avec vérification des dernières données enregistrées. Une copie de retour est ensuite préparée et lancée. Ces contrôles de démarrage utilisent le binaire de la version compilée ; le retour entre deux versions différentes est couvert par les tests de données et reste à vérifier sur poste avec les versions distribuées.
+
+[Release publique 0.5.0](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/tag/v0.5.0) : deux ZIP, deux rapports, PDF et SHA256SUMS présents, publics et non vides. L’accueil, le bilan et la proposition initiale ont été montrés avec des données fictives. Les trous sont désormais pénalisés avant le coût rémunéré ; les coupures nécessaires restent possibles, sans retirer les pauses ni contourner les limites. [Fichiers, hypothèses et limites](LIVRAISON_0_5_0.md).
+
 ## Livraison 0.4.0 — absences, corrections, comparaison et préférences
 
 Le code exact testé est `934f2094836ddb536d21ac1b5ba8471ff4330473`. Les suites locale, Windows et Mac réussissent chacune **307 tests**, plus **six sous-cas de pagination**, sans test ignoré. Les 26 nouveaux cas couvrent les absences à la journée et leurs sauvegardes, les préférences dans le solveur, la comparaison et les corrections locales avec verrous, pauses, buffers et limites.

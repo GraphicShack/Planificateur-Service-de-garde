@@ -3,9 +3,9 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths-ignore: ['docs/**', 'README.md']
+    paths-ignore: ['docs/**', 'README.md', '.github/release-request.json']
   pull_request:
-    paths-ignore: ['docs/**', 'README.md']
+    paths-ignore: ['docs/**', 'README.md', '.github/release-request.json']
 
 permissions:
   contents: read
