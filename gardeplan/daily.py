@@ -43,6 +43,7 @@ def day_plan(selected: str, template: Week | None = None, *, extract=False) -> W
             from .models import Window
             room.availability = [Window(0, 0, 1)]
     if extract:
+        result.absent_educator_ids = deepcopy(template.absent_educator_ids) if template.planning_date else []
         result.groups = deepcopy(template.groups)
         for group in result.groups:
             group.periods = periods(group.periods)
@@ -62,6 +63,7 @@ def duplicate_day(source: Week, selected: str) -> Week:
     result.planning_date = selected
     result.monday = (current - timedelta(days=current.weekday())).isoformat()
     result.status = "draft"
+    result.absent_educator_ids = []
     result.settings.staffing_policy = CURRENT_POLICY
     result.settings.max_daily_minutes = min(result.settings.max_daily_minutes or DAILY_MAXIMUM, DAILY_MAXIMUM)
     return result

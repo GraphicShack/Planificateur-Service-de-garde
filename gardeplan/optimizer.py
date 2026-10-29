@@ -14,6 +14,7 @@ import copy
 from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any
+from .attendance import is_absent
 
 from .staffing import shared_presence, shared_requirements, service_need, group_presence_requirements, group_requirement, daily_limit, boundaries, minimum_presence, pupil_requirement, requirements as staffing_requirements
 from .models import (
@@ -39,7 +40,9 @@ class _Candidate:
     variable: Any = None
 
 
-def _windows(educator: Educator, day: int) -> list[tuple[int, int]]:
+def _windows(educator: Educator, day: int, week=None) -> list[tuple[int, int]]:
+    if week is not None and is_absent(week, educator.id):
+        return []
     available = [(w.start, w.end) for w in educator.availability if w.day == day]
     if not educator.availability:
         available = [(0, 1440)]
@@ -50,8 +53,8 @@ def _windows(educator: Educator, day: int) -> list[tuple[int, int]]:
     return result
 
 
-def _fits(shift: Shift, educator: Educator) -> bool:
-    return any(a <= shift.start and shift.end <= b for a, b in _windows(educator, shift.day))
+def _fits(shift: Shift, educator: Educator, week=None) -> bool:
+    return any(a <= shift.start and shift.end <= b for a, b in _windows(educator, shift.day,week))
 
 
 def _candidate_breaks(start: int, end: int, week: Week) -> list[list[Break]]:
@@ -93,7 +96,7 @@ def _build_candidates(week: Week) -> tuple[list[_Candidate], list[str]]:
         educator = people.get(shift.educator_id)
         if educator is None or shift.group_id not in groups or not educator.active:
             diagnostics.append("Un quart verrouillé utilise une éducatrice inactive ou un groupe manquant.")
-        elif not _fits(shift, educator):
+        elif not _fits(shift, educator,week):
             diagnostics.append(f"Le quart verrouillé de {educator.name} ({format_time(shift.start)} à {format_time(shift.end)}) est hors disponibilité ou pendant une absence.")
         add(copy.deepcopy(shift))
     if diagnostics:
@@ -117,7 +120,7 @@ def _build_candidates(week: Week) -> tuple[list[_Candidate], list[str]]:
             for educator in week.educators:
                 if not educator.active:
                     continue
-                for a, b in _windows(educator, day):
+                for a, b in _windows(educator, day,week):
                     points = set(base_points)
                     # Une arrivée peut conserver la minute exacte de sa
                     # disponibilité tout en incluant la relève rémunérée.
@@ -171,7 +174,7 @@ def _build_candidates(week: Week) -> tuple[list[_Candidate], list[str]]:
 def _requirements(week: Week) -> list[str]:
     """Diagnostics certains, indépendants du découpage en quarts candidats."""
     result: list[str] = []
-    active = [e for e in week.educators if e.active]
+    active = [e for e in week.educators if e.active and not is_absent(week,e.id)]
     if not active:
         return ["Aucune éducatrice active n'est disponible."]
     if not any(g.periods for g in week.groups):
@@ -181,7 +184,7 @@ def _requirements(week: Week) -> list[str]:
         if not periods:
             continue
         points = sorted(set(boundaries(week)) | {t for _, p in periods for t in (p.start, p.end)} |
-                        {t for e in active for a, b in _windows(e, day) for t in (a, b)} |
+                        {t for e in active for a, b in _windows(e, day,week) for t in (a, b)} |
                         {week.settings.open_minute - week.settings.opening_buffer,
                          week.settings.close_minute + week.settings.closing_buffer})
         for a, b in zip(points, points[1:]):
@@ -194,7 +197,7 @@ def _requirements(week: Week) -> list[str]:
                            week.settings.close_minute + week.settings.closing_buffer)
             needed = max(needed, minimum_presence(week,a) if school_open else 0)
             if week.settings.staffing_policy>=4 and week.planning_date:needed=service_need(week,a,day)
-            available = sum(any(start <= a and b <= end for start, end in _windows(e, day)) for e in active)
+            available = sum(any(start <= a and b <= end for start, end in _windows(e, day,week)) for e in active)
             if available < needed:
                 result.append(f"Jour {day + 1}, {format_time(a)} à {format_time(b)} : {needed} éducatrices requises, seulement {available} disponibles.")
                 if len(result) >= 12:
@@ -206,7 +209,7 @@ def _requirements(week: Week) -> list[str]:
             needs=[group_requirement(week,a,max(p.students for p in g.periods if p.day==0 and p.start<=a<p.end),g.ratio,g.min_educators)
                    for g in week.groups if any(p.day==0 and p.start<=a<p.end for p in g.periods)]
             if needs:needed_minutes+=(b-a)*(service_need(week,a) if week.settings.staffing_policy>=4 else max(minimum_presence(week,a),sum(needs)))
-        capacity=sum(min(e.max_minutes,daily_limit(week),sum(b-a for a,b in _windows(e,0))) for e in active)
+        capacity=sum(min(e.max_minutes,daily_limit(week),sum(b-a for a,b in _windows(e,0,week))) for e in active)
         if needed_minutes>capacity:
             from .models import format_duration
             result.append(f"La couverture des enfants exige au moins {format_duration(needed_minutes)}. L’équipe dispose d’au plus {format_duration(capacity)} avec le plafond de 8 h 00 par personne et les disponibilités. Ajoutez du personnel ou corrigez les disponibilités ; aucun horaire invalide ne sera créé.")
@@ -451,7 +454,7 @@ def generate(week: Week, time_limit: float = 20) -> GenerationResult:
         total = model.new_int_var(0, max(0, educator.max_minutes), f"minutes_{educator.id}")
         model.add(total == sum(c.paid * c.variable for c in choices))
         total_variables[educator.id] = total
-        model.add(total >= educator.guaranteed_minutes if educator.active else total == 0)
+        model.add(total >= educator.guaranteed_minutes if educator.active and not is_absent(snapshot,educator.id) else total == 0)
         bound = max(educator.max_minutes, educator.target_minutes, 1)
         under = model.new_int_var(0, bound, f"manque_{educator.id}")
         over = model.new_int_var(0, bound, f"surplus_{educator.id}")

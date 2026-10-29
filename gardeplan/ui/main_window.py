@@ -27,6 +27,7 @@ from ..validation import validate
 from ..alerts import alert_text, visible_alerts
 from ..coverage import day_summary
 from ..hours import educator_hour_state
+from ..attendance import is_absent, set_day_absence
 from ..optimizer import generate
 from ..pdf import export_general, export_individual, export_combined, export_all_individual
 from .calendar import CalendarWidget, EDUCATOR_MIME
@@ -848,6 +849,7 @@ class MainWindow(QMainWindow):
         selected = self.educator_list.currentItem()
         selected_id = selected.data(Qt.ItemDataRole.UserRole) if selected else None
         self.educator_list.clear()
+        self.absence_buttons = {}
         planned = totals(self.week)
         active_count = sum(educator.active for educator in self.week.educators)
         self.team_summary.setText(f"{active_count} éducatrice{'s' if active_count != 1 else ''} active{'s' if active_count != 1 else ''} · {format_duration(sum(planned.values()))} planifiées")
@@ -858,19 +860,19 @@ class MainWindow(QMainWindow):
             if query and query not in self._search_key(educator.name):
                 continue
             minutes = planned.get(educator.id, 0)
+            absent = is_absent(self.week,educator.id)
             hour_status = educator_hour_state(self.week, educator)
             remaining = educator.target_minutes - minutes
             item = QListWidgetItem()
             item.setData(Qt.ItemDataRole.UserRole, educator.id)
-            item.setData(Qt.ItemDataRole.UserRole + 1, educator.active and not self.read_only)
-            item.setSizeHint(QSize(0, 134 if hour_status.code in {"target", "maximum"} else 108))
+            item.setData(Qt.ItemDataRole.UserRole + 1, educator.active and not absent and not self.read_only)
+            item.setSizeHint(QSize(0, (134 if hour_status.code in {"target", "maximum"} else 108)+(48 if self.week.planning_date else 0)))
             item.setData(Qt.ItemDataRole.AccessibleTextRole, f"{educator.name}, {format_duration(minutes)} planifiées. {hour_status.label}")
             tooltip = f"{educator.name}\nAncienneté : {educator.seniority}\nPlanifiées : {format_duration(minutes)} · Cible : {format_duration(educator.target_minutes)}\nDouble-cliquez pour modifier le profil."
             item.setToolTip(tooltip)
             card = QFrame()
             card.setObjectName("educatorCard")
             card.setToolTip(tooltip)
-            card.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
             layout = QVBoxLayout(card)
             layout.setContentsMargins(13, 11, 13, 10)
             layout.setSpacing(4)
@@ -887,7 +889,7 @@ class MainWindow(QMainWindow):
             heading.addWidget(dot)
             identity = QVBoxLayout()
             identity.setSpacing(2)
-            name = QLabel(educator.name + (" · inactive" if not educator.active else ""))
+            name = QLabel(educator.name + (" · absente" if absent else " · inactive" if not educator.active else ""))
             name.setObjectName("educatorName")
             name.setMinimumWidth(0)
             name.setText(name.fontMetrics().elidedText(name.text(), Qt.TextElideMode.ElideRight, 156))
@@ -917,11 +919,24 @@ class MainWindow(QMainWindow):
             progress.setStyleSheet(f"QProgressBar {{border:0;background:#edf2ee;border-radius:1px;}} QProgressBar::chunk {{background:{progress_color};border-radius:1px;}}")
             layout.addWidget(progress)
             balance = "Objectif atteint" if remaining == 0 else (f"Reste {format_duration(remaining)}" if remaining > 0 else f"Au-delà de la cible : {format_duration(-remaining)}")
-            label = QLabel(hour_status.label)
+            label = QLabel("Absente pour cette journée" if absent else hour_status.label)
             label.setWordWrap(True)
             label.setStyleSheet(f"color:{hour_status.color};font-size:12px;")
             card.setAccessibleName(f"{educator.name}. {format_duration(minutes)} planifiées. {hour_status.label}")
             layout.addWidget(label)
+            for child in card.findChildren(QWidget):
+                child.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+            if self.week.planning_date:
+                absence = self._button("Rendre disponible" if absent else "Signaler une absence",
+                    lambda checked=False,identifier=educator.id: self.toggle_day_absence(identifier,checked))
+                absence.setCheckable(True)
+                absence.setChecked(absent)
+                absence.setMinimumHeight(44)
+                absence.setEnabled(educator.active and not self.read_only)
+                absence.setAccessibleName(("Rendre disponible " if absent else "Signaler l’absence de ")+educator.name+" pour cette journée")
+                absence.setToolTip("Les quarts non verrouillés seront retirés. Annuler permet de les récupérer. Les quarts verrouillés restent à corriger manuellement.")
+                layout.addWidget(absence)
+                self.absence_buttons[educator.id] = absence
             self.educator_list.addItem(item)
             self.educator_list.setItemWidget(item, card)
             if educator.id == selected_id:
@@ -935,6 +950,10 @@ class MainWindow(QMainWindow):
         elif self.educator_list.currentItem() is None:
             self.educator_list.setCurrentRow(0)
         self._refresh_profile_button()
+
+    def toggle_day_absence(self, identifier, absent):
+        if self.commit(lambda plan:set_day_absence(plan,identifier,absent)):
+            self.statusBar().showMessage("Absence notée : quarts non verrouillés retirés. Annuler les rétablit ; les quarts verrouillés restent à vérifier." if absent else "Disponibilité rétablie. Les quarts retirés ne sont pas recréés automatiquement.",8000)
 
     def refresh_alerts(self):
         self.alert_list.clear()
@@ -1313,7 +1332,11 @@ class MainWindow(QMainWindow):
                 if collection == "rooms" and any(a.room_id == original.id for a in self.week.activities):
                     QMessageBox.information(self, "Lieu utilisé", "Changez le lieu des activités concernées avant de supprimer ce lieu.")
                     return
-            self.commit(lambda week: setattr(week, collection, [item for item in getattr(week, collection) if item.id != original.id]))
+            def remove(week):
+                setattr(week,collection,[item for item in getattr(week,collection) if item.id!=original.id])
+                if collection == "educators":
+                    week.absent_educator_ids = [x for x in week.absent_educator_ids if x!=original.id]
+            self.commit(remove)
         else:
             result = dialog.result_item()
             def replace(week):

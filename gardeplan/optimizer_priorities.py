@@ -5,6 +5,7 @@ unfinished preference search into an invalid or silently empty schedule.
 """
 from time import monotonic
 from .staffing import daily_limit, shared_presence, shared_requirement
+from .attendance import is_absent
 
 
 def cohort_hint(week,candidates,ranked):
@@ -52,7 +53,7 @@ def cohort_hint(week,candidates,ranked):
 
 def solve_daily(model,candidates,by_person,totals,week,time_limit):
     from ortools.sat.python import cp_model
-    ranked=sorted((e for e in week.educators if e.active),key=lambda e:(e.seniority,e.id))
+    ranked=sorted((e for e in week.educators if e.active and not is_absent(week,e.id)),key=lambda e:(e.seniority,e.id))
     used={};scores={};pieces={};last={}
     # No educator can have more than 1,440 disjoint positive-minute shifts.
     cut_weight=(daily_limit(week)+1)*1441
@@ -74,7 +75,7 @@ def solve_daily(model,candidates,by_person,totals,week,time_limit):
     locked={c.shift.educator_id for c in candidates if c.shift.locked}
     for person in ranked:
         if person.id in locked:continue
-        signature=(tuple(_windows(person,0)),min(person.max_minutes,daily_limit(week)),person.guaranteed_minutes,
+        signature=(tuple(_windows(person,0,week)),min(person.max_minutes,daily_limit(week)),person.guaranteed_minutes,
                    person.target_minutes,tuple(sorted(person.preferred_groups)))
         if signature in equivalent:
             model.add(scores[equivalent[signature]]>=scores[person.id])

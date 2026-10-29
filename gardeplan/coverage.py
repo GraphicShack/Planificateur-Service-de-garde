@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from .staffing import boundaries, minimum_presence, pupil_requirement, group_requirement, group_presence_requirements, shared_presence, shared_requirement
 from .models import coverage_intervals, working_intervals, required_educators
 from .models import totals, format_duration
+from .attendance import is_absent
 
 
 @dataclass(frozen=True)
@@ -33,7 +34,7 @@ def coverage_timeline(week, day=0, group_id=""):
     end = min(1440, week.settings.close_minute+week.settings.closing_buffer)
     all_shifts = [s for s in week.shifts if s.day==day]
     shifts = [s for s in all_shifts if not group_id or s.group_id==group_id]
-    active = {e.id for e in week.educators if e.active}
+    active = {e.id for e in week.educators if e.active and not is_absent(week,e.id)}
     covered = {s.id: coverage_intervals(s) for s in all_shifts}
     worked = {s.id: working_intervals(s) for s in all_shifts}
     points_set = {start, end, week.settings.open_minute, week.settings.close_minute, *boundaries(week)}

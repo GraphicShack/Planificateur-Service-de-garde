@@ -4,6 +4,7 @@ La vérification balaye les minutes exactes puis regroupe les erreurs identiques
 adjacentes en intervalles lisibles. Aucun arrondi ni approximation par tranche.
 """
 from __future__ import annotations
+from .attendance import is_absent
 from .staffing import minimum_presence, pupil_requirement, group_requirement, group_presence_requirements, shared_presence, shared_requirement, daily_limit
 
 from dataclasses import dataclass, field
@@ -177,6 +178,8 @@ def validate(week: Week, *, _service=False) -> list[Issue]:
                 add("missing_data", f"Deux pauses de {e.name} se chevauchent.", s.day, b.start, min(a.end, b.end), s.group_id, [s.id])
         if not e.active:
             add("missing_data", f"{e.name} est inactive, mais un quart lui est affecté.", s.day, s.start, s.end, s.group_id, [s.id])
+        if is_absent(week,e.id):
+            add("absence", _prefix(s.day,s.start,s.end)+f"{e.name} est absente pour cette journée. Ce quart verrouillé doit être remplacé manuellement.",s.day,s.start,s.end,s.group_id,[s.id],"Déverrouiller ou réaffecter ce quart.")
         if not _available(e.availability, s.day, s.start, s.end):
             add("availability", _prefix(s.day, s.start, s.end) + f"{e.name} n'est pas disponible pendant tout le quart, buffers compris.", s.day, s.start, s.end, s.group_id, [s.id], "Ajuster le quart ou choisir une éducatrice disponible.")
         for absence in e.absences:
@@ -202,7 +205,7 @@ def validate(week: Week, *, _service=False) -> list[Issue]:
             outside.extend((minute, True if not any(x <= minute < y for x, y in opened) else None) for minute in range(a, b))
         for a, b, _ in _minute_runs(outside):
             add("closed_group_shift", _prefix(s.day, a, b) + f"{e.name} est affectée au groupe {groups[s.group_id].name} alors que ce groupe est fermé.", s.day, a, b, s.group_id, [s.id], "Réviser ce quart ou rouvrir le groupe si des enfants sont présents.", severity="warning")
-        if e.active:
+        if e.active and not is_absent(week,e.id):
             shifts.append(s)
             coverage[s.id] = coverage_intervals(s)
             working[s.id] = working_intervals(s)
@@ -313,7 +316,7 @@ def validate(week: Week, *, _service=False) -> list[Issue]:
 
     actual_totals = totals(week)
     for e in week.educators:
-        if not e.active:
+        if not e.active or is_absent(week,e.id):
             continue
         minutes = actual_totals.get(e.id, 0)
         if minutes > e.max_minutes:
@@ -324,7 +327,7 @@ def validate(week: Week, *, _service=False) -> list[Issue]:
             label = "manquent" if minutes < e.target_minutes else "dépassent la cible"
             add("target", f"{e.name} : {format_duration(abs(minutes - e.target_minutes))} {label} ({format_duration(minutes)} planifiées sur {format_duration(e.target_minutes)} visées).", severity="warning")
     # L'ancienneté conseille, elle ne peut rendre une disponibilité irréalisable obligatoire.
-    active = sorted([e for e in week.educators if e.active], key=lambda e: e.seniority)
+    active = sorted([e for e in week.educators if e.active and not is_absent(week,e.id)], key=lambda e: e.seniority)
     for index, senior in enumerate(active):
         if actual_totals.get(senior.id, 0) >= senior.target_minutes:
             continue

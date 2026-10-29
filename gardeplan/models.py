@@ -161,6 +161,7 @@ class Week:
     day_names: dict[int, str] = field(default_factory=dict)
     status: str = "draft"
     planning_date: str = ""  # Daily records use local day index 0; legacy weeks remain readable.
+    absent_educator_ids: list[str] = field(default_factory=list)
 
     @property
     def active_days(self):
@@ -295,6 +296,12 @@ def from_dict(data: dict[str, Any]) -> Week:
         periods += [p for r in raw['rooms'] for p in r.availability]
         if any(p.day != 0 for p in periods + raw['shifts'] + raw['activities']) or any(k != 0 for k in raw['day_names']):
             raise ValueError("Cet horaire doit contenir uniquement la journée choisie.")
+    absent = raw.get("absent_educator_ids", [])
+    if (not isinstance(absent, list) or any(not isinstance(x, str) for x in absent)
+            or len(set(absent)) != len(absent)
+            or not set(absent) <= {e.id for e in raw["educators"]}
+            or (absent and not planning_date)):
+        raise ValueError("Les absences doivent désigner des profils existants de cette journée.")
     return Week(**raw)
 
 
