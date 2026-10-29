@@ -133,14 +133,21 @@ def main(argv=None):
     parser.add_argument("--portable", action="store_true", help="Conserver les données à côté du logiciel")
     parser.add_argument("--check-installation", type=Path, metavar="RESULTAT_JSON",
                         help=argparse.SUPPRESS)
+    parser.add_argument('--check-update-archive',type=Path,help=argparse.SUPPRESS)
+    parser.add_argument('--check-update-launch',type=Path,help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
     if args.example and args.database:
         parser.error("--example utilise une base distincte ; ne pas combiner avec --database.")
+    if args.check_update_launch is not None:
+        from gardeplan.update_check import check_update_launch
+        return check_update_launch(args.check_update_launch)
+    if args.check_update_archive is not None and args.check_installation is None:
+        parser.error('--check-update-archive nécessite un contrôle d’installation.')
     if args.check_installation is not None:
         if args.example or args.database or args.portable:
             parser.error("Le contrôle d'installation utilise uniquement des données temporaires.")
         from gardeplan.installation_check import check_installation
-        return check_installation(args.check_installation)
+        return check_installation(args.check_installation,update_archive=args.check_update_archive)
     app = QApplication.instance() or QApplication(sys.argv[:1])
     app.setApplicationName(STORAGE_APPLICATION)
     app.setOrganizationName(STORAGE_ORGANIZATION)
@@ -161,6 +168,7 @@ def main(argv=None):
             return 0
     portable = root is not None and args.database is None
     app.setProperty("portableMode", portable)
+    app.setProperty("portableDirectory", str(root) if root is not None else '')
     database = database_path(location, database=args.database, example=args.example,
                              force_portable=args.portable, portable_directory=root)
     try:
@@ -170,6 +178,13 @@ def main(argv=None):
                   if portable else "Le dossier des données n'est pas accessible. Vérifiez les droits d'accès à ce dossier.")
         QMessageBox.critical(None, "Dossier inaccessible", f"{action}\n\n{exc}")
         return 1
+    if root is not None:
+        try:
+            from gardeplan.updater import activate_pending
+            activate_pending(root)
+        except Exception as exc:
+            QMessageBox.critical(None,"Mise à jour à terminer",str(exc))
+            return 1
     lock = QLockFile(str(database) + ".lock")
     lock.setStaleLockTime(30000)
     if not lock.tryLock(100):

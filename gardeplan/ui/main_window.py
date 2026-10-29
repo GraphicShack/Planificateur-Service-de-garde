@@ -7,10 +7,10 @@ from pathlib import Path
 import tempfile
 import unicodedata
 
-from PySide6.QtCore import Qt, QDate, QMimeData, QThread, QTimer, Signal, QSize
+from PySide6.QtCore import Qt, QDate, QMimeData, QThread, QTimer, Signal, QSize, QProcess, QProcessEnvironment
 from PySide6.QtGui import QAction, QColor, QDrag, QKeySequence, QPainter
 from PySide6.QtWidgets import (
-    QAbstractItemView, QCheckBox, QComboBox, QDateEdit, QDialog,
+    QApplication, QAbstractItemView, QCheckBox, QComboBox, QDateEdit, QDialog,
     QDialogButtonBox, QFileDialog, QFormLayout, QFrame, QHBoxLayout,
     QInputDialog, QLabel, QLineEdit, QListWidget, QListWidgetItem, QMainWindow,
     QMenu, QMessageBox, QProgressBar, QPushButton,
@@ -119,6 +119,7 @@ class MainWindow(QMainWindow):
         self._history_version = None
         self._undo, self._redo = [], []
         self._worker = None
+        self._pending_update = None
         self._progress = None
         self._save_error_shown = False
         self._updating = False
@@ -726,6 +727,9 @@ class MainWindow(QMainWindow):
         backups = self.file_menu
         add(backups, "backup", "Exporter une sauvegarde…", lambda: self.backup())
         add(backups, "import", "Importer une sauvegarde…", lambda: self.import_backup())
+        self.file_menu.addSeparator()
+        add(self.file_menu,"update","Mettre à jour depuis un ZIP…",lambda:self.show_update_assistant())
+        add(self.file_menu,"rollback","Revenir à la version précédente…",lambda:self.show_update_assistant(rollback=True))
         self.command_menu.addSeparator()
         add(self.command_menu, "display", "Affichage…", lambda: self.show_display_options())
         self.command_menu.aboutToShow.connect(self._sync_menu_actions)
@@ -747,6 +751,8 @@ class MainWindow(QMainWindow):
             "history": self._worker is None,
             "backup": self._worker is None,
             "import": self._worker is None,
+            "update": self._worker is None,
+            "rollback": self._worker is None,
         }
         for key, value in enabled.items():
             self.menu_actions[key].setEnabled(value)
@@ -1776,7 +1782,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         if self._worker is not None:
-            QMessageBox.information(self, "Génération en cours", "La recherche se termine dans quelques instants. Attendez la proposition avant de fermer l'application.")
+            QMessageBox.information(self, "Opération en cours", "Attendez la fin de l’opération avant de fermer le logiciel.")
             event.ignore()
             return
         if self.dirty and not self.save_week():
@@ -1792,4 +1798,48 @@ class MainWindow(QMainWindow):
             if response != QMessageBox.StandardButton.Yes:
                 event.ignore()
                 return
+        if self._pending_update is not None:
+            try:
+                from ..updater import refresh_prepared
+                refresh_prepared(self._pending_update,self.repo)
+                if not self._launch_updated(self._pending_update):
+                    raise ValueError('Le système n’a pas pu démarrer la version préparée. Le dossier et les données restent conservés.')
+            except Exception as error:
+                QMessageBox.warning(self,'Mise à jour non démarrée',str(error))
+                event.ignore();return
         event.accept()
+
+    def show_update_assistant(self,rollback=False):
+        if self._worker is not None:return
+        if self.dirty and not self.save_week(manual=False):return
+        from .. import __version__
+        from ..data_paths import portable_root
+        from .update import UpdateDialog
+        selected=QApplication.instance().property('portableDirectory')
+        root=Path(selected) if selected else portable_root()
+        dialog=UpdateDialog(self.repo,self.motion,__version__,root,self,rollback=rollback)
+        self.autosave.stop()
+        try:
+            if dialog.exec()==QDialog.DialogCode.Accepted and dialog.want_launch:
+                self._pending_update=dialog.prepared
+                try:self.close()
+                finally:self._pending_update=None
+        finally:
+            dialog.deleteLater()
+            if self.dirty:self.autosave.start()
+
+    @staticmethod
+    def _launch_updated(prepared):
+        process=QProcess()
+        environment=QProcessEnvironment.systemEnvironment()
+        environment.insert('PYINSTALLER_RESET_ENVIRONMENT','1')
+        process.setProcessEnvironment(environment)
+        process.setWorkingDirectory(str(prepared.folder))
+        if prepared.platform=='macos':
+            app=next((p for p in prepared.executable.parents if p.suffix=='.app'),None)
+            if app is None:return False
+            process.setProgram('/usr/bin/open');process.setArguments(['-n',str(app)])
+        else:
+            process.setProgram(str(prepared.executable));process.setArguments([])
+        result=process.startDetached()
+        return bool(result[0] if isinstance(result,tuple) else result)
