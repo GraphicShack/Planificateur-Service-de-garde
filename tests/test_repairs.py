@@ -70,6 +70,14 @@ def test_repair_can_extend_a_nearby_unlocked_shift_instead_of_adding_one():
     assert changes[0].after.id=='nearby' and changes[0].after.end==630
 
 
+def test_a_complete_available_replacement_is_preferred_to_two_fragmented_additions():
+    plan=gap_day();plan.educators[2].max_minutes=30
+    result=repair(plan,gap_issue(plan))
+    assert result.success,result.message
+    changes=compare(plan,result.proposal)
+    assert len(changes)==1 and changes[0].after.educator_id=='reserve2'
+
+
 def test_repair_can_add_two_people_to_fix_a_ratio_deficit_without_hiding_other_errors():
     plan=gap_day();plan.groups[0].periods[0].students=60
     result=repair(plan,gap_issue(plan))

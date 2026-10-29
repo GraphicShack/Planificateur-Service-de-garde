@@ -122,7 +122,9 @@ def repair(plan,issue,time_limit=10):
             else:proposal.shifts=[shift if s.id==old_id else s for s in proposal.shifts]
             remaining=_deficit(proposal,issue)
             if remaining>=deficit or not _safe(proposal,baseline):continue
-            key=(person.seniority,-(deficit-remaining),extra,preference_cost(proposal,person,[s for s in proposal.shifts if s.educator_id==person.id]),shift.start,person.id)
+            # Prefer one complete local edit to a fragmented sequence. Within
+            # compatible replacements, the lowest rank number remains first.
+            key=(remaining!=0,person.seniority,-(deficit-remaining),extra,preference_cost(proposal,person,[s for s in proposal.shifts if s.educator_id==person.id]),shift.start,person.id)
             if best is None or key<best[0]:best=(key,proposal,remaining,shift.id,person.name)
         if best is None:break
         _,source,deficit,identifier,name=best
