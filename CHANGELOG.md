@@ -4,6 +4,14 @@ Chaque release reprend la section correspondant à sa version. Une section doit
 être ajoutée ici avant de publier ; le contrôle de publication refuse une
 version sans notes. Les téléchargements sont dans les [Releases GitHub](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases).
 
+## [0.3.5] — 2026-10-28
+
+- Nouvel écran de chargement pendant la génération réelle de l’horaire : indicateur circulaire animé, message explicite et temps écoulé, sans pourcentage simulé.
+- L’indicateur utilise la couleur du thème et respecte l’option « Animations discrètes » : l’information reste visible quand les mouvements sont désactivés.
+- Fermeture automatique à l’arrivée d’une proposition, d’une impossibilité ou d’une erreur. Les animations et le compteur sont arrêtés et libérés à la fin du calcul.
+- La génération continue dans son fil de calcul ; aucune proposition n’est appliquée sans confirmation. Les commandes sont réactivées après la fin du calcul et les horaires existants restent conservés.
+- Cinq tests supplémentaires couvrent le chargement, la réduction des mouvements et les issues de génération : proposition, absence de solution et erreur.
+
 ## [0.3.4] — 2026-10-28
 
 - Transitions discrètes entre l’accueil et la planification, et entre les panneaux Équipe, Inscriptions et Vérification. Les effets courts (120–160 ms) sont interruptibles ; les commandes et le clavier restent immédiatement utilisables.

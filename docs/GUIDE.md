@@ -225,3 +225,9 @@ Dans l’icône **Réglages** en bas de la barre latérale, choisissez **Afficha
 - Désactivez **Animations discrètes** pour une navigation immédiate sans effet. Les transitions ne déplacent jamais les quarts et ne modifient pas les heures.
 
 Ces préférences sont conservées dans `interface.json`, à côté de la base SQLite (dans `donnees` en mode portable). Elles ne créent pas de nouvelle version d’horaire. Les sauvegardes d’horaires SQLite restent indépendantes de ces préférences d’affichage. Les couleurs des éducatrices et des groupes, les alertes et le PDF ne changent pas avec le thème. Les thèmes disponibles gardent des surfaces claires ; aucun thème sombre n’est proposé.
+
+## Chargement de la génération — version 0.3.5
+
+Après **Générer l’horaire**, une fenêtre affiche **Création de votre horaire**, un indicateur circulaire et le temps écoulé. Il ne s’agit pas d’un pourcentage d’avancement : le calcul peut durer quelques instants. Le cercle suit votre thème et reste statique si vous avez désactivé **Animations discrètes** dans Affichage ; le texte confirme toujours que le calcul est en cours.
+
+La fenêtre se ferme quand le calcul rend sa proposition ou un message expliquant l’impossibilité ou l’erreur. Votre horaire actuel est conservé et vous devez confirmer la proposition avant qu’elle soit appliquée. La recherche n’est pas annulable pendant son exécution ; Échap et le bouton de fermeture ne masquent pas son état.
