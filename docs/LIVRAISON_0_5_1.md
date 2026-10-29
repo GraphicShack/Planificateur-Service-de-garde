@@ -10,7 +10,7 @@ Une demande de publication seule ne déclenche plus deux nouvelles compilations 
 
 ## Vérification
 
-Les 21 tests directement liés à l’assistant et à la copie passent localement, dont le nouveau cas avec PDF personnel, préparation, retour, conservation des documents et refus d’un exécutable corrompu. Les dix tests des scripts de publication passent. La suite complète locale réussit **340 tests et six sous-cas** en 122,39 s, sans test ignoré. Les contrôles natifs du ZIP sont exécutés avant publication ; leurs résultats définitifs figurent dans [État des vérifications](ETAT_VERIFICATION.md).
+Les 21 tests directement liés à l’assistant et à la copie passent localement, dont le nouveau cas avec PDF personnel, préparation, retour, conservation des documents et refus d’un exécutable corrompu. Les dix tests des scripts de publication passent. La suite complète locale réussit **340 tests et six sous-cas** en 122,39 s, sans test ignoré. Les suites Windows et Mac réussissent aussi 340 tests et six sous-cas. Les trois contrôles natifs de chaque plateforme passent, dont le ZIP extrait et les lancements des copies préparée et restaurée. La version 0.5.1 est publiée avec ses six fichiers publics ; les preuves figurent dans [État des vérifications](ETAT_VERIFICATION.md).
 
 ## Aperçus
 

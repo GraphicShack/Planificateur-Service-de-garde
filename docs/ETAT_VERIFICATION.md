@@ -2,6 +2,18 @@
 
 Les constructions et les contrôles natifs s’exécutent sur GitHub Actions. Les fichiers à remettre sont les ZIP portables d’une exécution réussie correspondant au code voulu. Une sortie compilée dont le contrôle échoue n’est pas livrée.
 
+## Livraison 0.5.1 — conserver les PDF personnels lors des mises à jour
+
+Le code exact testé et publié est `0a82919bd322b184b0906b3274a741465ad979c6`. Les suites locale, Windows et Mac réussissent chacune **340 tests et six sous-cas**, sans test ignoré. Les 21 tests ciblés de l’assistant et les dix tests des scripts de publication réussissent aussi.
+
+- [Windows — 188,16 s de tests et trois contrôles du programme compilé](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40895284686).
+- [Mac Apple Silicon — 151,48 s de tests et trois contrôles du programme compilé](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40895284619).
+- Local : suite complète en 122,39 s. La non-régression couvre un PDF à côté du programme, sa conservation lors de la mise à jour et du retour, son exclusion des dossiers préparés et le refus d’un exécutable altéré.
+
+Chaque ZIP a été extrait et son véritable programme lancé. Le contrôle `portable_update_archive` prépare puis démarre une copie du logiciel avec reprise de la dernière base source, puis prépare et démarre une copie de retour. Les contrôles de nom de session, de bilan, de couverture, de rangs, de pauses, de maximum quotidien, de SQLite, de PDF et de fonctionnement hors ligne sont obligatoires avant publication. Les lancements de copie et de retour utilisent les binaires de la version compilée ; le lancement entre deux versions distribuées différentes reste un essai à réaliser sur poste.
+
+[Release publique 0.5.1](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/tag/v0.5.1), publiée pour ce SHA exact : deux ZIP, deux rapports, un PDF d’exemple et SHA256SUMS sont présents, publics, téléversés et non vides. Les notes reprennent la section 0.5.1 du CHANGELOG. Les fonctionnalités 0.5.0 sont conservées, dont Proposition affichée en premier et la continuité prioritaire. Les demandes de publication seules ne relancent plus les deux compilations. [Fichiers modifiés, hypothèses et limites](LIVRAISON_0_5_1.md).
+
 ## Livraison 0.5.0 — mise à jour portable, bilan et session
 
 Le code exact testé et publié est `4171ee67b1afe8956ec8197813a8fc1aaf072332`. Les suites locale, Windows et Mac réussissent **339 tests et six sous-cas**, sans test ignoré. Les douze tests directement touchés par l’ouverture de la grille Proposition ont également été vérifiés localement après le dernier ajustement. Les dix contrôles de publication et le diagnostic hors ligne réussissent.
