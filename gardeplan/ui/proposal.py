@@ -1,6 +1,6 @@
 """An explicit before/after view, reused by full generation and local repair."""
 from copy import deepcopy
-from PySide6.QtCore import Qt,QTimer
+from PySide6.QtCore import Qt,QTimer,QEvent
 from PySide6.QtWidgets import (
     QAbstractItemView,QDialog,QDialogButtonBox,QHeaderView,QLabel,QTabWidget,
     QTableWidget,QTableWidgetItem,QVBoxLayout,QWidget,
@@ -23,6 +23,7 @@ def table(headers):
     widget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
     widget.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
     widget.setWordWrap(True)
+    widget.setTextElideMode(Qt.TextElideMode.ElideNone)
     return widget
 
 
@@ -71,6 +72,9 @@ class ProposalDialog(QDialog):
             for col,value in enumerate([person.name,format_duration(old.get(person.id,0)),format_duration(new.get(person.id,0)),('+' if delta>0 else '')+format_duration(delta)]):
                 self.hours_table.setItem(row,col,QTableWidgetItem(value))
         self.tabs.addTab(self.hours_table,'Heures')
+        self.row_timer=QTimer(self);self.row_timer.setSingleShot(True)
+        self.row_timer.timeout.connect(self.fit_rows)
+        for grid in (self.changes_table,self.hours_table):grid.viewport().installEventFilter(self)
         self.calendars=[]
         for label,plan in [('Actuel',self.before),('Proposition',self.after)]:
             calendar=CalendarWidget();calendar.single_service=bool(plan.planning_date);calendar.grouped_staff=bool(plan.planning_date)
@@ -92,6 +96,21 @@ class ProposalDialog(QDialog):
         self.apply_button=buttons.addButton('Appliquer au brouillon' if self.error_count else 'Appliquer cette proposition',QDialogButtonBox.ButtonRole.AcceptRole)
         for button in buttons.buttons():button.setMinimumHeight(44)
         buttons.accepted.connect(self.accept);buttons.rejected.connect(self.reject);layout.addWidget(buttons)
+
+    def eventFilter(self,watched,event):
+        if self.isVisible() and event.type()==QEvent.Type.Resize:self.row_timer.start(0)
+        return super().eventFilter(watched,event)
+
+    def showEvent(self,event):
+        super().showEvent(event)
+        self.row_timer.start(0)
+
+    def hideEvent(self,event):
+        self.row_timer.stop()
+        super().hideEvent(event)
+
+    def fit_rows(self):
+        for grid in (self.changes_table,self.hours_table):grid.resizeRowsToContents()
 
     def fit_calendar(self):
         calendar=self.tabs.currentWidget()

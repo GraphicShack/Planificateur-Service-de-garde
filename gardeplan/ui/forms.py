@@ -220,6 +220,10 @@ class IntervalsEditor(QWidget):
         layout.addLayout(row)
         for p in periods:
             self.add_row(p.day, p.start, p.end, getattr(p, "students", 20))
+        self._fit_compact()
+
+    def _fit_compact(self):
+        if self.compact:self.table.setFixedHeight(112 if self.table.rowCount() else 80)
 
     def add_row(self, day=0, start=420, end=1050, students=20):
         row = self.table.rowCount()
@@ -233,6 +237,7 @@ class IntervalsEditor(QWidget):
         if self.students:
             self.table.setCellWidget(row, 3, integer(students, 0, 10000))
         self.table.setRowHeight(row, 48 if self.compact else 40)
+        self._fit_compact()
 
     def remove_selected(self):
         rows = {i.row() for i in self.table.selectedIndexes()}
@@ -240,6 +245,7 @@ class IntervalsEditor(QWidget):
             rows.add(self.table.currentRow())
         for row in sorted(rows, reverse=True):
             self.table.removeRow(row)
+        self._fit_compact()
 
     def values(self):
         result = []
@@ -578,7 +584,7 @@ class EducatorDialog(EditorDialog):
         self.profile_columns.right_layout.addWidget(availability)
         preference_card,preference_layout=profile_section("Préférences d’horaire")
         preference_form=QFormLayout()
-        preference_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapAllRows)
+        preference_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         self.shift_preference=QComboBox()
         from ..preferences import LABELS
         for key,label in LABELS.items():self.shift_preference.addItem(label,key)
@@ -587,6 +593,8 @@ class EducatorDialog(EditorDialog):
         self.shift_preference.setMinimumHeight(44)
         self.avoid_split=check("Éviter les horaires coupés",ed.avoid_split)
         self.preferred_end_enabled=check("Heure de départ souhaitée",ed.preferred_end is not None)
+        self.avoid_split.setMinimumHeight(44)
+        self.preferred_end_enabled.setMinimumHeight(44)
         self.preferred_end=ClockEdit(ed.preferred_end if ed.preferred_end is not None else 900)
         self.preferred_end.setAccessibleName("Heure de départ souhaitée")
         self.preferred_end.setMinimumHeight(44)
