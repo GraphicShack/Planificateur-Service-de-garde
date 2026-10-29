@@ -7,6 +7,7 @@ from ..home_data import recent_days
 from .day_selector import full_date
 from .flow_layout import FlowLayout
 from .appearance import set_themed_style
+from ..session_user import greeting
 
 STYLE='''
 QWidget#homeBody {background:#F7F9F8;color:#203D32;}
@@ -123,7 +124,9 @@ class HomePage(QScrollArea):
         self.heading_layout=flow
         intro=Intro();intro_box=QVBoxLayout(intro);intro_box.setContentsMargins(0,0,0,0)
         intro_box.addWidget(label('SERVICE DE GARDE','homeSecondary'))
-        intro_box.addWidget(label('Bonjour, bienvenue','homeTitle'))
+        self.greeting=label(greeting(),'homeTitle')
+        self.greeting.setTextFormat(Qt.TextFormat.PlainText)
+        intro_box.addWidget(self.greeting)
         self.subtitle=label('','homeSecondary');intro_box.addWidget(self.subtitle)
         flow.addWidget(intro,1)
         self.new_button=button('Nouvelle journée pédagogique',self.new_day.emit,True);flow.addWidget(self.new_button)
