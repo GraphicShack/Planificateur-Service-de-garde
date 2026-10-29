@@ -11,6 +11,7 @@ from ..models import totals,format_duration
 from .appearance import set_themed_style
 from .calendar import CalendarWidget
 from .theme import EDITOR_STYLE
+from .proposal_report import ProposalReport
 
 
 def table(headers):
@@ -46,6 +47,8 @@ class ProposalDialog(QDialog):
         self.summary=QLabel(f"{len(self.changes)} changement(s) · {sum(i.severity=='error' for i in prior)} erreur(s) avant → {self.error_count} après · {format_duration(sum(totals(self.before).values()))} → {format_duration(sum(totals(self.after).values()))} planifiées")
         self.summary.setWordWrap(True);layout.addWidget(self.summary)
         self.tabs=QTabWidget();layout.addWidget(self.tabs,1)
+        self.report=ProposalReport(self.before,self.after)
+        self.tabs.addTab(self.report,'Bilan')
         comparison=QWidget();column=QVBoxLayout(comparison);column.setContentsMargins(0,8,0,0)
         hint=QLabel('Sélectionnez un changement puis appuyez sur Entrée pour le voir dans la grille. Aucun horaire ne change avant votre confirmation.')
         hint.setWordWrap(True);column.addWidget(hint)
@@ -94,6 +97,7 @@ class ProposalDialog(QDialog):
         buttons=QDialogButtonBox()
         buttons.addButton('Conserver l’horaire actuel',QDialogButtonBox.ButtonRole.RejectRole)
         self.apply_button=buttons.addButton('Appliquer au brouillon' if self.error_count else 'Appliquer cette proposition',QDialogButtonBox.ButtonRole.AcceptRole)
+        self.apply_button.setEnabled(self.report.report['locks_preserved']==self.report.report['locks_total'])
         for button in buttons.buttons():button.setMinimumHeight(44)
         buttons.accepted.connect(self.accept);buttons.rejected.connect(self.reject);layout.addWidget(buttons)
 
