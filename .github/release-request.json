@@ -1,6 +1,6 @@
 {
   "version": "0.5.1",
-  "commit": "4171ee67b1afe8956ec8197813a8fc1aaf072332",
-  "approved": false,
-  "authorization": "Dernière vérification de l’assistant : conserver les PDF déjà exportés à côté du programme sans bloquer la mise à jour. L’autorisation de publier persiste ; le nouveau code vérifié sera référencé avant publication."
+  "commit": "0a82919bd322b184b0906b3274a741465ad979c6",
+  "approved": true,
+  "authorization": "Publication autorisée dans la conversation : « fait tout les changement et ensuite push et release le programme » et « Montre moi un aperçu une fois ça fait et ensuite release ». Les aperçus Qt réels de l’accueil, de la proposition initiale, du bilan et de l’assistant ont été montrés. La 0.5.0 est publiée. Le correctif 0.5.1 permet de garder les PDF personnels à côté du programme sans bloquer l’assistant et conserve la vérification des fichiers du logiciel. Les 340 tests et six sous-cas, les 21 tests ciblés et dix contrôles de publication réussissent localement. La publication attend les deux constructions natives réussies du SHA exact et le contrôle du ZIP, de la copie préparée et du retour."
 }
