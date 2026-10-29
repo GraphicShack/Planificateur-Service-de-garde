@@ -4,6 +4,15 @@ Chaque release reprend la section correspondant à sa version. Une section doit
 être ajoutée ici avant de publier ; le contrôle de publication refuse une
 version sans notes. Les téléchargements sont dans les [Releases GitHub](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases).
 
+## [0.4.0] — 2026-10-28
+
+- **Absence pour la journée en un clic** depuis L’équipe. Le profil reste actif ; les quarts non verrouillés sont retirés, la couverture et les alertes se recalculent, et Annuler permet de récupérer l’horaire précédent. Les quarts verrouillés sont conservés et signalés pour traitement manuel. Les absences rapides ne sont pas reprises dans les nouvelles journées.
+- **Correction ciblée** depuis Vérifier : sélectionner une alerte de couverture, puis Proposer une correction. La recherche peut ajouter une remplaçante ou prolonger un quart voisin non verrouillé, avec les buffers et les limites applicables, sans déplacer les autres quarts. Elle ne renvoie aucun résultat partiel et ne crée aucune nouvelle erreur bloquante ; les erreurs déjà présentes restent indiquées et empêchent la publication.
+- **Comparaison avant/après** avant toute application : quarts ajoutés, retirés ou modifiés, heures rémunérées par éducatrice, écarts et nombre d’alertes. Les grilles actuelle et proposée restent consultables. Des identifiants générés différents ne suffisent pas à marquer un quart identique comme modifié.
+- **Préférences individuelles structurées** : ouvrir, fermer, éviter les horaires coupés, heure de départ souhaitée à la minute. Elles départagent les propositions rang par rang, après les contraintes obligatoires, la participation, les heures utiles et la continuité. Un souhait non satisfait produit un avertissement ; il ne devient pas une indisponibilité obligatoire.
+- La génération conserve ses contraintes de groupes, les deux présences collectives aux extrémités, les quinze minutes de relève, les pauses et le maximum de huit heures. Les anciennes journées restent consultables et les nouveaux champs sont optionnels à la lecture des anciens fichiers.
+- Le contrôle des logiciels portables extraits vérifie aussi les absences, les préférences sauvegardées, une correction réelle et l’affichage de la comparaison, sans connexion réseau.
+
 ## [0.3.5] — 2026-10-28
 
 - Nouvel écran de chargement pendant la génération réelle de l’horaire : indicateur circulaire animé, message explicite et temps écoulé, sans pourcentage simulé.

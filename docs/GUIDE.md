@@ -231,3 +231,33 @@ Ces préférences sont conservées dans `interface.json`, à côté de la base S
 Après **Générer l’horaire**, une fenêtre affiche **Création de votre horaire**, un indicateur circulaire et le temps écoulé. Il ne s’agit pas d’un pourcentage d’avancement : le calcul peut durer quelques instants. Le cercle suit votre thème et reste statique si vous avez désactivé **Animations discrètes** dans Affichage ; le texte confirme toujours que le calcul est en cours.
 
 La fenêtre se ferme quand le calcul rend sa proposition ou un message expliquant l’impossibilité ou l’erreur. Votre horaire actuel est conservé et vous devez confirmer la proposition avant qu’elle soit appliquée. La recherche n’est pas annulable pendant son exécution ; Échap et le bouton de fermeture ne masquent pas son état.
+
+## Nouveautés de la version 0.4.0
+
+### Signaler une absence pour cette journée
+
+Dans **L’équipe**, cliquez **Signaler une absence** sous la personne concernée. Le profil reste actif pour les prochaines journées. Les quarts non verrouillés sont retirés et les alertes indiquent la couverture à remplacer. Les quarts verrouillés sont conservés : déverrouillez-les ou réaffectez-les manuellement avant une nouvelle génération. Les heures cibles et garanties du profil ne sont pas imposées à une personne signalée absente pour la journée.
+
+**Annuler** restaure l’absence et les quarts dans leur état précédent. **Rendre disponible** retire seulement l’absence : les quarts retirés ne sont pas recréés automatiquement. Une nouvelle journée ne reprend pas cette absence rapide. Une duplication reprend les quarts actuels, mais réinitialise les absences rapides.
+
+### Définir des préférences
+
+Dans le formulaire de profil existant, la section **Préférences d’horaire** propose ouvrir ou fermer, éviter les horaires coupés et une heure de départ souhaitée. Activez la case de l’heure pour la renseigner exactement. Une pause à l’intérieur d’un quart n’est pas un horaire coupé ; deux affectations qui se suivent sans interruption ne le sont pas non plus.
+
+Ces souhaits restent facultatifs. Le générateur respecte les disponibilités, les absences, les groupes, les relèves et les plafonds, attribue des heures au plus de personnes possible, limite les heures inutiles puis privilégie les rangs 1, 2, etc. Pour chaque rang, les quarts continus et les heures priment, puis viennent les préférences et une fin plus tôt à égalité. Une préférence non satisfaite reste un avertissement. Pour une heure de départ impérative, limitez les disponibilités. Les préférences du profil sont reprises pour les nouvelles journées ; les horaires historiques ne sont pas réécrits.
+
+### Corriger une plage en défaut
+
+Ouvrez **Vérifier** dans la barre latérale, sélectionnez une alerte de couverture puis cliquez **Proposer une correction**. Le calcul conserve les autres affectations et les verrous. Il recherche une remplaçante disponible ou une prolongation locale, avec les buffers nécessaires et sans dépasser les heures autorisées. Les rangs départagent les remplacements compatibles.
+
+Une correction doit couvrir toute la plage choisie sans créer de nouvelle erreur bloquante. Les erreurs qui existaient déjà peuvent rester : le résultat indique leur nombre et demeure un brouillon. Si la recherche locale n’aboutit pas, aucun changement n’est appliqué ; ajustez les disponibilités ou générez une proposition pour toute la journée. Les alertes de maximum, de verrou ou de données demandent un ajustement manuel.
+
+### Comparer avant de confirmer
+
+L’onglet **Changements** liste les quarts ajoutés, retirés ou modifiés et leurs heures exactes. **Heures** compare les totaux rémunérés par personne. **Actuel** et **Proposition** permettent de consulter les deux grilles ; sélectionnez un changement et appuyez sur Entrée pour le localiser. **Détails** reprend les limites et explications de la recherche.
+
+**Conserver l’horaire actuel** ferme la proposition sans changer les données. **Appliquer cette proposition** enregistre une modification annulable. S’il reste des erreurs préexistantes après une correction ciblée, le bouton précise **Appliquer au brouillon** et la publication reste bloquée.
+
+### Mise à jour et données
+
+Conservez une copie de votre dossier `donnees` avant la mise à jour, puis transférez-le dans la version 0.4.0 extraite. Les anciens horaires se lisent sans conversion obligatoire de leurs profils et les versions figées restent conservées. Une ancienne version du programme peut refuser les nouveaux champs enregistrés en 0.4.0 : pour revenir à l’ancien logiciel, utilisez la copie des données faite avant la mise à jour.
