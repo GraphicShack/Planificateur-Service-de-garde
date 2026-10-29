@@ -1,6 +1,6 @@
 {
-  "version": "0.3.4",
-  "commit": "5ab50980f4e72acab884a5c620348216a5811d38",
+  "version": "0.3.5",
+  "commit": "b9dd650ccd41a77f3d4cc075edc43d25eb3465bb",
   "approved": true,
-  "authorization": "Publication autorisée dans cette conversation : « fait tout les changement et ensuite push et release le programme » et « Montre moi un aperçu une fois ça fait et ensuite release ». Les demandes courantes ajoutent les animations discrètes, les thèmes prédéfinis et un accent personnalisé. Les aperçus Qt réels ont été montrés ; 276 tests et six sous-cas réussissent localement. La publication attend les deux constructions natives réussies du SHA exact et leurs contrôles après extraction."
+  "authorization": "Publication autorisée dans cette conversation : « fait tout les changement et ensuite push et release le programme » et « Montre moi un aperçu une fois ça fait et ensuite release ». La demande courante ajoute une animation de chargement pendant la génération. L’aperçu Qt capturé pendant un vrai calcul a été montré ; 281 tests et six sous-cas réussissent localement, ainsi que les dix tests des scripts de publication. La publication attend les deux constructions natives réussies du SHA exact et leurs contrôles après extraction."
 }
