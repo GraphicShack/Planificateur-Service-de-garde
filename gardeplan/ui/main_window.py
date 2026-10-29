@@ -40,6 +40,7 @@ from .enrolment import EnrolmentPanel
 from .home import HomePage
 from .motion import AnimatedStack, Motion
 from .loading import GenerationLoading
+from .proposal import ProposalDialog
 from .appearance import Appearance, AppearancePanel, set_themed_style
 from .visuals import icon, logo_icon, logo_pixmap
 from .forms import EducatorDialog, GroupDialog, RoomDialog, ShiftDialog, ActivityDialog, SettingsDialog, integer, note
@@ -1498,6 +1499,7 @@ class MainWindow(QMainWindow):
 
     def _generation_finished(self):
         worker = self._worker
+        focus = getattr(worker,"issue",None)
         self._worker = None
         if worker:
             worker.deleteLater()
@@ -1512,42 +1514,7 @@ class MainWindow(QMainWindow):
             if self.dirty:
                 self.autosave.start()
             return
-        dialog = QDialog(self)
-        dialog.setWindowTitle("Vérifier la proposition avant de l'appliquer")
-        dialog.resize(1160, 770)
-        layout = QVBoxLayout(dialog)
-        summary = note(result.message + "\nLes quarts verrouillés sont conservés. Fermez cette fenêtre pour garder votre horaire actuel.")
-        layout.addWidget(summary)
-        preview_controls = QHBoxLayout()
-        preview_day = QComboBox()
-        preview_day.addItems([result.proposal.day_label(day) for day in result.proposal.active_days])
-        preview_day.setCurrentIndex(self.day)
-        preview_controls.addWidget(preview_day)
-        calendar = CalendarWidget()
-        preview_issues = validate(result.proposal)
-        def open_proposal_day(day):
-            calendar.set_week(result.proposal, day, preview_issues)
-            calendar.set_mode("Jour")
-        preview_day.activated.connect(open_proposal_day)
-        calendar.day_selected.connect(open_proposal_day)
-        preview_controls.addWidget(self._button("Jour", lambda: open_proposal_day(preview_day.currentIndex())))
-
-        preview_controls.addStretch()
-        layout.addLayout(preview_controls)
-        calendar.set_week(result.proposal, self.day, preview_issues)
-        calendar.set_mode("Jour")
-        calendar.set_read_only(True)
-        layout.addWidget(calendar, 1)
-        totals_list = QListWidget()
-        totals_list.addItems([f"{ed.name} : {format_duration(totals(result.proposal).get(ed.id, 0))}" for ed in result.proposal.educators if ed.active])
-        totals_list.setMaximumHeight(120)
-        layout.addWidget(totals_list)
-        buttons = QDialogButtonBox()
-        buttons.addButton("Conserver l'horaire actuel", QDialogButtonBox.ButtonRole.RejectRole)
-        buttons.addButton("Appliquer cette proposition", QDialogButtonBox.ButtonRole.AcceptRole)
-        buttons.accepted.connect(dialog.accept)
-        buttons.rejected.connect(dialog.reject)
-        layout.addWidget(buttons)
+        dialog = ProposalDialog(self.week,result,self,focus=focus)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             self.commit(lambda week: deepcopy(result.proposal))
         elif self.dirty:
