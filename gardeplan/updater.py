@@ -103,7 +103,7 @@ def prepare_update(package,repository,parent,*,current_root=None,current_version
     previous=None
     if current_root is not None:
         if (current_root/MANIFEST).is_file():
-            previous=verify_folder(current_root)
+            previous=verify_folder(current_root,allow_extra=True)
             if current_version is not None and previous['version']!=current_version:
                 raise ValueError('La version du dossier actuel ne correspond pas au logiciel lancé.')
     destination=_destination(parent,package.manifest['version'])
@@ -229,7 +229,7 @@ def prepare_rollback(current_root,repository,parent):
     if receipt.get('operation')!='update' or not receipt.get('previous_root'):
         raise ValueError('Aucune version précédente conservée par cet assistant n’est disponible.')
     previous=previous_root(current_root,receipt)
-    data=verify_folder(previous)
+    data=verify_folder(previous,allow_extra=True)
     current=read_manifest(current_root)
     if (data['version']!=receipt.get('previous_version') or data['platform']!=current['platform']
             or data['architecture']!=current['architecture']):

@@ -135,8 +135,24 @@ def read_manifest(root):
     return validate_manifest(json.loads(path.read_text(encoding='utf-8')))
 
 
-def verify_folder(root,data=None):
+def verify_folder(root,data=None,*,allow_extra=False):
     root=Path(root);data=validate_manifest(data or read_manifest(root))
+    if allow_extra:
+        # An existing portable folder may also contain the user's PDF exports.
+        # Verify every declared program path, without reading or copying extras.
+        for name in data['directories']:
+            path=root/name
+            if path.is_symlink() or getattr(path,'is_junction',lambda:False)() or not path.is_dir():
+                raise ValueError('Un dossier du logiciel est manquant ou remplacé par un lien.')
+        for name,digest in data['files'].items():
+            path=root/name
+            if path.is_symlink() or not path.is_file() or sha256(path)!=digest:
+                raise ValueError('Un fichier du logiciel est manquant ou modifié : '+name)
+        for name,target in data['links'].items():
+            path=root/name
+            if not path.is_symlink() or os.readlink(path)!=target:
+                raise ValueError('Un lien du logiciel est manquant ou modifié : '+name)
+        return data
     files,links,directories=inventory(root)
     # Receipts and pre-update snapshots belong to the update workflow, not the executable.
     files={k:v for k,v in files.items() if k!='mise-a-jour.json' and not k.startswith('retour-avant-maj/')}

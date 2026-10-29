@@ -1,6 +1,6 @@
 {
   "version": "0.5.0",
   "commit": "4171ee67b1afe8956ec8197813a8fc1aaf072332",
-  "approved": true,
-  "authorization": "Publication autorisée dans cette conversation : « fait tout les changement et ensuite push et release le programme » et « Montre moi un aperçu une fois ça fait et ensuite release ». La version 0.5.0 comprend l’assistant de mise à jour, le bilan des propositions, l’accueil par nom de session, la réduction des trous inutiles et l’ouverture directe de la grille Proposition. Les aperçus Qt réels ont été montrés. Les 339 tests et six sous-cas, dix contrôles de publication et le diagnostic hors ligne passent localement ; les douze tests directement touchés par le dernier ajustement d’onglet réussissent. La publication exige les deux constructions natives réussies du SHA exact et le contrôle du vrai ZIP, de sa copie et du retour."
+  "approved": false,
+  "authorization": "Dernière vérification de l’assistant : conserver les PDF déjà exportés à côté du programme sans bloquer la mise à jour. L’autorisation de publier persiste ; le nouveau code vérifié sera référencé avant publication."
 }

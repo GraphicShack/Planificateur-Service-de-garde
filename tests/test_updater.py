@@ -148,3 +148,16 @@ def test_pending_update_refuses_to_copy_data_while_the_old_session_is_open(updat
     try:
         with pytest.raises(ValueError):activate_pending(prepared.folder)
     finally:lock.unlock()
+
+
+def test_user_exports_beside_program_do_not_block_update_or_enter_the_new_package(update_case):
+    old,repo,package,destination=update_case
+    exported=old/'Horaire-pedagogique.pdf';exported.write_bytes(b'private PDF export')
+    prepared=prepare_update(package,repo,destination,current_root=old,current_version='0.5.0')
+    restored=prepare_rollback(prepared.folder,Repository(prepared.folder/'donnees/gardeplan.sqlite'),destination)
+    assert exported.read_bytes()==b'private PDF export'
+    assert not (prepared.folder/exported.name).exists()
+    assert not (restored.folder/exported.name).exists()
+    # Extra documents are tolerated, but declared executable files remain checked.
+    (old/'Planificateur-SDG.exe').write_bytes(b'corrupted program')
+    with pytest.raises(ValueError):prepare_update(package,repo,destination,current_root=old)
