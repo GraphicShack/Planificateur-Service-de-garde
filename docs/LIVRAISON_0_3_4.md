@@ -13,7 +13,7 @@ Chaque étape possède son commit. Les notes de version sont reprises automatiqu
 
 ## Vérifications
 
-Neuf nouveaux tests ciblés vérifient la navigation immédiate, les clics pendant une transition, le focus, les changements rapides, le redimensionnement, la désactivation, le contraste, la conservation et la restauration des préférences, les erreurs de couleur et d’écriture et l’absence de modification des horaires. Le test des contrôles d’affichage existants suit leur déplacement dans la zone défilante. La suite complète et les contrôles portables natifs restent obligatoires avant publication ; leurs résultats sont consignés dans [État des vérifications](ETAT_VERIFICATION.md).
+Neuf nouveaux tests ciblés vérifient la navigation immédiate, les clics pendant une transition, le focus, les changements rapides, le redimensionnement, la désactivation, le contraste, la conservation et la restauration des préférences, les erreurs de couleur et d’écriture et l’absence de modification des horaires. Le test des contrôles d’affichage existants suit leur déplacement dans la zone défilante. Les suites locale, Windows et Mac réussissent chacune 276 tests et six sous-cas de pagination. Dix tests des scripts de publication réussissent également. Les trois contrôles de chaque exécutable natif, dont le lancement après extraction du ZIP, réussissent. Les résultats du SHA exact sont consignés dans [État des vérifications](ETAT_VERIFICATION.md). La version 0.3.4 est publiée avec ses notes sur GitHub.
 
 L’aperçu est capturé dans l’application Qt6 avec des données fictives. [Options d’apparence](themes-interface.png).
 

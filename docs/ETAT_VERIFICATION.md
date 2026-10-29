@@ -2,6 +2,16 @@
 
 Les constructions et les contrôles natifs s’exécutent sur GitHub Actions. Les fichiers à remettre sont les ZIP portables d’une exécution réussie correspondant au code voulu. Une sortie compilée dont le contrôle échoue n’est pas livrée.
 
+## Livraison 0.3.4 — animations et thèmes
+
+Le code exact testé est `5ab50980f4e72acab884a5c620348216a5811d38`. Les suites locale, Windows et Mac réussissent **276 tests chacune**, plus **six sous-cas de pagination**, sans test ignoré. Neuf tests supplémentaires couvrent les transitions et les préférences de thème, le contraste et les erreurs de saisie/écriture, sans modification des données de planification.
+
+- [Windows — 163,66 s de tests, compilation puis trois contrôles du logiciel, dont le ZIP extrait](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40792912541).
+- [Mac Apple Silicon — 142,94 s de tests, compilation puis trois contrôles du logiciel, dont le ZIP extrait](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40792912538).
+- Local : 276 tests et six sous-cas en 114,21 s ; dix tests des scripts de publication ; contrôle Qt6/SQLite/PDF/OR-Tools et fonctionnement hors ligne réussi.
+
+[Release publique 0.3.4 et notes de version](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/tag/v0.3.4). Les deux ZIP, le PDF d’exemple, les deux rapports et les sommes SHA-256 sont présents, non vides et publiés. Le thème et les animations sont des préférences locales ; les règles de couverture, le solveur et le PDF sont inchangés. Les transitions peuvent être désactivées manuellement ; aucun thème sombre ni détection automatique de réduction des mouvements du système n’a été ajouté. Les essais physiques sur le poste de l’école restent à faire.
+
 ## Livraison 0.3.3 — deux personnes au total pendant l’accueil commun
 
 Le code exact testé est `6339a4862ac343bd52cc121bc491103dbb129fc1`. Les deux constructions natives réussissent **267 tests chacune**, plus les **six sous-cas de pagination**, sans test ignoré :
