@@ -23,4 +23,5 @@ class ReleaseNotesTests(unittest.TestCase):
         import tomllib
         root=Path(__file__).resolve().parents[1]
         version=tomllib.loads((root/'pyproject.toml').read_text())['project']['version']
-        self.assertIn('Accueil'.lower(),version_notes(root/'CHANGELOG.md',version).lower())
+        notes=version_notes(root/'CHANGELOG.md',version)
+        self.assertRegex(notes,r'(?m)^- \S', 'La version courante doit décrire ses changements.')

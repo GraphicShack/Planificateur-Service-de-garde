@@ -20,6 +20,7 @@ Cinq tests ciblés couvrent l’animation active, sa désactivation, les trois i
 - `gardeplan/ui/loading.py`
 - `gardeplan/ui/main_window.py`
 - `tests/test_loading.py`
+- `scripts/test_release_notes.py` : le contrôle exige des changements documentés pour la version courante, sans imposer le mot « Accueil » à chaque nouvelle release.
 - `gardeplan/__init__.py`, `pyproject.toml`
 - `CHANGELOG.md`, `README.md`, `docs/GUIDE.md`
 - `docs/chargement-horaire.png`, `docs/LIVRAISON_0_3_5.md`, `docs/ETAT_VERIFICATION.md`
