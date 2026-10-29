@@ -1,6 +1,6 @@
 {
-  "version": "0.3.3",
-  "commit": "6339a4862ac343bd52cc121bc491103dbb129fc1",
+  "version": "0.3.4",
+  "commit": "5ab50980f4e72acab884a5c620348216a5811d38",
   "approved": true,
-  "authorization": "Publication autorisée dans cette conversation : « fait tout les changement et ensuite push et release le programme » et « Montre moi un aperçu une fois ça fait et ensuite release ». La correction demandée compte deux personnes au total de 6 h 50 à 7 h et de 17 h à 17 h 35 ; la plage du matin a été confirmée explicitement. L’aperçu conforme a été montré. La publication attend les deux constructions natives réussies du SHA exact et leurs contrôles après extraction."
+  "authorization": "Publication autorisée dans cette conversation : « fait tout les changement et ensuite push et release le programme » et « Montre moi un aperçu une fois ça fait et ensuite release ». Les demandes courantes ajoutent les animations discrètes, les thèmes prédéfinis et un accent personnalisé. Les aperçus Qt réels ont été montrés ; 276 tests et six sous-cas réussissent localement. La publication attend les deux constructions natives réussies du SHA exact et leurs contrôles après extraction."
 }
