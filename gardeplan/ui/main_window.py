@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
     QAbstractItemView, QCheckBox, QComboBox, QDateEdit, QDialog,
     QDialogButtonBox, QFileDialog, QFormLayout, QFrame, QHBoxLayout,
     QInputDialog, QLabel, QLineEdit, QListWidget, QListWidgetItem, QMainWindow,
-    QMenu, QMessageBox, QProgressBar, QProgressDialog, QPushButton,
+    QMenu, QMessageBox, QProgressBar, QPushButton,
     QSlider, QSpinBox, QSplitter, QScrollArea, QVBoxLayout, QWidget,
 )
 
@@ -38,6 +38,7 @@ from .inline_name import InlineDayName
 from .enrolment import EnrolmentPanel
 from .home import HomePage
 from .motion import AnimatedStack, Motion
+from .loading import GenerationLoading
 from .appearance import Appearance, AppearancePanel, set_themed_style
 from .visuals import icon, logo_icon, logo_pixmap
 from .forms import EducatorDialog, GroupDialog, RoomDialog, ShiftDialog, ActivityDialog, SettingsDialog, integer, note
@@ -1449,11 +1450,7 @@ class MainWindow(QMainWindow):
             return
         self.autosave.stop()
         self._worker = GenerationThread(self.week, self)
-        self._progress = QProgressDialog("Recherche d'une proposition respectant les contraintes…", "", 0, 0, self)
-        self._progress.setWindowTitle("Génération locale")
-        self._progress.setCancelButton(None)
-        self._progress.setWindowModality(Qt.WindowModality.WindowModal)
-        self._progress.setMinimumDuration(0)
+        self._progress = GenerationLoading(self.motion, self)
         self._progress.show()
         self._worker.completed.connect(self._generation_result)
         self._worker.failed.connect(self._generation_error)
@@ -1463,12 +1460,12 @@ class MainWindow(QMainWindow):
 
     def _generation_error(self, message):
         if self._progress:
-            self._progress.close()
+            self._progress.finish()
         QMessageBox.warning(self, "Génération", message)
 
     def _generation_result(self, result):
         if self._progress:
-            self._progress.close()
+            self._progress.finish()
         if not result.success or result.proposal is None:
             details = "\n".join(result.diagnostics[:20])
             QMessageBox.information(self, "Aucune proposition appliquée", result.message + ("\n\n" + details if details else ""))
@@ -1482,7 +1479,7 @@ class MainWindow(QMainWindow):
         if worker:
             worker.deleteLater()
         if self._progress:
-            self._progress.close()
+            self._progress.finish()
             self._progress.deleteLater()
             self._progress = None
         self.refresh()
