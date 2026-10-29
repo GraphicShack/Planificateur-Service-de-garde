@@ -2,6 +2,18 @@
 
 Les constructions et les contrôles natifs s’exécutent sur GitHub Actions. Les fichiers à remettre sont les ZIP portables d’une exécution réussie correspondant au code voulu. Une sortie compilée dont le contrôle échoue n’est pas livrée.
 
+## Livraison 0.4.0 — absences, corrections, comparaison et préférences
+
+Le code exact testé est `934f2094836ddb536d21ac1b5ba8471ff4330473`. Les suites locale, Windows et Mac réussissent chacune **307 tests**, plus **six sous-cas de pagination**, sans test ignoré. Les 26 nouveaux cas couvrent les absences à la journée et leurs sauvegardes, les préférences dans le solveur, la comparaison et les corrections locales avec verrous, pauses, buffers et limites.
+
+- [Windows — 137,80 s de tests, compilation et trois contrôles du logiciel, dont le ZIP extrait](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40819037867).
+- [Mac Apple Silicon — 127,46 s de tests, compilation et trois contrôles du logiciel, dont le ZIP extrait](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/40819037897).
+- Local : 307 tests et six sous-cas en 121,68 s, dix tests des scripts de publication et contrôle hors ligne de la version 0.4.0 réussis.
+
+Le nouveau contrôle `daily_improvements` vérifie les absences et préférences sauvegardées, une correction réelle de pause et le rendu du comparateur dans les exécutables gelés. La publication exige ce contrôle sur les deux plateformes. Les sockets restent interdites pendant le diagnostic.
+
+[Release publique 0.4.0 et notes de version](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/tag/v0.4.0). Les deux ZIP, les rapports, le PDF d’exemple et les sommes SHA-256 sont publiés, présents et non vides. Les captures utilisent des données fictives. Les règles de couverture, les quinze minutes de relève et le maximum de huit heures restent obligatoires. Les corrections locales peuvent conserver des erreurs existantes, explicitement signalées, et restent alors en brouillon. Les essais physiques à l’école restent à faire.
+
 ## Livraison 0.3.5 — chargement de la génération
 
 Le code exact testé est `b9dd650ccd41a77f3d4cc075edc43d25eb3465bb`. Les suites locale, Windows et Mac réussissent **281 tests chacune**, plus **six sous-cas de pagination**, sans test ignoré. Cinq tests supplémentaires couvrent l’animation de chargement, la préférence de mouvements réduits, les signaux de proposition/impossibilité/erreur et la conservation de l’horaire.

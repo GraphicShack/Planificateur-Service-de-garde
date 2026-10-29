@@ -15,7 +15,7 @@ Le style Atelier, les thèmes, les animations, le chargement, le PDF unique lett
 
 Les nouveaux tests couvrent les absences, la persistance et les dates indépendantes, les anciens snapshots sans nouveaux champs, les objectifs absents, l’annulation, les préférences dans le solveur et les formulaires, les comparaisons, les corrections à une ou plusieurs personnes, les extensions, l’ouverture, la fermeture, les verrous, les limites et la confirmation réelle via un fil de calcul.
 
-Le contrôle du logiciel portable vérifie aussi ces fonctionnalités avec réseau interdit, y compris la correction d’une vraie pause et le dessin du comparateur. Le contrôle de publication exige ce nouveau résultat avant de proposer les ZIP. Les résultats du code exact publié sont consignés dans [État des vérifications](ETAT_VERIFICATION.md).
+Le contrôle du logiciel portable vérifie aussi ces fonctionnalités avec réseau interdit, y compris la correction d’une vraie pause et le dessin du comparateur. Le contrôle de publication exige ce nouveau résultat avant de proposer les ZIP. Les suites locale, Windows et Mac réussissent chacune 307 tests et six sous-cas de pagination. Les dix tests des scripts de publication réussissent également. Les exécutables sont vérifiés trois fois sur chaque plateforme, dont après extraction des ZIP, avec le nouveau contrôle obligatoire `daily_improvements`. La version 0.4.0 est publiée sur GitHub ; les résultats du SHA exact sont consignés dans [État des vérifications](ETAT_VERIFICATION.md).
 
 ## Aperçus
 
