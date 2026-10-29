@@ -55,6 +55,15 @@ def test_absent_guarantees_and_targets_do_not_force_hours_or_warnings():
     assert not [i for i in validate(result.proposal) if i.severity=='error']
 
 
+def test_absent_profiles_are_not_unassigned_columns_but_locked_quarters_remain_visible():
+    from test_group_generation import grouped_day
+    from gardeplan.staff_layout import assignment_columns
+    plan=set_day_absence(grouped_day(),'0',True)
+    assert not any(person and person.id=='0' for group,person in assignment_columns(plan))
+    plan.shifts=[Shift('locked','0','A',0,600,700,locked=True)]
+    assert any(person and person.id=='0' for group,person in assignment_columns(plan))
+
+
 def test_absence_card_is_keyboard_operable_and_undo_restores_assignments(tmp_path,qapp):
     from PySide6.QtCore import Qt
     from PySide6.QtTest import QTest

@@ -35,6 +35,7 @@ Les captures Qt6 utilisent des données fictives. La comparaison montre volontai
 
 ## Fichiers modifiés
 
+- `gardeplan/staff_layout.py` : les personnes absentes ne sont pas proposées à de nouvelles affectations ; leurs quarts verrouillés restent visibles.
 - `.github/release-request.json`
 - `CHANGELOG.md`
 - `README.md`

@@ -1438,6 +1438,9 @@ class MainWindow(QMainWindow):
     def new_shift(self, checked=False, *, day=None, start=None, group_id="", educator_id=""):
         if not self._can_edit():
             return
+        if is_absent(self.week,educator_id):
+            QMessageBox.information(self,"Absence pour cette journée","Cette personne est absente pour cette journée. Utilisez Rendre disponible dans L’équipe avant de lui créer un quart.")
+            return
         if not self.week.educators or not self.week.groups:
             QMessageBox.information(self, "Préparer le calendrier", "Ajoutez une éducatrice et saisissez les inscriptions, puis glissez son nom sur le calendrier ou double-cliquez sur une plage vide.")
             return

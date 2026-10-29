@@ -1,5 +1,6 @@
 """Stable group/educator columns without changing any assignment."""
 from .models import Group, Educator
+from .attendance import is_absent
 
 
 def assignment_columns(plan, day=0):
@@ -19,7 +20,7 @@ def assignment_columns(plan, day=0):
         result.extend((group, person) for person in members)
         if not members:
             result.append((group, None))
-    unassigned = sorted((e for e in plan.educators if e.active and e.id not in assigned),
+    unassigned = sorted((e for e in plan.educators if e.active and not is_absent(plan,e.id) and e.id not in assigned),
                         key=lambda e: (e.seniority, e.name.casefold()))
     result.extend((None, e) for e in unassigned)
     return result
