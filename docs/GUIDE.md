@@ -210,7 +210,7 @@ et reprises dans les Releases GitHub.
 
 Le générateur traite tous les groupes sans les fusionner. Chaque groupe doit respecter son ratio (initialement 1/20). Deux éducateurs minimum sont requis par groupe entre les plages communes ; pendant ces plages, le minimum est de deux pour tout le service, avec le ratio collectif maintenu. Si des groupes demeurent ouverts avec des enfants à la fin de la journée, leur couverture reste nécessaire.
 
-La recherche attribue d’abord des heures au plus grand nombre de personnes possible, sans modifier les contraintes obligatoires. Elle limite ensuite les heures inutiles, puis privilégie le rang 1, suivi des rangs suivants : quarts continus, plus d’heures, fin plus tôt. Les rangs n’ont pas besoin d’être consécutifs. Les horaires verrouillés et les disponibilités peuvent empêcher l’ordre idéal ; les personnes sans heures sont nommées dans la proposition. Une recherche interrompue signale que les préférences ne sont pas toutes prouvées optimales.
+La recherche attribue d’abord des heures au plus grand nombre de personnes possible, sans modifier les contraintes obligatoires. Elle réduit ensuite les personnes avec un horaire coupé et la durée des interruptions nécessaires, avant de limiter les heures inutiles, puis privilégie le rang 1, suivi des rangs suivants : quarts continus, plus d’heures, fin plus tôt. Les rangs n’ont pas besoin d’être consécutifs. Les horaires verrouillés et les disponibilités peuvent empêcher l’ordre idéal ; les personnes sans heures sont nommées dans la proposition. Une recherche interrompue signale que les préférences ne sont pas toutes prouvées optimales.
 
 Le maximum quotidien est de 8 h rémunérées, tous les quarts cumulés. Les buffers payés et les pauses payées comptent ; les pauses non payées sont déduites. Un maximum individuel plus bas reste obligatoire. Un dépassement manuel est une erreur rouge et empêche de valider/publier ; le brouillon demeure sauvegardable pour correction.
 
@@ -244,7 +244,7 @@ Dans **L’équipe**, cliquez **Signaler une absence** sous la personne concern�
 
 Dans le formulaire de profil existant, la section **Préférences d’horaire** propose ouvrir ou fermer, éviter les horaires coupés et une heure de départ souhaitée. Activez la case de l’heure pour la renseigner exactement. Une pause à l’intérieur d’un quart n’est pas un horaire coupé ; deux affectations qui se suivent sans interruption ne le sont pas non plus.
 
-Ces souhaits restent facultatifs. Le générateur respecte les disponibilités, les absences, les groupes, les relèves et les plafonds, attribue des heures au plus de personnes possible, limite les heures inutiles puis privilégie les rangs 1, 2, etc. Pour chaque rang, les quarts continus et les heures priment, puis viennent les préférences et une fin plus tôt à égalité. Une préférence non satisfaite reste un avertissement. Pour une heure de départ impérative, limitez les disponibilités. Les préférences du profil sont reprises pour les nouvelles journées ; les horaires historiques ne sont pas réécrits.
+Ces souhaits restent facultatifs. Le générateur respecte les disponibilités, les absences, les groupes, les relèves et les plafonds, attribue des heures au plus de personnes possible, évite les trous entre quarts, limite ensuite les heures inutiles puis privilégie les rangs 1, 2, etc. Pour chaque rang, les quarts continus et les heures priment, puis viennent les préférences et une fin plus tôt à égalité. Une préférence non satisfaite reste un avertissement. Pour une heure de départ impérative, limitez les disponibilités. Les préférences du profil sont reprises pour les nouvelles journées ; les horaires historiques ne sont pas réécrits.
 
 ### Corriger une plage en défaut
 
@@ -286,3 +286,10 @@ Les onglets Changements, Heures, Actuel, Proposition et Détails restent disponi
 ### Bonjour, selon votre session
 
 L’accueil lit le nom de votre session Windows ou Mac et affiche **Bonjour [nom] !**. Sur Mac, le nom complet du compte local est utilisé lorsqu’il existe ; sinon le nom de connexion est repris. Aucun nom n’est transmis, aucun compte supplémentaire n’est créé et les données ne changent pas. Si le système ne fournit pas de nom, le message reste **Bonjour, bienvenue**.
+
+
+### Éviter les petits trous inutiles
+
+La génération de toute la journée cherche d’abord à faire travailler le plus de personnes disponibles, puis à réduire le nombre de personnes avec un horaire coupé et la durée des interruptions. Un petit trou n’est donc plus préféré simplement parce qu’il économise quelques minutes rémunérées. Ensuite, les heures superflues et les priorités de rang départagent les solutions. Cette continuité est recherchée pour tout le monde, même sans cocher « Éviter les horaires coupés » dans le profil.
+
+Une coupure reste possible si les disponibilités, les quarts verrouillés, la couverture, les heures garanties ou le plafond de huit heures l’imposent. Les pauses ne sont pas supprimées et ne sont pas comptées comme une interruption entre deux quarts. Une recherche limitée en temps peut encore présenter une solution comportant une coupure ; le bilan la rend visible et le logiciel indique que les préférences ne sont pas toutes prouvées optimales. La correction ciblée conserve son périmètre local et ne réorganise pas les autres quarts.

@@ -1,4 +1,4 @@
-"""Ordered daily objectives: participation, staffing cost, then seniority.
+"""Ordered daily objectives: participation, continuity, cost, then seniority.
 
 Each solve keeps the previous feasible proposal. A time limit never turns an
 unfinished preference search into an invalid or silently empty schedule.
@@ -54,7 +54,7 @@ def cohort_hint(week,candidates,ranked):
 def solve_daily(model,candidates,by_person,totals,week,time_limit):
     from ortools.sat.python import cp_model
     ranked=sorted((e for e in week.educators if e.active and not is_absent(week,e.id)),key=lambda e:(e.seniority,e.id))
-    used={};scores={};pieces={};last={};ties={}
+    used={};scores={};pieces={};last={};ties={};cuts={};gaps={}
     # No educator can have more than 1,440 disjoint positive-minute shifts.
     cut_weight=(daily_limit(week)+1)*1441
     participation_weight=1441*cut_weight+(daily_limit(week)+1)*1441
@@ -67,8 +67,10 @@ def solve_daily(model,candidates,by_person,totals,week,time_limit):
         last[person.id]=model.new_int_var(0,1440,'fin_'+person.id)
         model.add_max_equality(last[person.id],[c.shift.end*c.variable for c in choices] or [0])
         scores[person.id]=used[person.id]*participation_weight-pieces[person.id]*cut_weight+totals[person.id]*1441
-        from .preferences import cp_preference
-        ties[person.id]=cp_preference(model,choices,used[person.id],last[person.id],week,person)*1441+last[person.id]
+        from .preferences import cp_preference,cp_interruptions
+        cuts[person.id],gaps[person.id]=cp_interruptions(model,choices,last[person.id],person.id)
+        ties[person.id]=cp_preference(model,choices,used[person.id],last[person.id],week,person,
+            interruptions=(cuts[person.id],gaps[person.id]))*1441+last[person.id]
 
     # Interchangeable profiles can always exchange entire schedules. Breaking
     # this symmetry makes rank order mandatory even when optimization times out.
@@ -127,6 +129,14 @@ def solve_daily(model,candidates,by_person,totals,week,time_limit):
         value=run(participation,True,max(.02,deadline-monotonic()))
     if value is None:return best,best_status,False,0
     model.add(participation>=value)
+    # Saving a few paid minutes must not create an avoidable hole. First keep
+    # the fewest people on split schedules, then shorten unavoidable gaps.
+    # This is an objective, not a ban: availability, locks and daily limits win.
+    continuity=sum(cuts.values())*(1440*len(ranked)+1)+sum(gaps.values())
+    value=run(continuity,False,max(.1,time_limit*.20))
+    if value is None and best_status in (cp_model.OPTIMAL,cp_model.FEASIBLE):
+        value=best.value(continuity)
+    if value is not None:model.add(continuity<=value)
     # Avoid creating unnecessary paid hours merely to satisfy preferences.
     cost=sum(totals.values())*(1440*len(ranked)+1)+sum(pieces.values())
     value=run(cost,False,max(.1,time_limit*.25))

@@ -31,10 +31,26 @@ def unmet_preferences(plan, person, shifts):
     return messages
 
 
-def cp_preference(model, choices, used, last, plan, person):
+def cp_interruptions(model, choices, last, person_id):
+    """Real gaps between disjoint shifts, including adjacent group changes.
+
+    Breaks within a shift do not create an interruption between assignments.
+    NoOverlap in the caller guarantees that summed spans are disjoint.
+    """
+    first=model.new_int_var(0,1440,'premiere_presence_'+person_id)
+    model.add_min_equality(first,[c.shift.start*c.variable+1440*(1-c.variable) for c in choices] or [1440])
+    gap=model.new_int_var(0,1440,'minutes_coupees_'+person_id)
+    model.add_max_equality(gap,[0,last-first-sum((c.shift.end-c.shift.start)*c.variable for c in choices)])
+    cut=model.new_bool_var('presence_coupee_'+person_id)
+    model.add(gap>=1).only_enforce_if(cut)
+    model.add(gap==0).only_enforce_if(cut.Not())
+    return cut,gap
+
+
+def cp_preference(model, choices, used, last, plan, person, *, interruptions=None):
     """Same score as preference_cost; all terms remain optional, never constraints."""
     terms=[]
-    if person.shift_preference=='opening' or person.avoid_split:
+    if person.shift_preference=='opening':
         first=model.new_int_var(0,1440,'debut_'+person.id)
         model.add_min_equality(first,[c.shift.start*c.variable+1440*(1-c.variable) for c in choices] or [1440])
     def positive(expression,name):
@@ -47,9 +63,6 @@ def cp_preference(model, choices, used, last, plan, person):
         terms.append(positive((plan.settings.close_minute+plan.settings.closing_buffer)*used-last,'fermeture'))
     if person.preferred_end is not None:terms.append(positive(last-person.preferred_end,'depart_souhaite'))
     if person.avoid_split:
-        gap=positive(last-first-sum((c.shift.end-c.shift.start)*c.variable for c in choices),'interruptions')
-        cut=model.new_bool_var('horaire_coupe_'+person.id)
-        model.add(gap>=1).only_enforce_if(cut)
-        model.add(gap==0).only_enforce_if(cut.Not())
+        cut,gap=interruptions if interruptions is not None else cp_interruptions(model,choices,last,person.id)
         terms.extend([cut*1441,gap])
     return sum(terms)
