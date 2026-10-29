@@ -61,7 +61,7 @@ function Assert-NoExistingInstallation {
 }
 
 function Test-FrozenApplication {
-    param([string]$Executable, [string]$ReportPath, [string]$ExpectedVersion, [bool]$ExpectedPortable = $false)
+    param([string]$Executable, [string]$ReportPath, [string]$ExpectedVersion, [bool]$ExpectedPortable = $false, [string]$UpdateArchive = '')
     try {
     if (Test-Path -LiteralPath $ReportPath) { Remove-Item -LiteralPath $ReportPath -Force }
     if (-not (Test-Path -LiteralPath $Executable -PathType Leaf)) {
@@ -70,7 +70,9 @@ function Test-FrozenApplication {
     Write-Host "Contrôle réel : $Executable"
     # Run from its own directory to catch accidental source imports. A bounded
     # wait also stops a native Qt error dialog from blocking the build forever.
-    $process = Start-Process -FilePath $Executable -ArgumentList @('--check-installation', ('"{0}"' -f $ReportPath)) -WorkingDirectory (Split-Path $Executable -Parent) -PassThru
+    $checkArguments = @('--check-installation', ('"{0}"' -f $ReportPath))
+    if ($UpdateArchive) { $checkArguments += @('--check-update-archive', ('"{0}"' -f $UpdateArchive)) }
+    $process = Start-Process -FilePath $Executable -ArgumentList $checkArguments -WorkingDirectory (Split-Path $Executable -Parent) -PassThru
     try {
         if (-not $process.WaitForExit(120000)) {
             try { $process.Kill(); $null = $process.WaitForExit(5000) }
@@ -177,16 +179,17 @@ PLANIFICATEUR - SERVICE DE GARDE : VERSION PORTABLE
 
 Ne pas lancer depuis le ZIP. Pour une mise a jour, sauvegarder puis conserver le sous-dossier donnees.
 '@ | Set-Content -LiteralPath (Join-Path $stage 'LIRE-MOI.txt') -Encoding UTF8
+    Invoke-Checked -FilePath $python -Arguments @('-m', 'gardeplan.portable_package', 'manifest', $stage, $version) -Failure 'Inventaire portable impossible'
     Test-FrozenApplication -Executable (Join-Path $stage 'Planificateur-SDG.exe') -ReportPath (Join-Path $verificationDirectory 'portable.json') -ExpectedVersion $version -ExpectedPortable $true
     if (Get-ChildItem -LiteralPath $stageData -Force | Select-Object -First 1) {
         throw 'Le contrôle portable doit nettoyer ses données de test avant de créer le ZIP.'
     }
-    Compress-Archive -LiteralPath $stage -DestinationPath $archive -Force
+    Invoke-Checked -FilePath $python -Arguments @('-m', 'gardeplan.portable_package', 'archive', $stage, $archive) -Failure 'Archive portable impossible'
     $extraction = Join-Path ([IO.Path]::GetTempPath()) ('PlanificateurArchive-' + [guid]::NewGuid().ToString('N'))
     try {
         Expand-Archive -LiteralPath $archive -DestinationPath $extraction -Force
         $extractedExecutable = Join-Path $extraction 'Planificateur-SDG\Planificateur-SDG.exe'
-        Test-FrozenApplication -Executable $extractedExecutable -ReportPath (Join-Path $verificationDirectory 'portable-archive.json') -ExpectedVersion $version -ExpectedPortable $true
+        Test-FrozenApplication -Executable $extractedExecutable -ReportPath (Join-Path $verificationDirectory 'portable-archive.json') -ExpectedVersion $version -ExpectedPortable $true -UpdateArchive $archive
     } finally {
         if (Test-Path -LiteralPath $extraction) { Remove-Item -LiteralPath $extraction -Recurse -Force }
     }

@@ -66,11 +66,12 @@ check_frozen_application() {
     local executable="$1"
     local report="$2"
     local expected_portable="$3"
+    local update_archive="${4:-}"
     if [ ! -x "$executable" ]; then
         printf 'Exécutable absent : %s\n' "$executable" >&2
         return 1
     fi
-    "$PYTHON" - "$executable" "$report" "$VERSION" "$expected_portable" <<'PY'
+    "$PYTHON" - "$executable" "$report" "$VERSION" "$expected_portable" "$update_archive" <<'PY'
 from pathlib import Path
 import json
 import subprocess
@@ -89,7 +90,9 @@ def fail(message):
 
 report_path.unlink(missing_ok=True)
 print(f'Contrôle réel : {executable}', flush=True)
-process = subprocess.Popen([str(executable), '--check-installation', str(report_path)], cwd=executable.parent)
+command=[str(executable), '--check-installation', str(report_path)]
+if sys.argv[5]:command+=['--check-update-archive',sys.argv[5]]
+process = subprocess.Popen(command, cwd=executable.parent)
 try:
     code = process.wait(timeout=120)
 except subprocess.TimeoutExpired:
@@ -152,17 +155,18 @@ PLANIFICATEUR — SERVICE DE GARDE : VERSION PORTABLE
 Pour une mise à jour, sauvegardez puis conservez le sous-dossier donnees.
 GUIDE
 codesign --verify --deep --strict "$STAGE/Planificateur-SDG.app"
+"$PYTHON" -m gardeplan.portable_package manifest "$STAGE" "$VERSION"
 check_frozen_application "$STAGE/Planificateur-SDG.app/Contents/MacOS/Planificateur-SDG" "$VERIFICATION_DIRECTORY/macos-portable.json" true
 if [ -n "$(ls -A "$STAGE/donnees")" ]; then
     printf '%s\n' 'Le contrôle portable doit nettoyer ses données de test avant de créer le ZIP.' >&2
     exit 1
 fi
 printf '%s\n' 'Création et contrôle de l’archive portable...'
-ditto -c -k --sequesterRsrc --keepParent "$STAGE" "$ARCHIVE"
+"$PYTHON" -m gardeplan.portable_package archive "$STAGE" "$ARCHIVE"
 EXTRACTION="$TEMPORARY_DIRECTORY/extracted"
 mkdir -p "$EXTRACTION"
 ditto -x -k "$ARCHIVE" "$EXTRACTION"
-check_frozen_application "$EXTRACTION/Planificateur-SDG/Planificateur-SDG.app/Contents/MacOS/Planificateur-SDG" "$VERIFICATION_DIRECTORY/macos-portable-archive.json" true
+check_frozen_application "$EXTRACTION/Planificateur-SDG/Planificateur-SDG.app/Contents/MacOS/Planificateur-SDG" "$VERIFICATION_DIRECTORY/macos-portable-archive.json" true "$ARCHIVE"
 if [ -n "${GITHUB_OUTPUT:-}" ]; then
     printf 'architecture=%s\n' "$ARCHITECTURE" >> "$GITHUB_OUTPUT"
 fi

@@ -19,7 +19,7 @@ from gardeplan import __version__
 from gardeplan.data_paths import portable_root, DATA_FOLDER
 
 
-def check_installation(destination: str | Path) -> int:
+def check_installation(destination: str | Path, *, update_archive=None) -> int:
     """Écrit un compte rendu JSON ; retourne zéro uniquement si tout réussit."""
     report = {
         "success": False,
@@ -121,6 +121,9 @@ def check_installation(destination: str | Path) -> int:
                 if window.content_stack.currentWidget() is not window.home_page or window.home_page.grab().isNull():
                     raise RuntimeError("La page d’accueil ne peut pas être dessinée.")
                 report["checks"]["home_dashboard"] = True
+                if not window.home_page.greeting.text().startswith('Bonjour'):
+                    raise RuntimeError('Le message d’accueil de session est absent.')
+                report['checks']['session_greeting']=True
                 window.show_planner()
                 window.set_mode("Jour")
                 window.fit_day()
@@ -160,6 +163,9 @@ def check_installation(destination: str | Path) -> int:
                 comparison.show();application.processEvents()
                 if comparison.changes_table.rowCount()<1 or comparison.grab().isNull():
                     raise RuntimeError("La comparaison avant/après ne peut pas être affichée.")
+                if comparison.report.metrics.rowCount()<8:
+                    raise RuntimeError('Le bilan détaillé de la proposition est incomplet.')
+                report['checks']['proposal_report']=True
                 comparison.reject();comparison.deleteLater()
                 report["checks"]["daily_improvements"] = True
 
@@ -210,6 +216,9 @@ def check_installation(destination: str | Path) -> int:
                 report["checks"]["daily_groups_seniority_eight_hours"] = True
                 report["checks"]["ortools_cp_sat_generation"] = True
                 report["checks"]["offline_operations"] = True
+                if update_archive is not None:
+                    from gardeplan.update_check import verify_update_archive
+                    report['checks']['portable_update_archive']=verify_update_archive(update_archive,repository,root,__version__)
                 # Ne pas déclencher la sauvegarde à la fermeture du tableau de
                 # bord : les seules données ici sont celles du dossier d'essai.
                 release_gui()

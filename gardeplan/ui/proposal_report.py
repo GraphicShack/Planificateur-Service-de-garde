@@ -24,7 +24,7 @@ class ProposalReport(QScrollArea):
         self.metrics.setWordWrap(True)
         self.metrics.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         def preferences(value):
-            return f'{value.preferences_met} / {value.preferences_total}' if value.preferences_total else 'Aucune définie'
+            return f'{value.preferences_met} / {value.preferences_total}' if value.preferences_total else 'Aucune à évaluer'
         rows=[('Couverture des groupes',a.coverage,b.coverage),('Erreurs bloquantes',str(a.errors),str(b.errors)),
               ('Avertissements',str(a.warnings),str(b.warnings)),('Heures rémunérées',format_duration(a.paid),format_duration(b.paid)),
               ('Personnes avec un horaire coupé',str(len(a.split_names)),str(len(b.split_names))),
