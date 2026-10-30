@@ -21,6 +21,7 @@ class CoverageBand(QWidget):
         self.selected = -1
         self.hovered = -1
         self.label_areas = {}
+        calendar.scroll.verticalScrollBar().valueChanged.connect(self.clear_hover)
 
     def set_week(self, week, day):
         self.segments = merged_coverage(week, day)
@@ -135,8 +136,11 @@ class CoverageBand(QWidget):
         self.setToolTip(self._label(self.segments[index]) if index is not None else '')
         super().mouseMoveEvent(event)
 
-    def leaveEvent(self,event):
+    def clear_hover(self):
         self.hovered=-1;self.setToolTip('');self.setCursor(Qt.CursorShape.ArrowCursor);self.update()
+
+    def leaveEvent(self,event):
+        self.clear_hover()
         super().leaveEvent(event)
 
     def keyPressEvent(self, event):
