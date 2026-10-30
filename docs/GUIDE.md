@@ -298,3 +298,12 @@ Une coupure reste possible si les disponibilités, les quarts verrouillés, la c
 ### Correctif 0.5.1 : documents à côté du programme
 
 Un PDF ou une sauvegarde exportée dans le dossier du logiciel ne bloque plus l’assistant. Les éléments connus du programme restent vérifiés ; les documents personnels supplémentaires restent à leur emplacement d’origine. L’assistant copie les données applicatives prévues, pas ces documents supplémentaires. Le retour conserve la même règle. Les ZIP proposés à l’assistant restent contrôlés strictement.
+
+
+## Survol et retours visuels (0.5.2)
+
+Les boutons et cartes cliquables se distinguent au survol par un fond ou un contour accentué et un curseur adapté. Les cartes d’équipe des personnes disponibles indiquent le glisser-déposer. Les boutons désactivés gardent un curseur neutre. Le clavier conserve ses états de focus et ses raccourcis.
+
+Dans la grille, survoler un quart accentue son contour. Sur une poignée, le curseur devient vertical et la poignée se remplit ; l’infobulle précise si le début ou la fin sera ajusté. Aucun horaire ne change avant un glissement ou une confirmation. Les quarts verrouillés et les vues en consultation ne proposent pas de manipulation. Les états rouges et orange restent visibles avec leur libellé.
+
+Sur la bande de ratio, un contour pointillé indique la plage survolée ; la sélection conserve son contour plein. Les animations restent réglables dans Affichage. Les retours statiques restent visibles lorsque les animations sont désactivées ; les contrôles et les quarts ne changent pas de taille au survol.
