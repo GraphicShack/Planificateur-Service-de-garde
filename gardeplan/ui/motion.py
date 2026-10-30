@@ -63,7 +63,12 @@ class ButtonOutline(QWidget):
         self.animation.valueChanged.connect(self._value)
         button.installEventFilter(self)
         motion.changed.connect(self._preference)
+        self._cursor()
         self.hide()
+
+    def _cursor(self):
+        self.button.setCursor(Qt.CursorShape.PointingHandCursor if self.button.isEnabled()
+                              else Qt.CursorShape.ArrowCursor)
 
     def _value(self, value):
         self.level = float(value)
@@ -81,6 +86,7 @@ class ButtonOutline(QWidget):
         if kind == QEvent.Type.Resize:
             self.setGeometry(self.button.rect())
         elif kind in (QEvent.Type.Hide, QEvent.Type.EnabledChange):
+            self._cursor()
             self.animation.stop()
             self._value(0)
         elif kind in (QEvent.Type.Enter, QEvent.Type.Leave,
@@ -100,12 +106,13 @@ class ButtonOutline(QWidget):
 
     def paintEvent(self, event):
         from .appearance import accent_color
-        color = QColor(accent_color("#D5E3DD" if self.button.objectName() == "railButton"
-                                    else "#527B69"))
-        color.setAlphaF(.65 * self.level)
+        solid = self.button.objectName() in {"primary", "editorSave", "homePrimary"}
+        color = QColor("#FFFFFF" if solid else accent_color(
+            "#D5E3DD" if self.button.objectName() == "railButton" else "#527B69"))
+        color.setAlphaF(.85 * self.level)
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        painter.setPen(QPen(color, 1.5))
+        painter.setPen(QPen(color, 2))
         painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.drawRoundedRect(self.rect().adjusted(1, 1, -1, -1), 8, 8)
 

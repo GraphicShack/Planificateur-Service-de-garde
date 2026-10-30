@@ -58,10 +58,16 @@ QDialog#editorDialog QPushButton {{ background:{SURFACE}; color:{TEXT}; font-siz
 QDialog#editorDialog QPushButton:hover {{ background:{HOVER}; }}
 QDialog#editorDialog QPushButton:focus {{ border:2px solid {FOCUS}; padding:7px 11px; }}
 QDialog#editorDialog QPushButton#editorSave {{ background:{FOREST}; color:white; border-color:{FOREST}; font-weight:600; }}
+QDialog#editorDialog QPushButton#editorSave:hover:enabled {{ background:#284B35; border-color:#284B35; }}
+QDialog#editorDialog QPushButton#editorSave:pressed:enabled {{ background:{FOCUS}; border-color:{FOCUS}; }}
+QDialog#editorDialog QPushButton#editorSave:focus {{ border-color:white; }}
+QDialog#editorDialog QLineEdit:hover:enabled, QDialog#editorDialog QSpinBox:hover:enabled,
+QDialog#editorDialog QComboBox:hover:enabled, QDialog#editorDialog QTextEdit:hover:enabled {{ border-color:{FOREST}; }}
 QDialog#editorDialog QCheckBox {{ spacing:8px; }}
 QDialog#editorDialog QTabWidget::pane {{ background:{SURFACE}; border:1px solid #DCE4DF; }}
 QDialog#editorDialog QTabBar::tab {{ background:{SOFT}; color:{SECONDARY}; padding:12px; }}
 QDialog#editorDialog QTabBar::tab:selected {{ background:{SURFACE}; color:{TEXT}; }}
+QDialog#editorDialog QTabBar::tab:hover:!selected {{ background:{HOVER}; color:{TEXT}; }}
 """
 
 
