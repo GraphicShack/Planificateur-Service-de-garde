@@ -17,9 +17,15 @@ QWidget#homeBody QPushButton {background:white;border:1px solid #C7D5CC;border-r
 QWidget#homeBody QPushButton:hover {background:#EDF5F0;}
 QWidget#homeBody QPushButton:focus {border:2px solid #173F32;padding:9px 13px;}
 QWidget#homeBody QPushButton#homePrimary {background:#214F40;color:white;border-color:#214F40;font-weight:700;}
+QWidget#homeBody QPushButton#homePrimary:hover:enabled {background:#284B35;border-color:#284B35;}
+QWidget#homeBody QPushButton#homePrimary:pressed:enabled {background:#173F32;border-color:#173F32;}
+QWidget#homeBody QPushButton#homePrimary:focus {border-color:white;}
 QWidget#homeBody QPushButton#homeDay {text-align:left;padding:0;background:white;border:1px solid #D2DDD6;}
+QWidget#homeBody QPushButton#homeDay:hover {background:#EDF5F0;border-color:#527B69;}
 QWidget#homeBody QPushButton#homeDay[today='true'] {background:#F0F7F3;border:2px solid #214F40;}
+QWidget#homeBody QPushButton#homeDay[today='true']:hover {background:#DFEBE4;}
 QWidget#homeBody QPushButton#homeDay:focus {border:3px solid #173F32;}
+QWidget#homeBody QPushButton#homeDelete:hover {background:#FFF0EC;border-color:#982D24;color:#982D24;}
 QWidget#homeBody QLabel#homeTitle {font-size:32px;font-weight:700;}
 QWidget#homeBody QLabel#homeSection {font-size:21px;font-weight:700;}
 QWidget#homeBody QLabel#homeSecondary {color:#52655E;}
@@ -182,6 +188,7 @@ class HomePage(QScrollArea):
             row=QWidget();line=QHBoxLayout(row);line.setContentsMargins(0,0,0,0);line.setSpacing(8)
             line.addWidget(item,1)
             remove=button('Supprimer',lambda selected=brief.date:self.delete_day.emit(selected))
+            remove.setObjectName('homeDelete')
             remove.setAccessibleName(f'Supprimer {brief.name}, {brief.date}')
             remove.setToolTip('Retirer cette journée de l’accueil. Son historique reste conservé.')
             line.addWidget(remove)

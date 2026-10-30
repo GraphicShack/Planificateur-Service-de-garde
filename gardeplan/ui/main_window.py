@@ -901,6 +901,9 @@ class MainWindow(QMainWindow):
             item.setToolTip(tooltip)
             card = QFrame()
             card.setObjectName("educatorCard")
+            card.setAttribute(Qt.WidgetAttribute.WA_Hover)
+            card.setCursor(Qt.CursorShape.OpenHandCursor if educator.active and not absent and not self.read_only
+                           else Qt.CursorShape.PointingHandCursor if not self.read_only else Qt.CursorShape.ArrowCursor)
             card.setToolTip(tooltip)
             layout = QVBoxLayout(card)
             layout.setContentsMargins(13, 11, 13, 10)

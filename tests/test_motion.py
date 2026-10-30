@@ -70,6 +70,10 @@ def test_disabling_motion_stops_all_effects_without_altering_selection(qapp):
         outline = pages[1]._motion_outline
         QTest.mouseMove(pages[1], pages[1].rect().center())
         motion.set_enabled(False)
+        assert pages[1].cursor().shape()==Qt.CursorShape.PointingHandCursor
+        pages[1].setEnabled(False)
+        assert pages[1].cursor().shape()==Qt.CursorShape.ArrowCursor
+        pages[1].setEnabled(True)
         assert not stack.animating and not stack.overlay.isVisible()
         assert outline.animation.state() == outline.animation.State.Stopped
         assert not outline.isVisible()
