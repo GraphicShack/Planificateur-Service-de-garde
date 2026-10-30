@@ -4,6 +4,14 @@ Chaque release reprend la section correspondant à sa version. Une section doit
 être ajoutée ici avant de publier ; le contrôle de publication refuse une
 version sans notes. Les téléchargements sont dans les [Releases GitHub](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases).
 
+## [0.5.2] — 2026-10-30
+
+- **Survol plus visible des commandes** : curseur de clic, contour discret renforcé, retour d’appui sur les boutons principaux et fond accentué dans les champs et onglets. Le focus clavier reste visible, y compris sur les boutons pleins quand les animations sont désactivées.
+- **Journées récentes et équipe** : les cartes cliquables se distinguent au passage de la souris. Les cartes du jour gardent leur repère et les actions Supprimer ont un retour visuel propre. Les cartes d’équipe indiquent la possibilité de glisser une éducatrice disponible ; les boutons désactivés gardent un curseur neutre.
+- **Quarts et poignées** : contour et ombre légèrement renforcés au survol ; la poignée visée se remplit et son infobulle précise l’ajustement du début ou de la fin. Le curseur correspond maintenant à toute la surface cliquable de la poignée. Les alertes et dépassements conservent leur couleur et leur texte.
+- **Ratio** : contour pointillé et curseur de clic sur la plage survolée, distincts de la sélection au clavier. L’état se retire quand la souris quitte la zone ; le libellé de couverture reste inchangé.
+- Le survol ne modifie aucune donnée, heure ou sélection. Les commandes, le glisser-déposer, le redimensionnement à la minute et les quarts verrouillés restent protégés. Les effets de boutons réutilisent l’animation existante de 120 ms ; les retours statiques restent présents si les animations sont désactivées. Aucun déplacement de contrôle ni animation de la géométrie des quarts.
+
 ## [0.5.1] — 2026-10-29
 
 - **Mise à jour compatible avec vos exports existants** : les PDF et autres documents enregistrés à côté du programme ne bloquent plus la préparation ni le retour à une version conservée. Ils restent dans leur dossier d’origine et ne sont jamais intégrés au nouveau logiciel.
