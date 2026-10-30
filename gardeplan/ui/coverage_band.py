@@ -19,11 +19,13 @@ class CoverageBand(QWidget):
         self.setAccessibleName('Couverture verticale du service de garde')
         self.segments = []
         self.selected = -1
+        self.hovered = -1
         self.label_areas = {}
 
     def set_week(self, week, day):
         self.segments = merged_coverage(week, day)
         self.selected = -1
+        self.hovered = -1
         self.label_areas = {}
         self.setAccessibleDescription('Haut/bas : parcourir les plages. Entrée ou Espace : sélectionner et surligner la plage. Chaque état comporte un libellé.')
         self.update()
@@ -70,7 +72,9 @@ class CoverageBand(QWidget):
             rect = QRectF(4, top, self.width()-8, max(1, height))
             painter.fillRect(rect, QColor(background))
             painter.fillRect(QRectF(rect.left(), rect.top(), 4, rect.height()), QColor(foreground))
-            painter.setPen(QPen(QColor('#173F32' if index == self.selected else '#CBD5CF'), 2 if index == self.selected else 1))
+            active = index == self.selected or index == self.hovered
+            painter.setPen(QPen(QColor('#173F32' if index == self.selected else foreground if active else '#CBD5CF'),
+                                2 if active else 1,Qt.PenStyle.DashLine if index == self.hovered and index != self.selected else Qt.PenStyle.SolidLine))
             painter.setBrush(Qt.BrushStyle.NoBrush)
             painter.drawRect(rect)
             visible.append((index, part, rect, foreground, state))
@@ -124,8 +128,16 @@ class CoverageBand(QWidget):
 
     def mouseMoveEvent(self, event):
         index = self._index_at(event.position())
+        hovered = index if index is not None else -1
+        if hovered != self.hovered:
+            self.hovered=hovered;self.update()
+        self.setCursor(Qt.CursorShape.PointingHandCursor if index is not None else Qt.CursorShape.ArrowCursor)
         self.setToolTip(self._label(self.segments[index]) if index is not None else '')
         super().mouseMoveEvent(event)
+
+    def leaveEvent(self,event):
+        self.hovered=-1;self.setToolTip('');self.setCursor(Qt.CursorShape.ArrowCursor);self.update()
+        super().leaveEvent(event)
 
     def keyPressEvent(self, event):
         if event.key() in (Qt.Key.Key_Up,Qt.Key.Key_Down,Qt.Key.Key_Home,Qt.Key.Key_End):

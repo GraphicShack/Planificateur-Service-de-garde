@@ -259,6 +259,7 @@ class _Canvas(QWidget):
         self.drag: dict | None = None
         self.selection: tuple[str, str] | None = None
         self.hover: tuple[str, str] | None = None
+        self.hover_action: str | None = None
         self.setAcceptDrops(True)
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
@@ -274,6 +275,8 @@ class _Canvas(QWidget):
 
     def rebuild(self):
         c = self.calendar
+        if not self.drag:
+            self.clear_hover()
         self.blocks = []
         if not c.week:
             return
@@ -448,9 +451,12 @@ class _Canvas(QWidget):
             hovered = self.hover == (block.kind, value.id)
             moving = bool(self.drag and self.drag["block"] is block)
             p.setPen(Qt.PenStyle.NoPen)
-            p.setBrush(QColor(31, 54, 39, 8 if hovered or moving else 4))
+            p.setBrush(QColor(31, 54, 39, 16 if hovered or moving else 4))
             p.drawRoundedRect(rect.translated(0, 2), 8, 8)
-            p.setPen(QPen(QColor(accent_color("#173F32")) if selected else border, 1.7 if selected else 1,
+            emphasized = selected or hovered or moving
+            warning = value.id in error_ids or (hour_status and hour_status.code in {"target", "maximum"})
+            outline = QColor(accent_color("#173F32")) if selected or (emphasized and not warning) else border
+            p.setPen(QPen(outline, 2 if emphasized else 1,
                           Qt.PenStyle.DashLine if is_activity else Qt.PenStyle.SolidLine))
             p.setBrush(_light(color, .10 if is_activity else .18 if hovered or moving else .12))
             p.drawRoundedRect(rect, 8, 8)
@@ -579,11 +585,14 @@ class _Canvas(QWidget):
                 p.fillRect(QRectF(rect.left()+1, rect.top()+1, 4, max(1, rect.height()-2)), color)
             if block.kind == "shift" and c.mode == "Jour":
                 disabled = getattr(value, "locked", False) or c.read_only
-                p.setBrush(QColor("#FFFFFF"))
-                p.setPen(QPen(QColor("#52655E" if disabled else accent_color("#173F32")), 1.5,
-                              Qt.PenStyle.DashLine if disabled else Qt.PenStyle.SolidLine))
-                for handle in resize_handles(_Block(block.kind, value, rect, block.column)):
+                for edge,handle in zip(("start","end"),resize_handles(_Block(block.kind, value, rect, block.column))):
+                    active = not disabled and ((hovered and self.hover_action == edge) or
+                                               (moving and self.drag["action"] == edge))
+                    p.setBrush(QColor(accent_color("#214F40") if active else "#FFFFFF"))
+                    p.setPen(QPen(QColor("#52655E" if disabled else accent_color("#173F32")), 2 if active else 1.5,
+                                  Qt.PenStyle.DashLine if disabled else Qt.PenStyle.SolidLine))
                     p.drawRoundedRect(handle, 3, 3)
+                    if active:p.setPen(QPen(QColor("#FFFFFF"),2))
                     p.drawLine(QPointF(handle.left()+7, handle.center().y()), QPointF(handle.right()-7, handle.center().y()))
         if c.highlighted_interval and c.highlighted_interval[0] == c.day:
             _, start, end = c.highlighted_interval
@@ -614,7 +623,14 @@ class _Canvas(QWidget):
                 f"Préparation : {value.buffer_before} min · Fermeture : {value.buffer_after} min\n"
                 + "\n".join(break_label(pause) for pause in value.breaks if pause.kind != "dinner")
                 + "\n" + state
-                + ("\nQuart verrouillé" if value.locked else "\nDouble-clic : modifier les heures"))
+                + ("\nConsultation seulement" if c.read_only else "\nQuart verrouillé" if value.locked else "\nDouble-clic : modifier les heures"))
+
+    @staticmethod
+    def _action_at(block, position):
+        top,bottom = resize_handles(block)
+        if top.contains(position) or position.y()-block.rect.top() <= 7:return "start"
+        if bottom.contains(position) or block.rect.bottom()-position.y() <= 7:return "end"
+        return "move"
 
     def focusInEvent(self, event):
         super().focusInEvent(event)
@@ -639,17 +655,7 @@ class _Canvas(QWidget):
         if (not block or self.calendar.mode != "Jour" or self.calendar.read_only
                 or getattr(block.value, "locked", False)):
             return
-        rect = block.rect
-        action = "move"
-        top_handle, bottom_handle = resize_handles(block)
-        if top_handle.contains(event.position()):
-            action = "start"
-        elif bottom_handle.contains(event.position()):
-            action = "end"
-        elif event.position().y() - rect.top() <= 7:
-            action = "start"
-        elif rect.bottom() - event.position().y() <= 7:
-            action = "end"
+        action = self._action_at(block,event.position())
         self.drag = dict(block=block, group_id=block.value.group_id, action=action, press=event.position(),
                          start=block.value.start, end=block.value.end, column=block.column)
         self.setCursor(Qt.CursorShape.SizeVerCursor if action != "move" else Qt.CursorShape.ClosedHandCursor)
@@ -677,35 +683,47 @@ class _Canvas(QWidget):
                              f"  ·  {format_duration(drag['end']-drag['start'])}", self)
             self.update()
             return
-        block = self._hit(event.position())
+        self.update_hover(event.position())
+
+    def update_hover(self, position):
+        c = self.calendar
+        block = self._hit(position)
         hover=(block.kind,block.value.id) if block else None
-        if hover != self.hover:
+        editable = block and c.mode == "Jour" and not c.read_only and not getattr(block.value,"locked",False)
+        action = self._action_at(block,position) if editable else None
+        if (hover,action) != (self.hover,self.hover_action):
             self.hover=hover
+            self.hover_action=action
             self.update()
         if block:
-            self.setToolTip(self._tip(block))
-            edge = (event.position().y()-block.rect.top() <= 7 or
-                    block.rect.bottom()-event.position().y() <= 7)
-            self.setCursor(Qt.CursorShape.SizeVerCursor if edge and not self.calendar.read_only and not getattr(block.value,"locked",False)
-                           and c.mode == "Jour" else Qt.CursorShape.OpenHandCursor
-                           if c.mode == "Jour" and not self.calendar.read_only and not getattr(block.value,"locked",False)
-                           else Qt.CursorShape.PointingHandCursor)
+            hint = {"start":"Glisser cette poignée pour ajuster le début.",
+                    "end":"Glisser cette poignée pour ajuster la fin.",
+                    "move":"Glisser pour déplacer le quart."}.get(action,"")
+            self.setToolTip(self._tip(block)+("\n"+hint if hint else ""))
+            self.setCursor(Qt.CursorShape.SizeVerCursor if action in ("start","end") else
+                           Qt.CursorShape.OpenHandCursor if action == "move" else Qt.CursorShape.PointingHandCursor)
         else:
             if c.grouped_staff and c.week:
                 lanes = c.assignment_columns()
-                group,person = lanes[c.assignment_index(event.position().x())] if lanes else (None,None)
+                group,person = lanes[c.assignment_index(position.x())] if lanes else (None,None)
                 self.setToolTip((group.name if group else "À affecter")+" · "+(person.name if person else "Glisser une éducatrice"))
                 self.setCursor(Qt.CursorShape.ArrowCursor)
                 return
             people = c.staff_lanes() if c.single_service and c.week else []
             lane_width = (c.column_width-16)/max(1,len(people))
-            index = int((event.position().x()-8)/lane_width) if lane_width > 0 else -1
+            index = int((position.x()-8)/lane_width) if lane_width > 0 else -1
             self.setToolTip(people[index].name if 0 <= index < len(people) else "")
             self.setCursor(Qt.CursorShape.ArrowCursor)
 
-    def leaveEvent(self, event):
+    def clear_hover(self):
         self.hover=None
+        self.hover_action=None
+        self.setToolTip("")
+        if not self.drag:self.setCursor(Qt.CursorShape.ArrowCursor)
         self.update()
+
+    def leaveEvent(self, event):
+        self.clear_hover()
         super().leaveEvent(event)
 
     def mouseReleaseEvent(self, event):
@@ -720,6 +738,7 @@ class _Canvas(QWidget):
             group_id = drag["group_id"] if c.grouped_staff else c.group_id(drag["column"])
             c.change_requested.emit(block.kind, block.value.id, c.day,
                                     drag["start"], drag["end"], group_id)
+        self.update_hover(event.position())
         self.update()
 
     def mouseDoubleClickEvent(self, event):
@@ -884,6 +903,7 @@ class CalendarWidget(QWidget):
         layout.setRowStretch(1,1)
         layout.setColumnStretch(2,1)
         self.scroll.verticalScrollBar().valueChanged.connect(lambda _: self.gutter.update())
+        self.scroll.verticalScrollBar().valueChanged.connect(lambda _: self.canvas.clear_hover() if not self.canvas.drag else None)
         self.scroll.verticalScrollBar().valueChanged.connect(lambda _: self.coverage_band.update())
         self.scroll.horizontalScrollBar().valueChanged.connect(self.header_scroll.horizontalScrollBar().setValue)
         self._layout_timer=QTimer(self)
@@ -1032,6 +1052,7 @@ class CalendarWidget(QWidget):
         """Keep navigation and inspection available while suppressing mutations."""
         self.read_only=bool(read_only)
         self.canvas.drag=None
+        self.canvas.clear_hover()
         self.canvas.update()
 
     def set_snap(self,minutes):
