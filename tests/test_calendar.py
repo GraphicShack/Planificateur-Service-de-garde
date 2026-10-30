@@ -77,12 +77,39 @@ def test_locked_and_archived_quarts_do_not_move(calendar):
     calendar.set_week(calendar.week)
     block = calendar.canvas.blocks[0]
     point = QPoint(round(block.rect.center().x()), round(block.rect.top() + 30))
+    QTest.mouseMove(calendar.canvas,point)
+    assert calendar.canvas.hover_action is None
     drag(calendar.canvas, point, point + QPoint(0, 33))
     assert requests == []
     calendar.week.shifts[0].locked = False
     calendar.set_read_only(True)
+    assert calendar.canvas.hover is None
+    QTest.mouseMove(calendar.canvas,point+QPoint(1,0))
+    assert calendar.canvas.hover_action is None
+    assert 'Consultation seulement' in calendar.canvas.toolTip()
     drag(calendar.canvas, point, point + QPoint(0, 33))
     assert requests == []
+
+
+def test_hover_handle_matches_resize_hit_area_and_never_edits_data(calendar):
+    from PySide6.QtCore import QEvent
+    from gardeplan.ui.calendar import resize_handles
+    from math import floor
+    before=calendar.week.to_dict()
+    requests=[];calendar.change_requested.connect(lambda *args:requests.append(args))
+    block=calendar.canvas.blocks[0];handle=resize_handles(block)[1]
+    # The handle extends beyond the seven-pixel edge; cursor and click must agree.
+    point=QPoint(round(handle.center().x()),floor(handle.top()+.5))
+    QTest.mouseMove(calendar.canvas,point)
+    assert calendar.canvas.hover_action=='end'
+    assert calendar.canvas.cursor().shape()==Qt.CursorShape.SizeVerCursor
+    assert requests==[] and calendar.week.to_dict()==before
+    drag(calendar.canvas,point,point+QPoint(0,round(calendar.scale)))
+    assert requests[-1]==('shift','precise',0,433,536,'g1')
+    assert calendar.week.to_dict()==before
+    QApplication.sendEvent(calendar.canvas,QEvent(QEvent.Type.Leave))
+    assert calendar.canvas.hover is None and calendar.canvas.hover_action is None
+    assert calendar.canvas.cursor().shape()==Qt.CursorShape.ArrowCursor
 
 
 def test_activity_move_is_independent(calendar):
