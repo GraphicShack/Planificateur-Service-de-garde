@@ -1,0 +1,47 @@
+name: Livrer le code de survol vérifié
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/deliver-hover-source.yml']
+permissions:
+  contents: write
+concurrency:
+  group: livraison-source-survol-052
+  cancel-in-progress: false
+jobs:
+  deliver:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reconstituer les quatre commits à partir des fichiers contrôlés
+        uses: actions/github-script@v7
+        with:
+          script: |
+          const fs = require('fs');
+          const {execFileSync} = require('child_process');
+          const git = (...args) => execFileSync('git', args, {encoding:'utf8'}).trim();
+          git('config','user.name','Codex');
+          git('config','user.email','codex@openai.com');
+          git('rm','--','.github/workflows/deliver-hover-source.yml');
+          const plans = [{"message":"01 — Renforcer le survol des commandes et des cartes avec des curseurs adaptés","tree":"6d5f1b104662228d34c36a852c1fd7735aee45af","files":[{"path":"gardeplan/app.py","sha":"c1d1c70cfc86364f84e2ad0c1d8a3e5116b06bb0","mode":"100644"},{"path":"gardeplan/ui/home.py","sha":"ca2b2b9c9cadb5660288c4e6a16d9ae1bfc2e853","mode":"100644"},{"path":"gardeplan/ui/main_window.py","sha":"c4425fdbf28c934eb2a7eaeaa42e69938a823cb2","mode":"100644"},{"path":"gardeplan/ui/motion.py","sha":"fd307919b4bb40fe99026be16d16f96799f52322","mode":"100644"},{"path":"gardeplan/ui/theme.py","sha":"403efc4588e45613a8173a2b1e29085af8b50df8","mode":"100644"},{"path":"tests/test_motion.py","sha":"75654a6fc326fe8e8ec52d964768c96f6c505074","mode":"100644"}]},{"message":"02 — Préciser le survol des quarts et des poignées sans modifier les horaires","tree":"9b65e1d0eb1ee28888330fa5833df4d3d9bd29c6","files":[{"path":"gardeplan/ui/calendar.py","sha":"25c3db40a73628f8114585b89fe51bff869c0889","mode":"100644"},{"path":"gardeplan/ui/coverage_band.py","sha":"e06641dbdb2a6242c79f9773b1764b3196ef560b","mode":"100644"},{"path":"tests/test_calendar.py","sha":"e0788fb331e5c4017f852631be0c8fb4f0de760b","mode":"100644"}]},{"message":"03 — Documenter les retours de survol et préparer la version 0.5.2","tree":"37acae451f71b2bff708d418f659fbce06cf4934","files":[{"path":"CHANGELOG.md","sha":"c3066bcc91727517963c8294527cb1ad4deee9a5","mode":"100644"},{"path":"README.md","sha":"666abdbff0ec033161287fb77b94c398164a7407","mode":"100644"},{"path":"docs/GUIDE.md","sha":"c878215317fc162c2ccad6fdc2ca6927d012e43f","mode":"100644"},{"path":"docs/LIVRAISON_0_5_2.md","sha":"77941d8979c76dd8e27b20257b3ab6447a6b912c","mode":"100644"},{"path":"docs/survol-accueil-0.5.2.png","sha":"69f29cc88c822a10b91498580e2a4a394f6419a6","mode":"100644"},{"path":"docs/survol-grille-0.5.2.png","sha":"a7dc01ffd392db086d4f040b2a48eb80fece96ce","mode":"100644"},{"path":"docs/survol-grille-avant-0.5.2.png","sha":"d078a112135aff7ba60c085d405fa0f469cbc372","mode":"100644"},{"path":"gardeplan/__init__.py","sha":"6849a8bbe5842c36a6cc6cda85656186ff8e372d","mode":"100644"},{"path":"pyproject.toml","sha":"49bf0c384e9e3baf980ea9c4ef42882294c6f101","mode":"100644"}]},{"message":"04 — Effacer le survol du ratio pendant le défilement","tree":"29fd63ac1c9ba1b8b00e9402305e423e5ec74a4b","files":[{"path":"gardeplan/ui/coverage_band.py","sha":"22f99789d69590b4794fffa1d8eca9e492bba397","mode":"100644"}]}];
+          const cache = new Set();
+          for (const plan of plans) {
+            for (const file of plan.files) {
+              if (!cache.has(file.sha)) {
+                const result = await github.rest.git.getBlob({...context.repo, file_sha:file.sha});
+                const content = Buffer.from(result.data.content, 'base64');
+                const sha = execFileSync('git',['hash-object','-w','--stdin'], {input:content,encoding:'utf8'}).trim();
+                if (sha !== file.sha) throw new Error('Empreinte différente : '+file.path);
+                cache.add(sha);
+              }
+              git('update-index','--add','--cacheinfo',file.mode,file.sha,file.path);
+            }
+            const tree = git('write-tree');
+            if (tree !== plan.tree) throw new Error('Arbre différent du code testé : '+plan.message);
+            git('commit','-m',plan.message);
+            core.info(plan.message+' : '+git('rev-parse','HEAD'));
+          }
+          git('push','origin','HEAD:main');
+          core.info('SOURCE_052='+git('rev-parse','HEAD'));
+          core.info('TREE_052='+git('rev-parse','HEAD^{tree}'));
