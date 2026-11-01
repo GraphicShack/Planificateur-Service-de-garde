@@ -124,6 +124,19 @@ def check_installation(destination: str | Path, *, update_archive=None) -> int:
                 if not window.home_page.greeting.text().startswith('Bonjour'):
                     raise RuntimeError('Le message d’accueil de session est absent.')
                 report['checks']['session_greeting']=True
+                unchanged=window.week.to_dict()
+                window.faq_button.click();application.processEvents()
+                if window.content_stack.currentWidget() is not window.faq_page or window.faq_page.grab().isNull():
+                    raise RuntimeError('La FAQ intégrée ne peut pas être ouverte.')
+                window.faq_page.search.setText('PDF');application.processEvents()
+                if not any(not entry.isHidden() and entry.answer.isVisible() for entry in window.faq_page.entries):
+                    raise RuntimeError('La recherche de la FAQ ne trouve pas les réponses.')
+                window.home_button.click();window.coverage_toggle.click();application.processEvents()
+                if window.content_stack.currentWidget() is not window.planner_page or not window.calendar.coverage_band.isVisible():
+                    raise RuntimeError('Les icônes ne rejoignent pas la planification depuis l’accueil.')
+                if window.week.to_dict()!=unchanged:
+                    raise RuntimeError('La navigation a modifié les données de la journée.')
+                report['checks']['faq_navigation']=True
                 window.show_planner()
                 window.set_mode("Jour")
                 window.fit_day()
