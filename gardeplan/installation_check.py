@@ -131,6 +131,19 @@ def check_installation(destination: str | Path, *, update_archive=None) -> int:
                 window.faq_page.search.setText('PDF');application.processEvents()
                 if not any(not entry.isHidden() and entry.answer.isVisible() for entry in window.faq_page.entries):
                     raise RuntimeError('La recherche de la FAQ ne trouve pas les réponses.')
+                from gardeplan.ui.faq_media import CAPTURE_ROOT,CAPTURES,CaptureDialog
+                from PySide6.QtGui import QImageReader
+                if any(not QImageReader(str(CAPTURE_ROOT/spec.filename)).canRead() for spec in CAPTURES.values()):
+                    raise RuntimeError('Une capture de la FAQ est absente ou illisible dans le logiciel.')
+                capture=CaptureDialog(CAPTURES['grille'],window);capture.show();application.processEvents()
+                try:
+                    capture.set_zoom(1.0)
+                    if capture.original.isNull() or capture.image.size()!=capture.original.size():
+                        raise RuntimeError('La capture de la FAQ ne peut pas être agrandie.')
+                    capture.fit_to_window();application.processEvents()
+                    if capture.grab().isNull():raise RuntimeError('La vue agrandie de la FAQ ne peut pas être dessinée.')
+                finally:capture.reject();capture.deleteLater();application.processEvents()
+                report['checks']['faq_screenshots']=True
                 window.home_button.click();window.coverage_toggle.click();application.processEvents()
                 if window.content_stack.currentWidget() is not window.planner_page or not window.calendar.coverage_band.isVisible():
                     raise RuntimeError('Les icônes ne rejoignent pas la planification depuis l’accueil.')
