@@ -1,25 +1,10 @@
 <a id="haut"></a>
 
-<p align="center">
-  <img src="gardeplan/assets/logo.svg" width="88" alt="Logo du Planificateur — Service de garde">
-</p>
-
 <h1 align="center">Planificateur — Service de garde</h1>
 
-```text
-          ____  ____   ____
-         / ___||  _ \ / ___|
-         \___ \| | | | |  _
-          ___) | |_| | |_| |
-         |____/|____/ \____|
-
-   +-------------------------------------+
-   |  PLANIFICATEUR - SERVICE DE GARDE   |
-   +----------+------------+-------------+
-   |  EQUIPE  |  HORAIRES  |  PDF        |
-   +----------+------------+-------------+
-       Une journee. Un horaire clair.
-```
+<p align="center">
+  <img src="docs/identite/banniere-readme.svg" width="1000" alt="SDG et calendrier en ASCII sur fond vert forêt. Une journée. Une équipe. Un horaire clair.">
+</p>
 
 <p align="center">
   <strong>Une journée pédagogique. Une équipe. Un horaire clair.</strong><br>
