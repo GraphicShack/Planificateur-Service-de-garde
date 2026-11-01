@@ -2,13 +2,17 @@
 
 Les constructions et les contrôles natifs s’exécutent sur GitHub Actions. Les fichiers à remettre sont les ZIP portables d’une exécution réussie correspondant au code voulu. Une sortie compilée dont le contrôle échoue n’est pas livrée.
 
-## Livraison 0.5.2 — survol, FAQ et accès aux sections
+## Livraison 0.5.2 — survol, FAQ illustrée et accès aux sections
 
-Localement, **346 tests et six sous-cas** réussissent en 141,33 s. Les vérifications ciblées couvrent la FAQ, sa recherche sans accents, les réponses au clavier, F1, la conservation des modifications en cours, le ratio depuis l’accueil et les neuf icônes sur une fenêtre de 640 × 480. Les dix tests des scripts de publication et le diagnostic Qt6 hors ligne réussissent également.
+Le code testé et publié est `2d044989dbf24430aa36415a626ec433e9136875`. Les deux constructions natives réussissent chacune **352 tests et six sous-cas**, sans test ignoré :
 
-La distribution exige `faq_navigation` et `faq_screenshots` en plus des contrôles de couverture, SQLite, PDF, génération et mise à jour. La [release 0.5.2](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/tag/v0.5.2) ne peut être publiée qu’après les deux constructions natives réussies du même SHA, dont les contrôles du vrai ZIP extrait et des copies préparée et restaurée. Ses rapports et ses notes fournissent le code exact et les liens des constructions. [Aperçus, fichiers modifiés, hypothèses et limites](LIVRAISON_0_5_2.md). Les essais physiques sur le poste de l’école restent à réaliser.
+- [Windows — 200,15 s de tests et contrôles du logiciel portable](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/41362296123).
+- [Mac Apple Silicon — 130,69 s de tests et contrôles du logiciel portable](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/41362296115).
+- [Publication et notes 0.5.2](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/tag/v0.5.2) ; [exécution de publication](https://github.com/GraphicShack/Planificateur-Service-de-garde/actions/runs/41362969401).
 
-Les 14 captures de la FAQ sont décodées dans les tests ciblés. Après cet ajout, 23 tests et trois sous-cas FAQ, accueil et préparation de release passent ; le diagnostic source hors ligne confirme `faq_screenshots`. Une construction du paquet Python contient les 14 images. Les constructions natives de ce nouveau code restent à exécuter avant sa publication.
+Les rapports publics Windows et Mac confirment `success`, `frozen`, `portable_mode`, `faq_navigation`, `faq_screenshots`, `portable_data_write`, `offline_operations` et `portable_update_archive`. Le contrôle porte sur le vrai ZIP extrait, puis sur la copie préparée et le retour de mise à jour. Les 14 captures locales sont lisibles et la vue agrandie fonctionne dans les deux exécutables. Les deux ZIP, les rapports, le PDF d’exemple et les sommes SHA-256 sont publiés.
+
+La suite locale avant ajout des images réussissait 346 tests et six sous-cas. Après cet ajout, les contrôles ciblés FAQ, accueil et préparation de release réussissent 23 tests et trois sous-cas ; le diagnostic source hors ligne et la construction du paquet Python avec les 14 PNG réussissent aussi. [Aperçus, fichiers modifiés, hypothèses et limites](LIVRAISON_0_5_2.md). Les essais physiques sur le poste de l’école restent à réaliser.
 
 ## Livraison 0.5.1 — conserver les PDF personnels lors des mises à jour
 
