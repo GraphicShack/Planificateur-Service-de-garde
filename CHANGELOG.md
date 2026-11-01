@@ -4,7 +4,11 @@ Chaque release reprend la section correspondant à sa version. Une section doit
 être ajoutée ici avant de publier ; le contrôle de publication refuse une
 version sans notes. Les téléchargements sont dans les [Releases GitHub](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases).
 
-## [0.5.2] — 2026-10-30
+## [0.5.2] — 2026-11-01
+
+- **FAQ intégrée hors ligne** : 17 réponses en français sur les inscriptions, ratios, horaires, pauses, rangs, génération, alertes, PDF et mises à jour. Recherche dans les questions et les réponses, sans distinction d’accents, réponses dépliables au clavier et état vide explicite. Accessible par l’icône « ? » ou F1 ; Ctrl+F ou Cmd+F rejoint la recherche.
+- **Icônes accessibles depuis l’accueil** : les outils de planification ouvrent la section correspondante. Le premier clic sur Ratio depuis une autre page affiche sa couverture. La barre latérale peut défiler sur les petites fenêtres, conserve des cibles d’au moins 44 px et suit le focus clavier. La FAQ, Dossier et Réglages restent joignables sans agrandir la fenêtre.
+
 
 - **Survol plus visible des commandes** : curseur de clic, contour discret renforcé, retour d’appui sur les boutons principaux et fond accentué dans les champs et onglets. Le focus clavier reste visible, y compris sur les boutons pleins quand les animations sont désactivées.
 - **Journées récentes et équipe** : les cartes cliquables se distinguent au passage de la souris. Les cartes du jour gardent leur repère et les actions Supprimer ont un retour visuel propre. Les cartes d’équipe indiquent la possibilité de glisser une éducatrice disponible ; les boutons désactivés gardent un curseur neutre.
