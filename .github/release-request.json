@@ -1,6 +1,6 @@
 {
-  "version": "0.5.1",
-  "commit": "0a82919bd322b184b0906b3274a741465ad979c6",
+  "version": "0.5.2",
+  "commit": "2d044989dbf24430aa36415a626ec433e9136875",
   "approved": true,
-  "authorization": "Publication autorisée dans la conversation : « fait tout les changement et ensuite push et release le programme » et « Montre moi un aperçu une fois ça fait et ensuite release ». Les aperçus Qt réels de l’accueil, de la proposition initiale, du bilan et de l’assistant ont été montrés. La 0.5.0 est publiée. Le correctif 0.5.1 permet de garder les PDF personnels à côté du programme sans bloquer l’assistant et conserve la vérification des fichiers du logiciel. Les 340 tests et six sous-cas, les 21 tests ciblés et dix contrôles de publication réussissent localement. La publication attend les deux constructions natives réussies du SHA exact et le contrôle du ZIP, de la copie préparée et du retour."
+  "authorization": "Publication explicitement autorisée dans la conversation : « publie ». Les aperçus réels de la FAQ illustrée ont été présentés. La version comprend les retours de survol, les icônes accessibles depuis l’accueil et les 14 captures locales agrandissables de la FAQ. La publication exige les deux constructions natives réussies du SHA exact, les contrôles de captures et navigation FAQ, et les contrôles hors ligne du ZIP portable, de sa copie préparée et du retour de mise à jour. Les notes de version sont dans CHANGELOG.md."
 }
