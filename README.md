@@ -3,7 +3,7 @@
 <h1 align="center">Planificateur — Service de garde</h1>
 
 <p align="center">
-  <img src="docs/identite/banniere-readme.svg" width="1000" alt="SDG et calendrier en ASCII sur fond vert forêt. Une journée. Une équipe. Un horaire clair.">
+  <img src="docs/identite/banniere-readme.png" width="1000" alt="Planificateur — Service de garde. Logo du calendrier et de l’équipe sur fond vert forêt. Une journée. Une équipe. Un horaire clair.">
 </p>
 
 <p align="center">
