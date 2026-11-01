@@ -6,7 +6,9 @@ Les constructions et les contrôles natifs s’exécutent sur GitHub Actions. Le
 
 Localement, **346 tests et six sous-cas** réussissent en 141,33 s. Les vérifications ciblées couvrent la FAQ, sa recherche sans accents, les réponses au clavier, F1, la conservation des modifications en cours, le ratio depuis l’accueil et les neuf icônes sur une fenêtre de 640 × 480. Les dix tests des scripts de publication et le diagnostic Qt6 hors ligne réussissent également.
 
-La distribution exige `faq_navigation` en plus des contrôles de couverture, SQLite, PDF, génération et mise à jour. La [release 0.5.2](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/tag/v0.5.2) ne peut être publiée qu’après les deux constructions natives réussies du même SHA, dont les contrôles du vrai ZIP extrait et des copies préparée et restaurée. Ses rapports et ses notes fournissent le code exact et les liens des constructions. [Aperçus, fichiers modifiés, hypothèses et limites](LIVRAISON_0_5_2.md). Les essais physiques sur le poste de l’école restent à réaliser.
+La distribution exige `faq_navigation` et `faq_screenshots` en plus des contrôles de couverture, SQLite, PDF, génération et mise à jour. La [release 0.5.2](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/tag/v0.5.2) ne peut être publiée qu’après les deux constructions natives réussies du même SHA, dont les contrôles du vrai ZIP extrait et des copies préparée et restaurée. Ses rapports et ses notes fournissent le code exact et les liens des constructions. [Aperçus, fichiers modifiés, hypothèses et limites](LIVRAISON_0_5_2.md). Les essais physiques sur le poste de l’école restent à réaliser.
+
+Les 14 captures de la FAQ sont décodées dans les tests ciblés. Après cet ajout, 23 tests et trois sous-cas FAQ, accueil et préparation de release passent ; le diagnostic source hors ligne confirme `faq_screenshots`. Une construction du paquet Python contient les 14 images. Les constructions natives de ce nouveau code restent à exécuter avant sa publication.
 
 ## Livraison 0.5.1 — conserver les PDF personnels lors des mises à jour
 
