@@ -371,5 +371,5 @@ def test_sidebar_groups_planning_tools_above_file_and_settings(planner):
     buttons = [row.itemAt(i).widget() for i in range(row.count()) if isinstance(row.itemAt(i).widget(),QPushButton)]
     assert buttons == [planner.home_button,planner.rail_buttons['calendar'],planner.rail_buttons['users'],
                        planner.enrolment_button,planner.coverage_toggle,planner.top_alert_button,
-                       planner.folder_button,planner.more_button]
+                       planner.faq_button,planner.folder_button,planner.more_button]
     assert all(button.width()>=44 and button.height()>=44 for button in buttons)

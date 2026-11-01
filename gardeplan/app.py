@@ -33,6 +33,9 @@ QLabel#smallMuted { color:#52655E; font-size:12px; }
 QLabel#saveStatus { color:#52655E; font-size:13px; }
 QLabel#dayTitle { font-size:15px; font-weight:600; }
 QFrame#navigationRail { background:#123F34; border:0; }
+QScrollArea#navigationScroll { background:#123F34; border:0; }
+QScrollArea#navigationScroll QScrollBar:vertical { background:#123F34; width:8px; margin:0; }
+QScrollArea#navigationScroll QScrollBar::handle:vertical { background:#D5E3DD; min-height:32px; border-radius:4px; }
 QPushButton#railButton { background:transparent; border:0; border-radius:8px; padding:12px; }
 QPushButton#railButton:hover { background:#2B5549; }
 QPushButton#railButton:focus { background:#2B5549; border:2px solid #D5E3DD; padding:10px; }
