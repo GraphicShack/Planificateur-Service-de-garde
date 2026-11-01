@@ -36,6 +36,8 @@ def test_faq_question_is_keyboard_operable_and_wraps_on_small_screens(qapp):
         assert question.isChecked() and page.entries[0].answer.isVisible()
         QTest.keyClick(question,Qt.Key.Key_Space)
         assert not question.isChecked()
+        QTest.keyClick(question,Qt.Key.Key_Return)
+        assert question.isChecked()
         QTest.keyClick(question,Qt.Key.Key_F,Qt.KeyboardModifier.ControlModifier)
         assert page.search.hasFocus()
         assert page.horizontalScrollBar().maximum()==0
@@ -102,4 +104,9 @@ def test_all_sidebar_icons_remain_reachable_by_tab_on_a_short_window(tmp_path,qa
             assert button.width()>=44 and button.height()>=44
             if index<len(buttons)-1:QTest.keyClick(button,Qt.Key.Key_Tab);qapp.processEvents()
         assert window.navigation_scroll.verticalScrollBar().maximum()>0
+        window.show_faq();qapp.processEvents()
+        assert window.navigation_scroll.viewport().rect().contains(window.faq_button.mapTo(window.navigation_scroll.viewport(),window.faq_button.rect().center()))
+        window.faq_page.go_home.emit();qapp.processEvents()
+        assert window.content_stack.currentWidget() is window.home_page
+        assert window.navigation_scroll.viewport().rect().contains(window.home_button.mapTo(window.navigation_scroll.viewport(),window.home_button.rect().center()))
     finally:dispose(window,qapp)

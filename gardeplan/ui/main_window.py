@@ -586,17 +586,20 @@ class MainWindow(QMainWindow):
         self.content_stack.setCurrentWidget(self.home_page)
         self._sync_navigation()
         self.home_page.new_button.setFocus()
+        self.navigation_scroll.ensureWidgetVisible(self.home_button)
         return True
 
     def show_planner(self):
         if hasattr(self,"content_stack"):
             self.content_stack.setCurrentWidget(self.planner_page)
         self._sync_navigation()
+        self.navigation_scroll.ensureWidgetVisible(self.rail_buttons['calendar'])
 
     def show_faq(self):
         if self._worker is not None:return False
         self.content_stack.setCurrentWidget(self.faq_page)
         self._sync_navigation();self.faq_page.focus_search()
+        self.navigation_scroll.ensureWidgetVisible(self.faq_button)
         return True
 
     def _sync_navigation(self):

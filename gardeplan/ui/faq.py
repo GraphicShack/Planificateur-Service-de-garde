@@ -80,6 +80,11 @@ class QuestionButton(QPushButton):
     def minimumSizeHint(self):return QSize(0,48)
     def sizeHint(self):return QSize(650,self.heightForWidth(max(200,self.width())))
 
+    def keyPressEvent(self,event):
+        if event.key() in (Qt.Key.Key_Return,Qt.Key.Key_Enter):
+            self.click();event.accept();return
+        super().keyPressEvent(event)
+
 
 class FaqEntry(QFrame):
     def __init__(self,category,question,answer):
