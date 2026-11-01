@@ -1,9 +1,12 @@
-# Livraison 0.5.2 — retours au survol
+# Livraison 0.5.2 — survol, FAQ et accès aux sections
 
 ## Modifications
 
 1. Commandes et cartes : survol visible des boutons, actions principales, journées récentes, champs, onglets et cartes d’équipe. Un curseur indique le clic ou le glisser-déposer ; les commandes désactivées restent neutres. Les boutons pleins gardent un focus blanc visible au clavier.
 2. Grille : contour et ombre accentués, poignée visée remplie, infobulle d’action et curseur cohérent sur toute la zone de redimensionnement. Le survol s’efface au départ de la souris, au défilement et lors d’une nouvelle disposition. La bande de ratio utilise un contour pointillé au survol, distinct de la sélection.
+
+3. FAQ : 17 réponses locales avec recherche sans distinction d’accents, accordéons utilisables avec Entrée ou Espace, accès par l’icône ? et F1. La recherche se rejoint avec Ctrl+F ou Cmd+F.
+4. Navigation : barre latérale commune et défilable, cibles d’au moins 44 px, suivi du focus au clavier et accès direct aux panneaux depuis l’accueil. Le premier clic sur Ratio ouvre sa couverture.
 
 Les effets réutilisent les couleurs des thèmes et la transition existante de 120 ms. Les cartes et boutons ne changent pas de dimensions. Les règles, les données, les heures, les exports PDF et le moteur de génération restent identiques.
 
@@ -13,11 +16,16 @@ Les effets réutilisent les couleurs des thèmes et la transition existante de 1
 - [Grille sans survol de quart](survol-grille-avant-0.5.2.png).
 - [Poignée de quart survolée](survol-grille-0.5.2.png).
 
+- [FAQ intégrée](faq-0.5.2.png).
+- [Recherche dans la FAQ](faq-recherche-0.5.2.png).
+- [Accueil et icônes](accueil-navigation-0.5.2.png).
+- [FAQ et barre latérale sur petit écran](faq-petit-ecran-0.5.2.png).
+
 Captures Qt6 réelles avec des données fictives. Le scénario vérifie que l’horaire et son état de sauvegarde restent identiques après survol.
 
 ## Vérification
 
-Les 62 tests ciblés de la grille, des commandes, du tableau de bord, des thèmes, de l’accueil et des animations réussissent. Le nouveau cas vérifie que le curseur de la poignée correspond à sa zone réellement cliquable, puis qu’un glissement ajuste la fin d’une minute sans modifier directement le modèle. Les cas existants vérifient le verrouillage, la consultation, le clavier, les thèmes et les mouvements réduits. Les contrôles natifs requis par la distribution sont exécutés avant publication ; les preuves figurent dans [État des vérifications](ETAT_VERIFICATION.md).
+Les 62 tests ciblés de la grille, des commandes, du tableau de bord, des thèmes, de l’accueil et des animations réussissent. Le nouveau cas vérifie que le curseur de la poignée correspond à sa zone réellement cliquable, puis qu’un glissement ajuste la fin d’une minute sans modifier directement le modèle. Les cas existants vérifient le verrouillage, la consultation, le clavier, les thèmes et les mouvements réduits. Les cinq nouveaux tests de FAQ et de navigation vérifient la recherche, les réponses, le clavier, les raccourcis, les sections depuis l’accueil, les cibles visibles sur une fenêtre de 640 × 480 et la conservation d’une modification non enregistrée. Les contrôles natifs requis par la distribution sont exécutés avant publication ; les preuves figurent dans [État des vérifications](ETAT_VERIFICATION.md).
 
 ## Hypothèses et limites
 
@@ -28,6 +36,6 @@ Les 62 tests ciblés de la grille, des commandes, du tableau de bord, des thème
 
 ## Fichiers modifiés
 
-- Interface : `gardeplan/app.py`, `gardeplan/ui/motion.py`, `gardeplan/ui/theme.py`, `gardeplan/ui/home.py`, `gardeplan/ui/main_window.py`, `gardeplan/ui/calendar.py`, `gardeplan/ui/coverage_band.py`.
-- Vérification : `tests/test_calendar.py`, `tests/test_motion.py`.
-- Version et documentation : `gardeplan/__init__.py`, `pyproject.toml`, `CHANGELOG.md`, `README.md`, `docs/GUIDE.md`, ce rapport, `docs/ETAT_VERIFICATION.md`, les trois captures et `.github/release-request.json`.
+- Interface : `gardeplan/app.py`, `gardeplan/ui/motion.py`, `gardeplan/ui/theme.py`, `gardeplan/ui/home.py`, `gardeplan/ui/main_window.py`, `gardeplan/ui/calendar.py`, `gardeplan/ui/coverage_band.py`, `gardeplan/ui/faq.py`, `gardeplan/ui/visuals.py`.
+- Vérification : `tests/test_calendar.py`, `tests/test_motion.py`, `tests/test_faq.py`, `tests/test_schedule_ui.py`.
+- Version et documentation : `gardeplan/__init__.py`, `pyproject.toml`, `CHANGELOG.md`, `README.md`, `docs/GUIDE.md`, ce rapport, `docs/ETAT_VERIFICATION.md`, les sept captures et `.github/release-request.json`.

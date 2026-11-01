@@ -307,3 +307,12 @@ Les boutons et cartes cliquables se distinguent au survol par un fond ou un cont
 Dans la grille, survoler un quart accentue son contour. Sur une poignée, le curseur devient vertical et la poignée se remplit ; l’infobulle précise si le début ou la fin sera ajusté. Aucun horaire ne change avant un glissement ou une confirmation. Les quarts verrouillés et les vues en consultation ne proposent pas de manipulation. Les états rouges et orange restent visibles avec leur libellé.
 
 Sur la bande de ratio, un contour pointillé indique la plage survolée ; la sélection conserve son contour plein. Les animations restent réglables dans Affichage. Les retours statiques restent visibles lorsque les animations sont désactivées ; les contrôles et les quarts ne changent pas de taille au survol.
+
+
+## FAQ et accès aux sections
+
+L’icône **?** ouvre la FAQ depuis l’accueil ou la planification. La touche **F1** fait la même chose. Les 17 réponses sont enregistrées dans le logiciel et ne nécessitent aucune connexion. Saisissez un mot dans la recherche : les accents ne sont pas obligatoires et les réponses trouvées se déplient. Ctrl+F, ou Cmd+F sur Mac, rejoint la recherche. Entrée et Espace déplient ou replient une question.
+
+La barre latérale reste commune à toutes les pages. Équipe, Inscriptions, Vérifier et Ratio ouvrent directement leur vue dans la planification. Le premier clic sur Ratio depuis l’accueil affiche la couverture. Sur un petit écran, faites défiler la barre ou utilisez Tab pour joindre les icônes du bas ; les cibles ne sont pas réduites. FAQ, Dossier et Réglages restent ainsi accessibles. Retour à l’accueil replace aussi l’icône Accueil dans la zone visible.
+
+Ouvrir la FAQ ne crée pas de journée et ne modifie ni les horaires ni les inscriptions. Une modification en cours reste disponible en revenant à la planification.
