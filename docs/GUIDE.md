@@ -313,6 +313,8 @@ Sur la bande de ratio, un contour pointillé indique la plage survolée ; la sé
 
 L’icône **?** ouvre la FAQ depuis l’accueil ou la planification. La touche **F1** fait la même chose. Les 17 réponses sont enregistrées dans le logiciel et ne nécessitent aucune connexion. Saisissez un mot dans la recherche : les accents ne sont pas obligatoires et les réponses trouvées se déplient. Ctrl+F, ou Cmd+F sur Mac, rejoint la recherche. Entrée et Espace déplient ou replient une question.
 
+Les réponses contiennent des captures des vrais écrans avec des données fictives. Cliquez sur **Agrandir la capture** pour lire les détails. Les commandes **Agrandir**, **Réduire**, **100 %** et **Adapter à la fenêtre** règlent l’affichage ; Échap ferme la vue. Les raccourcis de zoom habituels sont disponibles, ainsi que Ctrl+0 pour adapter et Ctrl+1 pour la taille réelle (Cmd sur Mac). Les captures restent disponibles sans Internet et ne changent pas votre horaire.
+
 La barre latérale reste commune à toutes les pages. Équipe, Inscriptions, Vérifier et Ratio ouvrent directement leur vue dans la planification. Le premier clic sur Ratio depuis l’accueil affiche la couverture. Sur un petit écran, faites défiler la barre ou utilisez Tab pour joindre les icônes du bas ; les cibles ne sont pas réduites. FAQ, Dossier et Réglages restent ainsi accessibles. Retour à l’accueil replace aussi l’icône Accueil dans la zone visible.
 
 Ouvrir la FAQ ne crée pas de journée et ne modifie ni les horaires ni les inscriptions. Une modification en cours reste disponible en revenant à la planification.

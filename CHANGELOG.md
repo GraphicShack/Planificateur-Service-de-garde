@@ -6,6 +6,7 @@ version sans notes. Les téléchargements sont dans les [Releases GitHub](https:
 
 ## [0.5.2] — 2026-11-01
 
+- **FAQ illustrée** : 14 captures réelles avec des données fictives, associées aux réponses et accompagnées de légendes. Le bouton « Agrandir la capture » ouvre une vue avec zoom, taille réelle et adaptation à la fenêtre. Les images sont incluses dans le logiciel et disponibles hors ligne ; elles ne sont chargées qu’à l’ouverture des réponses.
 - **FAQ intégrée hors ligne** : 17 réponses en français sur les inscriptions, ratios, horaires, pauses, rangs, génération, alertes, PDF et mises à jour. Recherche dans les questions et les réponses, sans distinction d’accents, réponses dépliables au clavier et état vide explicite. Accessible par l’icône « ? » ou F1 ; Ctrl+F ou Cmd+F rejoint la recherche.
 - **Icônes accessibles depuis l’accueil** : les outils de planification ouvrent la section correspondante. Le premier clic sur Ratio depuis une autre page affiche sa couverture. La barre latérale peut défiler sur les petites fenêtres, conserve des cibles d’au moins 44 px et suit le focus clavier. La FAQ, Dossier et Réglages restent joignables sans agrandir la fenêtre.
 
