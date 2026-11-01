@@ -25,7 +25,7 @@ Captures Qt6 réelles avec des données fictives. Le scénario vérifie que l’
 
 ## Vérification
 
-Les 62 tests ciblés de la grille, des commandes, du tableau de bord, des thèmes, de l’accueil et des animations réussissent. Le nouveau cas vérifie que le curseur de la poignée correspond à sa zone réellement cliquable, puis qu’un glissement ajuste la fin d’une minute sans modifier directement le modèle. Les cas existants vérifient le verrouillage, la consultation, le clavier, les thèmes et les mouvements réduits. Les cinq nouveaux tests de FAQ et de navigation vérifient la recherche, les réponses, le clavier, les raccourcis, les sections depuis l’accueil, les cibles visibles sur une fenêtre de 640 × 480 et la conservation d’une modification non enregistrée. Les contrôles natifs requis par la distribution sont exécutés avant publication ; les preuves figurent dans [État des vérifications](ETAT_VERIFICATION.md).
+Les 62 tests ciblés de la grille, des commandes, du tableau de bord, des thèmes, de l’accueil et des animations réussissent. Le nouveau cas vérifie que le curseur de la poignée correspond à sa zone réellement cliquable, puis qu’un glissement ajuste la fin d’une minute sans modifier directement le modèle. Les cas existants vérifient le verrouillage, la consultation, le clavier, les thèmes et les mouvements réduits. Les cinq nouveaux tests de FAQ et de navigation vérifient la recherche, les réponses, le clavier, les raccourcis, les sections depuis l’accueil, les cibles visibles sur une fenêtre de 640 × 480 et la conservation d’une modification non enregistrée. Le contrôle du logiciel compilé vérifie aussi l’ouverture de la FAQ, sa recherche, le retour à l’accueil et l’icône Ratio, avec le réseau interdit et sans modification de la journée. La publication exige désormais le contrôle `faq_navigation`. Les contrôles natifs requis par la distribution sont exécutés avant publication ; les preuves figurent dans [État des vérifications](ETAT_VERIFICATION.md).
 
 ## Hypothèses et limites
 
@@ -37,5 +37,5 @@ Les 62 tests ciblés de la grille, des commandes, du tableau de bord, des thème
 ## Fichiers modifiés
 
 - Interface : `gardeplan/app.py`, `gardeplan/ui/motion.py`, `gardeplan/ui/theme.py`, `gardeplan/ui/home.py`, `gardeplan/ui/main_window.py`, `gardeplan/ui/calendar.py`, `gardeplan/ui/coverage_band.py`, `gardeplan/ui/faq.py`, `gardeplan/ui/visuals.py`.
-- Vérification : `tests/test_calendar.py`, `tests/test_motion.py`, `tests/test_faq.py`, `tests/test_schedule_ui.py`.
+- Vérification : `tests/test_calendar.py`, `tests/test_motion.py`, `tests/test_faq.py`, `tests/test_schedule_ui.py`, `gardeplan/installation_check.py`, `scripts/prepare_release.py`, `scripts/test_prepare_release.py`.
 - Version et documentation : `gardeplan/__init__.py`, `pyproject.toml`, `CHANGELOG.md`, `README.md`, `docs/GUIDE.md`, ce rapport, `docs/ETAT_VERIFICATION.md`, les sept captures et `.github/release-request.json`.
