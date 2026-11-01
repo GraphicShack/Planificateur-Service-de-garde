@@ -6,6 +6,21 @@
 
 <h1 align="center">Planificateur — Service de garde</h1>
 
+```text
+          ____  ____   ____
+         / ___||  _ \ / ___|
+         \___ \| | | | |  _
+          ___) | |_| | |_| |
+         |____/|____/ \____|
+
+   +-------------------------------------+
+   |  PLANIFICATEUR - SERVICE DE GARDE   |
+   +----------+------------+-------------+
+   |  EQUIPE  |  HORAIRES  |  PDF        |
+   +----------+------------+-------------+
+       Une journee. Un horaire clair.
+```
+
 <p align="center">
   <strong>Une journée pédagogique. Une équipe. Un horaire clair.</strong><br>
   Préparez, vérifiez et imprimez vos horaires dans une application de bureau en français.
