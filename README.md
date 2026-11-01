@@ -1,124 +1,220 @@
+<a id="haut"></a>
+
 <p align="center">
-  <img src="gardeplan/assets/logo.svg" width="76" alt="Logo du Planificateur — Service de garde">
+  <img src="gardeplan/assets/logo.svg" width="88" alt="Logo du Planificateur — Service de garde">
 </p>
 
 <h1 align="center">Planificateur — Service de garde</h1>
 
-<p align="center"><strong>Version 0.5.2 · Portable, sans installation</strong></p>
-
 <p align="center">
-  <strong>Des horaires clairs pour chaque journée pédagogique.</strong><br>
-  Une application de bureau en français, pour Windows et macOS, entièrement utilisable hors ligne.
+  <strong>Une journée pédagogique. Une équipe. Un horaire clair.</strong><br>
+  Préparez, vérifiez et imprimez vos horaires dans une application de bureau en français.
 </p>
 
 <p align="center">
-  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.5.2/Planificateur-SDG-0.5.2-Windows-x64-Portable.zip">Télécharger pour Windows</a>
-  &nbsp;·&nbsp;
-  <a href="https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.5.2/Planificateur-SDG-0.5.2-macOS-arm64-Portable.zip">Télécharger pour Mac</a>
+  <strong>Windows et Mac</strong> &nbsp;·&nbsp; Sans installation &nbsp;·&nbsp; Entièrement hors ligne<br>
+  Sans compte, sans abonnement. Vos données restent sur votre ordinateur.
+</p>
+
+<p align="center">
+  <a href="#telecharger"><strong>Télécharger la version 0.5.2</strong></a>
   &nbsp;·&nbsp;
   <a href="docs/GUIDE.md">Guide d’utilisation</a>
+  &nbsp;·&nbsp;
+  <a href="CHANGELOG.md">Notes de version</a>
 </p>
 
-![Accueil personnalisé et journées récentes](docs/accueil-0.5.0.png)
+<p align="center">
+  <a href="#apercu">Découvrir</a> &nbsp; / &nbsp;
+  <a href="#demarrer">Premiers pas</a> &nbsp; / &nbsp;
+  <a href="#regles">Règles de planification</a> &nbsp; / &nbsp;
+  <a href="#aide">Aide et mises à jour</a> &nbsp; / &nbsp;
+  <a href="#projet">L’histoire du projet</a> &nbsp; / &nbsp;
+  <a href="#documentation">Documentation</a>
+</p>
 
-La **branche 0.5** ajoute un assistant de mise à jour portable, un bilan lisible des propositions et un accueil qui reprend le nom de la session locale. La **0.5.2** ajoute une FAQ intégrée avec recherche et 14 captures agrandissables, rétablit l’accès aux icônes depuis l’accueil et renforce les retours au survol. La barre latérale reste utilisable sur les petits écrans, avec des cibles lisibles et un focus clavier visible. Les PDF conservés à côté du programme restent compatibles avec l’assistant de mise à jour. Les données restent sur votre ordinateur et chaque proposition attend votre confirmation. [Voir la FAQ illustrée](docs/faq-illustree-0.5.2.png) · [Voir le survol dans la grille](docs/survol-grille-0.5.2.png) · [Voir le bilan](docs/bilan-0.5.0.png) · [Voir l’assistant](docs/mise-a-jour-0.5.0.png).
+![Accueil du planificateur : journées récentes, résumé de la journée et équipe](docs/accueil-navigation-0.5.2.png)
 
-Le logiciel s’ouvre sur un accueil réunissant les journées récentes, le résumé d’aujourd’hui et l’équipe. La création d’une journée mène directement aux inscriptions. La grille reste organisée par groupes et sous-colonnes d’éducatrices. Les icônes Équipe, Inscriptions et Vérification partagent le panneau gauche ; le ratio est masquable et les alertes sont comptées dans un badge. Annuler et Rétablir sont alignés avec le nom de la journée. Les dîners restent calculés, sans être affichés dans les blocs.
+<p align="center"><sub>Captures réelles de l’application, avec des données fictives.</sub></p>
 
-De **6 h 50 à 7 h** et de **17 h à 17 h 35**, le service exige **deux personnes au total, tous groupes confondus**. De **7 h à 17 h**, chaque groupe ouvert exige au moins deux éducateurs. Les pauses doivent être remplacées et les relèves conserver quinze minutes communes. Le ratio configuré (initialement 1/20) peut en exiger davantage. La génération attribue des heures au plus grand nombre de personnes possible, évite les trous inutiles entre leurs quarts, puis privilégie le rang 1 et les suivants : quarts continus, davantage d’heures et fin plus tôt, en limitant les heures inutiles. Le plafond quotidien est de **8 h rémunérées**, buffers compris et pauses non rémunérées déduites. Les anciennes versions publiées et archivées conservent leurs règles. [Détails de la livraison](docs/LIVRAISON_0_5_2.md) · [Notes de version](CHANGELOG.md).
+---
 
-L’interface propose des transitions discrètes et quatre thèmes de couleur : Forêt, Bleu, Prune et Ardoise. Dans **Réglages → Affichage**, choisissez aussi un accent personnalisé, ajusté automatiquement pour préserver le contraste. Les préférences restent locales et suivent le dossier `donnees`. Les animations peuvent être désactivées. [Voir les options d’apparence](docs/themes-interface.png).
+<a id="telecharger"></a>
 
-Pendant la génération, un indicateur animé et le temps écoulé confirment que la recherche est en cours. Le chargement suit le thème choisi et respecte la désactivation des animations. [Voir le chargement](docs/chargement-horaire.png).
+## Télécharger
 
-[Voir la couverture et les alertes](docs/couverture-journee.png)
+**Version stable : 0.5.2** — un dossier à décompresser, un programme à ouvrir.
 
-## L’histoire du projet
+| Votre ordinateur | Téléchargement |
+| :--- | :--- |
+| **Windows 10 ou 11 · 64 bits** | [**Télécharger le ZIP Windows**](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.5.2/Planificateur-SDG-0.5.2-Windows-x64-Portable.zip) |
+| **Mac Apple Silicon · macOS 15 ou plus récent** | [**Télécharger le ZIP Mac**](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/download/v0.5.2/Planificateur-SDG-0.5.2-macOS-arm64-Portable.zip) |
+
+Aucun installateur ni Python à ajouter sur le poste utilisateur. Extrayez **le dossier complet** dans un emplacement où vous pouvez enregistrer des fichiers, par exemple Documents.
+
+[Notes de la 0.5.2 et rapports de contrôle](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/tag/v0.5.2) · [Toutes les versions](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases)
+
+<a id="apercu"></a>
+
+## Une journée, du premier quart au PDF
+
+| Pour… | Le planificateur vous permet de… |
+| :--- | :--- |
+| **Préparer la journée** | Retrouver vos journées récentes, choisir une date, nommer la journée et saisir les inscriptions. |
+| **Organiser l’équipe** | Gérer les profils, les disponibilités, les couleurs et les rangs de 1 à 11, avec des rangs libres possibles. |
+| **Ajuster les horaires** | Glisser les éducatrices dans la grille, déplacer les quarts et les redimensionner à la minute. |
+| **Vérifier la couverture** | Repérer les manques, lire les alertes et rejoindre la plage concernée. Le ratio peut être masqué. |
+| **Générer une proposition** | Planifier tous les groupes, préserver les quarts verrouillés et examiner le bilan avant d’appliquer. |
+| **Conserver et imprimer** | Enregistrer, dupliquer, consulter les versions et exporter un PDF général prêt à imprimer. |
+
+Les panneaux Équipe, Inscriptions et Vérification partagent le même espace à gauche. L’annulation conserve 50 actions. Quatre thèmes, un accent personnalisé et des animations désactivables adaptent l’affichage à vos préférences.
+
+**Nouveau dans la 0.5.2 :** une FAQ avec recherche et **14 captures agrandissables**, des icônes accessibles depuis l’accueil et des retours au survol plus visibles.
+
+<details>
+<summary><strong>Voir la grille de planification</strong></summary>
+
+Les groupes et leurs éducatrices restent séparés. Les quarts utilisent les couleurs de l’équipe et conservent les heures exactes.
+
+![Grille quotidienne avec quarts et couverture des groupes](docs/survol-grille-0.5.2.png)
+
+</details>
+
+<details>
+<summary><strong>Voir une proposition avant de l’appliquer</strong></summary>
+
+La génération ouvre d’abord la grille proposée. Le bilan compare les heures, la couverture, les interruptions et les préférences. Vous gardez le choix de l’appliquer ou de conserver l’horaire actuel.
+
+![Comparaison de l’horaire proposé avant confirmation](docs/proposition-0.5.0.png)
+
+[Voir le bilan détaillé](docs/bilan-0.5.0.png)
+
+</details>
+
+<details>
+<summary><strong>Voir la FAQ illustrée</strong></summary>
+
+La FAQ fonctionne sans Internet. Les questions sont recherchables et chaque capture peut être agrandie pour lire les détails.
+
+![FAQ avec réponse et capture du panneau Inscriptions](docs/faq-illustree-0.5.2.png)
+
+</details>
+
+**Un seul PDF général**, au format lettre paysage : jusqu’à huit éducateurs par page, couleurs par groupe, horaires coupés sur une même ligne et interruptions laissées vides. Le titre, la date, la légende et l’échelle sont repris sur chaque page ; le ratio et les alertes restent dans l’application.
+
+[**Consulter un exemple de PDF →**](docs/exemple-horaire-pedagogique.pdf)
+
+<a id="demarrer"></a>
+
+## Vos premiers pas
+
+1. **Ouvrez le logiciel.** Après extraction du ZIP, lancez `Planificateur-SDG.exe` sur Windows ou `Planificateur-SDG.app` sur Mac.
+2. **Ajoutez votre équipe.** Depuis l’accueil, saisissez les profils, les disponibilités et les rangs d’ancienneté.
+3. **Créez une journée pédagogique.** Indiquez le nombre d’enfants dans Inscriptions, puis ajustez la date et le nom au besoin.
+4. **Préparez l’horaire.** Glissez les éducatrices dans la grille ou générez une proposition. Vérifiez la couverture avant d’exporter le PDF.
+
+> **À conserver :** le dossier complet du logiciel, y compris le sous-dossier `donnees`. Fermez le programme avant de déplacer le dossier et gardez une copie de sécurité séparée.
+
+[Ouvrir le guide pas à pas →](docs/GUIDE.md)
+
+<a id="regles"></a>
+
+## Des règles de planification explicites
+
+| Repère | Fonctionnement de départ |
+| :--- | :--- |
+| **Présence du personnel** | De **6 h 50 à 17 h 35**. |
+| **Accueil des enfants** | De **7 h à 17 h 30**. |
+| **Ouverture et fin de journée** | De 6 h 50 à 7 h et de 17 h à 17 h 35 : **deux personnes au total, tous groupes confondus**. |
+| **Couverture des groupes** | De 7 h à 17 h : **au moins deux éducateurs par groupe ouvert**. |
+| **Ratio initial** | Un éducateur pour vingt enfants ; configurable et susceptible d’exiger plus de personnel. |
+| **Relève et pauses** | Quinze minutes communes pour la relève. Une pause retire la personne de la couverture, même si elle est payée. |
+| **Maximum quotidien** | **8 h rémunérées** par personne, buffers payés compris et pauses non payées déduites. Une limite individuelle plus basse reste prioritaire. |
+| **Ancienneté** | Priorité au rang 1, puis aux suivants, après les contraintes obligatoires et les objectifs de participation et de continuité. |
+
+Les durées sont calculées en **minutes entières**. Présence, rémunération et couverture sont distinguées ; un buffer payé ne couvre pas automatiquement les enfants. Le ratio décrit le fonctionnement demandé et n’est pas présenté comme une disposition réglementaire.
+
+La génération cherche à donner des heures au plus grand nombre de personnes, à éviter les trous inutiles, puis à privilégier les quarts continus, davantage d’heures et une fin plus tôt selon le rang. Chaque proposition est vérifiée avant acceptation. Les anciennes journées publiées ou archivées conservent leurs règles.
+
+<a id="aide"></a>
+
+## Aide et mises à jour
+
+Dans l’application, cliquez sur **?** ou appuyez sur **F1** pour ouvrir la FAQ illustrée.
+
+<details>
+<summary><strong>Comment mettre le logiciel à jour ?</strong></summary>
+
+**Depuis la version 0.5.0 :** ouvrez **Dossier → Mettre à jour depuis un ZIP**. Choisissez un ZIP officiel plus récent pour votre système et votre architecture. L’assistant prépare un autre dossier avec une copie des données et conserve l’ancien.
+
+Fermez l’ancienne version avant de lancer la nouvelle. Le retour proposé par l’assistant reprend les données d’avant mise à jour et conserve le travail plus récent séparément.
+
+**Depuis la version 0.4.0 ou avant :** fermez le logiciel, sauvegardez votre dossier `donnees`, puis transférez-le dans la nouvelle version extraite. Ne le remplacez pas par un dossier vide.
+
+[Procédure complète et retour à la version précédente](docs/GUIDE.md#assistant-de-mise-à-jour)
+
+</details>
+
+<details>
+<summary><strong>Où sont enregistrés les horaires ?</strong></summary>
+
+Les données restent dans le sous-dossier `donnees`, à côté du programme, dans une base SQLite locale. Le menu **Dossier** regroupe l’ouverture, l’enregistrement, la duplication, l’historique et les sauvegardes.
+
+L’application ne transmet pas les horaires à un serveur. Les renseignements sur les élèves se limitent aux effectifs ; aucun nom d’élève n’est nécessaire. La sauvegarde automatique, l’annulation et l’historique accompagnent le travail. Les erreurs bloquantes empêchent la publication d’un horaire ; un brouillon reste enregistrable.
+
+</details>
+
+<details>
+<summary><strong>Que faire si macOS bloque l’ouverture ?</strong></summary>
+
+La distribution Mac ne possède pas de notarisation Apple. L’autorisation d’ouverture de macOS est distincte du fonctionnement du logiciel.
+
+Si le programme demande le dossier portable d’origine, sélectionnez le dossier extrait contenant `Planificateur-SDG.app` et `portable.mode`. Cela permet de retrouver un emplacement accessible en écriture lorsque macOS lance une copie temporaire avec AppTranslocation.
+
+[Consulter le guide de distribution Mac](docs/DISTRIBUTION_MACOS.md)
+
+</details>
+
+<a id="projet"></a>
+
+## Une idée née d’un besoin familial
 
 J’ai commencé ce projet pour aider ma mère à répondre à un besoin informatique concret : préparer les horaires d’un service de garde. Elle avait besoin d’un outil simple pour répartir son équipe, ajuster les heures et produire un document facile à imprimer.
 
-Derrière une grille d’horaire se cachent beaucoup de détails : les inscriptions changent, les éducatrices doivent se relayer, les pauses doivent être couvertes et personne ne peut laisser un groupe sans surveillance. Le logiciel s’est construit autour de ces besoins, avec une priorité constante : rendre la planification plus claire et plus facile à utiliser.
+Derrière une grille d’horaire se cachent beaucoup de détails : les inscriptions changent, les éducatrices doivent se relayer, les pauses doivent être couvertes et personne ne peut laisser un groupe sans surveillance. Le planificateur s’est construit autour de ces besoins, avec une priorité constante : rendre la planification plus claire et plus facile à utiliser.
 
-Aujourd’hui, le planificateur se concentre sur une journée pédagogique à la fois, de sa préparation jusqu’à l’impression de l’horaire.
-
-## L’essentiel, dans un seul espace
-
-- **Choisir une journée** dans un champ de date lisible, utilisable au clavier, avec des flèches précédent/suivant.
-- **Organiser l’équipe** : une couleur attribuée à chaque nouvelle éducatrice, des heures journalières et un rang de 1 à 11. Les rangs intermédiaires peuvent rester libres.
-- **Saisir les inscriptions** et lire immédiatement le besoin total, avec deux éducateurs minimum par groupe.
-- **Ajuster les quarts à la minute** par glisser-déposer, redimensionnement ou saisie exacte, avec pauses et temps de préparation.
-- **Vérifier la couverture** et demander une proposition automatique respectant les contraintes et les quarts verrouillés.
-- **Enregistrer et retrouver les horaires** depuis l’icône Dossier de la barre latérale : ouverture, duplication, historique et sauvegardes locales.
-- **Imprimer un seul PDF général**, au format lettre paysage, avec huit éducateurs maximum par page. Les interruptions restent vides.
-
-L’interface se consacre aux horaires. Chaque date conserve ses propres inscriptions, affectations, heures et versions. Le dossier de la barre latérale regroupe les fichiers et les sauvegardes ; les profils se remplissent dans une seule fenêtre claire, sans onglets.
-
-[Voir le formulaire d’ajout d’un profil](docs/ajouter-educateur.png)
-
-## Une journée, des règles explicites
-
-| Repère | Configuration de départ |
-| --- | --- |
-| Présence du personnel | **6 h 50 à 17 h 35** |
-| Accueil des enfants | **7 h à 17 h 30** |
-| Préparation et fermeture | Deux éducatrices pour ouvrir et deux pour fermer |
-| Relève | Quinze minutes de présence commune |
-| Couverture | Deux par groupe de 7 h à 17 h ; deux au total avant 7 h et après 17 h |
-| Ratio de départ | Un éducateur pour vingt enfants, configurable |
-
-Les heures sont calculées en minutes entières. La présence, la rémunération et la couverture des enfants sont distinguées : une pause ou un temps de préparation ne constitue pas automatiquement de la surveillance. Le ratio configuré décrit le fonctionnement demandé ; il n’est pas présenté comme une disposition réglementaire.
-
-## Prise en main
-
-1. Téléchargez le ZIP correspondant à votre ordinateur depuis les [versions publiées](https://github.com/GraphicShack/Planificateur-Service-de-garde/releases/latest).
-2. Extrayez **tout le dossier** dans un emplacement où vous pouvez enregistrer des fichiers, par exemple Documents.
-3. Ouvrez **Planificateur-SDG.exe** sous Windows ou **Planificateur-SDG.app** sous macOS.
-
-Aucune installation de Python, aucun compte et aucun abonnement ne sont nécessaires sur le poste utilisateur. La version Mac proposée cible **Apple Silicon et macOS 15 ou plus récent**.
-
-Vos données restent dans le sous-dossier **donnees**, à côté du programme. Gardez le dossier complet et fermez le logiciel avant de le déplacer. Depuis la version 0.5.0, **Dossier → Mettre à jour depuis un ZIP** vérifie un ZIP plus récent et prépare le nouveau dossier en conservant l’ancien. Pour passer de 0.4.0 ou avant à 0.5.2, fermez le logiciel, sauvegardez puis transférez votre dossier **donnees** dans la nouvelle version extraite. [Procédure et retour à la version précédente](docs/GUIDE.md#assistant-de-mise-à-jour).
-
-## Un horaire prêt à imprimer
-
-Le PDF reprend le modèle de journée pédagogique fourni : titre à gauche, date à droite, noms des éducateurs puis grille de **6 h 50 à 17 h 35**, avec repères de trente minutes et blocs positionnés à la minute. Les horaires coupés apparaissent sur une même ligne ; l’en-tête, la légende et l’échelle sont repris sur chaque page.
-
-[Consulter un exemple de PDF](docs/exemple-horaire-pedagogique.pdf)
-
-## Les difficultés rencontrées
-
-**Respecter les heures réelles.** Les besoins dépassaient une simple grille par heure : il fallait conserver chaque minute et distinguer les buffers, les pauses, le temps payé et la couverture effective du service.
-
-**Trouver une interface suffisamment simple.** Le projet a évolué vers une planification quotidienne, un calendrier plus lisible et un menu Dossier centralisé. La taille des textes, les contrastes et les zones cliquables font partie des critères de vérification. Les différences de dimensions entre Windows et Mac ont aussi nécessité des formulaires qui adaptent leurs colonnes à la place disponible.
-
-**Livrer sans installation.** Python, Qt et les autres dépendances sont inclus dans les distributions portables. Sur Mac, une difficulté particulière venait d’AppTranslocation, qui peut lancer une copie temporaire en lecture seule. Le démarrage retrouve le dossier d’origine ou permet de le choisir. L’autorisation d’ouverture de macOS reste distincte : la distribution ne possède pas de notarisation Apple.
-
-**Préserver les horaires existants.** Le passage d’un fonctionnement hebdomadaire à des journées indépendantes a nécessité une migration avec copie de sécurité, tout en conservant les anciennes photographies et leurs historiques.
-
-**Rendre les fichiers faciles à récupérer et à imprimer.** Les téléchargements destinés aux utilisateurs sont publiés dans les Releases, accessibles sans compte GitHub. Le rendu PDF a été adapté au modèle fourni, aux coupures d’horaire et à la pagination de huit noms par page.
-
-## Données et fiabilité
-
-Les données sont enregistrées localement dans SQLite. L’application n’utilise aucun serveur distant et ne transmet pas les horaires. Les renseignements sur les élèves se limitent aux effectifs ; aucun nom d’élève n’est nécessaire.
-
-La sauvegarde automatique, l’annulation, les copies de sécurité et l’historique accompagnent le travail quotidien. Les erreurs de couverture empêchent la publication d’un horaire ; un brouillon reste enregistrable pour poursuivre les corrections.
-
-Les constructions Windows et Mac exécutent les tests puis vérifient le programme compilé, y compris après extraction du ZIP : calendrier, choix de date, SQLite, génération et PDF. Les résultats et les limites des contrôles sont détaillés dans l’[état des vérifications](docs/ETAT_VERIFICATION.md).
-
-## Documentation
-
-| Besoin | Document |
-| --- | --- |
-| Utiliser le planificateur | [Guide d’utilisation](docs/GUIDE.md) |
-| Comprendre les règles et la couverture fonctionnelle | [Exigences et contrôles](docs/EXIGENCES.md) |
-| Comprendre le code et les données | [Architecture](docs/ARCHITECTURE.md) |
-| Construire une version Windows | [Distribution Windows](docs/DISTRIBUTION_WINDOWS.md) |
-| Construire une version Mac | [Distribution macOS](docs/DISTRIBUTION_MACOS.md) |
-| Consulter les résultats de tests | [État des vérifications](docs/ETAT_VERIFICATION.md) |
+Aujourd’hui, il se concentre sur **une journée pédagogique à la fois**, de sa préparation jusqu’à l’impression.
 
 <details>
-<summary><strong>Pour les développeurs</strong></summary>
+<summary><strong>Les difficultés rencontrées pendant le développement</strong></summary>
 
-Le projet utilise Python 3, PySide6, SQLite, OR-Tools CP-SAT et ReportLab. Les paquets autonomes sont construits nativement avec PyInstaller. Python 3.12 64 bits est utilisé pour les distributions.
+- **Respecter chaque minute.** Conserver les heures exactes tout en distinguant les buffers, les pauses, le temps payé et la couverture réelle des enfants.
+- **Simplifier l’interface.** Passer d’une logique hebdomadaire à des journées indépendantes, rendre les textes et les contrôles lisibles, et adapter les formulaires aux différences entre Windows et Mac.
+- **Livrer sans installation.** Inclure Python, Qt et les dépendances dans les distributions portables, puis gérer sur Mac les lancements temporaires en lecture seule dus à AppTranslocation.
+- **Préserver les horaires existants.** Faire évoluer la base avec une copie de sécurité, sans perdre les versions et les historiques des anciennes journées.
+- **Soigner la remise des fichiers.** Proposer des téléchargements publics sans compte GitHub et un PDF fidèle au modèle fourni, y compris pour les horaires coupés et les pages de huit noms.
+
+</details>
+
+<a id="documentation"></a>
+
+## Pour aller plus loin
+
+| Vous cherchez… | Ouvrez… |
+| :--- | :--- |
+| Une aide pour utiliser le logiciel | [Guide d’utilisation](docs/GUIDE.md) |
+| Les changements de chaque version | [Notes de version](CHANGELOG.md) |
+| Les règles et les fonctionnalités couvertes | [Exigences et contrôles](docs/EXIGENCES.md) |
+| Les résultats et les limites des tests | [État des vérifications](docs/ETAT_VERIFICATION.md) |
+| L’organisation du code et des données | [Architecture](docs/ARCHITECTURE.md) |
+| La création des exécutables | [Distribution Windows](docs/DISTRIBUTION_WINDOWS.md) · [Distribution Mac](docs/DISTRIBUTION_MACOS.md) |
+
+**Version 0.5.2 vérifiée :** 352 tests et 6 sous-cas réussis sur chaque plateforme. Les constructions natives vérifient le programme compilé, le ZIP extrait, les captures de la FAQ et la mise à jour portable. Les essais physiques sur le poste de l’école restent à réaliser.
+
+<details>
+<summary><strong>Développement et lancement depuis les sources</strong></summary>
+
+Le projet utilise **Python 3, PySide6, SQLite, OR-Tools CP-SAT et ReportLab**. Les paquets autonomes sont construits nativement avec PyInstaller ; les distributions utilisent Python 3.12 64 bits.
 
 Après création et activation d’un environnement virtuel :
 
@@ -128,8 +224,14 @@ python -m gardeplan
 python -m pytest -q
 ```
 
-`python -m gardeplan --example` utilise une base distincte avec des données fictives. Les dépendances sont téléchargées pendant la préparation du poste de développement ; le logiciel livré fonctionne ensuite hors ligne.
+`python -m gardeplan --example` ouvre une base distincte avec des données fictives. Les dépendances sont téléchargées pendant la préparation du poste de développement ; le logiciel livré fonctionne ensuite hors ligne.
 
-La génération automatique recherche parmi des quarts candidats. Une absence de solution dans ces candidats ne prouve pas l’impossibilité de tout horaire théorique ; la proposition est vérifiée avant acceptation.
+La génération recherche parmi des quarts candidats. Une absence de solution dans ces candidats ne prouve pas l’impossibilité de tout horaire théorique ; chaque proposition est vérifiée avant acceptation.
 
 </details>
+
+---
+
+<p align="center">
+  <a href="#haut">Retour en haut ↑</a>
+</p>
