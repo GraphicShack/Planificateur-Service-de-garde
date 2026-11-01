@@ -39,6 +39,7 @@ from .theme import DATE_STYLE
 from .inline_name import InlineDayName
 from .enrolment import EnrolmentPanel
 from .home import HomePage
+from .faq import FaqPage
 from .motion import AnimatedStack, Motion
 from .loading import GenerationLoading
 from .proposal import ProposalDialog
@@ -174,7 +175,8 @@ class MainWindow(QMainWindow):
         rail = QFrame()
         rail.setObjectName("navigationRail")
         self.navigation_rail = rail
-        rail.setFixedWidth(72)
+        rail.setMinimumWidth(64)
+        rail.setMaximumWidth(72)
         rail_layout = QVBoxLayout(rail)
         self.rail_layout = rail_layout
         rail_layout.setContentsMargins(10, 28, 10, 20)
@@ -210,7 +212,14 @@ class MainWindow(QMainWindow):
         self.folder_button.setFixedSize(50, 50)
         rail_layout.addWidget(self.folder_button)
         rail_layout.addStretch()
-        shell.addWidget(rail)
+        self.navigation_scroll=QScrollArea()
+        self.navigation_scroll.setObjectName('navigationScroll')
+        self.navigation_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        self.navigation_scroll.setWidgetResizable(True)
+        self.navigation_scroll.setFixedWidth(72)
+        self.navigation_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.navigation_scroll.setWidget(rail)
+        shell.addWidget(self.navigation_scroll)
         content = QWidget()
         self.content_stack = AnimatedStack(self.motion)
         self.planner_page = content
@@ -422,6 +431,7 @@ class MainWindow(QMainWindow):
         self.coverage_toggle.setAccessibleName("Masquer la bande de ratio")
         self.coverage_toggle.setProperty("active", True)
         self.coverage_toggle.toggled.connect(self.toggle_coverage)
+        self.coverage_toggle.clicked.connect(self.open_coverage)
         for control, symbol in ((self.coverage_toggle, "panel"), (self.top_alert_button, "check")):
             control.setText("")
             control.setObjectName("railButton")
@@ -546,6 +556,20 @@ class MainWindow(QMainWindow):
         self.home_page.previous_day.connect(self.choose_week)
         self.home_page.add_educator.connect(lambda: self.edit_home_educator())
         self.home_page.edit_educator.connect(self.edit_home_educator)
+        self.faq_page=FaqPage()
+        self.faq_page.go_home.connect(self.show_home)
+        self.content_stack.addWidget(self.faq_page)
+        self.faq_button=self._button('',self.show_faq,'FAQ — Aide et questions fréquentes',icon_name='help')
+        self.faq_button.setObjectName('railButton')
+        self.faq_button.setIcon(icon('help',color='#D5E3DD'))
+        self.faq_button.setIconSize(QSize(22,22));self.faq_button.setFixedSize(50,50)
+        rail_layout.insertWidget(rail_layout.indexOf(self.folder_button),self.faq_button)
+        self.help_action=QAction('FAQ — Questions fréquentes',self)
+        self.help_action.setShortcut(QKeySequence('F1'));self.help_action.triggered.connect(self.show_faq)
+        self.addAction(self.help_action)
+        navigation=[self.home_button,*self.rail_buttons.values(),self.enrolment_button,
+                    self.coverage_toggle,self.top_alert_button,self.faq_button,self.folder_button,self.more_button]
+        for previous,following in zip(navigation,navigation[1:]):QWidget.setTabOrder(previous,following)
 
     def _home_roster(self):
         return self.repo.latest_week() or self.week
@@ -560,24 +584,46 @@ class MainWindow(QMainWindow):
             self.home_page.error.setText(f"Les journées ne peuvent pas être chargées : {error}")
             self.home_page.error.show()
         self.content_stack.setCurrentWidget(self.home_page)
-        self.rail_buttons['calendar'].setProperty("active",False)
-        self.rail_buttons['calendar'].style().unpolish(self.rail_buttons['calendar'])
-        self.rail_buttons['calendar'].style().polish(self.rail_buttons['calendar'])
-        self.home_button.setProperty("active",True)
-        self.home_button.style().unpolish(self.home_button)
-        self.home_button.style().polish(self.home_button)
+        self._sync_navigation()
         self.home_page.new_button.setFocus()
         return True
 
     def show_planner(self):
         if hasattr(self,"content_stack"):
             self.content_stack.setCurrentWidget(self.planner_page)
-        self.rail_buttons['calendar'].setProperty("active",True)
-        self.rail_buttons['calendar'].style().unpolish(self.rail_buttons['calendar'])
-        self.rail_buttons['calendar'].style().polish(self.rail_buttons['calendar'])
-        self.home_button.setProperty("active",False)
-        self.home_button.style().unpolish(self.home_button)
-        self.home_button.style().polish(self.home_button)
+        self._sync_navigation()
+
+    def show_faq(self):
+        if self._worker is not None:return False
+        self.content_stack.setCurrentWidget(self.faq_page)
+        self._sync_navigation();self.faq_page.focus_search()
+        return True
+
+    def _sync_navigation(self):
+        page=self.content_stack.currentWidget()
+        planning=page is self.planner_page
+        states=[(self.home_button,page is self.home_page),(self.rail_buttons['calendar'],planning),
+                (self.faq_button,page is self.faq_page),
+                (self.rail_buttons['users'],planning and self.management_stack.currentWidget() is self.team_page),
+                (self.enrolment_button,planning and self.management_stack.currentWidget() is self.enrolment_page),
+                (self.top_alert_button,planning and self.management_stack.currentWidget() is self.alert_panel),
+                (self.coverage_toggle,planning and self.coverage_toggle.isChecked())]
+        for button,active in states:
+            button.setProperty('active',active)
+            button.style().unpolish(button);button.style().polish(button)
+        if not planning:
+            self.coverage_toggle.setAccessibleName('Consulter le ratio de la journée')
+            self.coverage_toggle.setToolTip('Ratio — ouvrir la couverture de la journée dans la planification')
+        else:
+            action='Masquer' if self.coverage_toggle.isChecked() else 'Afficher'
+            self.coverage_toggle.setAccessibleName(action+' la bande de ratio')
+            self.coverage_toggle.setToolTip(action+' la bande de ratio. Elle n’est jamais incluse dans le PDF.')
+
+    def open_coverage(self,checked=False):
+        if self.content_stack.currentWidget() is not self.planner_page:
+            self.show_planner()
+            self.coverage_toggle.setChecked(True)
+        self._sync_navigation()
 
     def open_home_day(self, selected):
         if self._worker is not None or (self.dirty and not self.save_week(manual=False)):
@@ -1214,7 +1260,7 @@ class MainWindow(QMainWindow):
             compact = self.height() < 800
             self.rail_layout.setSpacing(6 if self.height()<680 else 8 if compact else 18)
             rail_size=44 if self.height()<680 else 50
-            for control in [self.home_button,*self.rail_buttons.values(),self.enrolment_button,self.coverage_toggle,self.top_alert_button,self.folder_button,self.more_button]:
+            for control in [self.home_button,*self.rail_buttons.values(),self.enrolment_button,self.coverage_toggle,self.top_alert_button,self.faq_button,self.folder_button,self.more_button]:
                 control.setFixedSize(rail_size,rail_size)
             self.alert_badge.move(rail_size-24,0)
             self.rail_layout.setContentsMargins(10,12 if compact else 28,10,12 if compact else 20)
@@ -1239,7 +1285,6 @@ class MainWindow(QMainWindow):
 
 
     def toggle_coverage(self, visible):
-        self.show_planner()
         self.calendar.set_coverage_visible(visible)
         action = "Masquer" if visible else "Afficher"
         self.coverage_toggle.setProperty("active", visible)
@@ -1264,6 +1309,7 @@ class MainWindow(QMainWindow):
             button.style().polish(button)
         {"team": self.educator_search, "enrolment": self.enrolment_panel.count,
          "alerts": self.alert_list}[page].setFocus()
+        self._sync_navigation()
 
     def toggle_alerts(self):
         self.show_management("alerts" if self.alert_toggle.isChecked() else "team")
