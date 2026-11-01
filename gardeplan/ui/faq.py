@@ -6,43 +6,44 @@ from PySide6.QtWidgets import (QFrame,QHBoxLayout,QLabel,QLineEdit,QPushButton,
                               QScrollArea,QSizePolicy,QVBoxLayout,QWidget)
 from .appearance import set_themed_style
 from .visuals import icon
+from .faq_media import CAPTURES,FaqFigure
 
 
 FAQ_ENTRIES=(
     ('Commencer','Comment créer une journée pédagogique ?',
-     'Depuis l’accueil, cliquez sur Nouvelle journée pédagogique. La date du jour est proposée ; vous pouvez ensuite la changer avec le champ de date et les flèches. Le panneau Inscriptions s’ouvre pour saisir le nombre d’enfants. Une journée existante n’est jamais remplacée automatiquement.'),
+     'Depuis l’accueil, cliquez sur Nouvelle journée pédagogique. La date du jour est proposée ; vous pouvez ensuite la changer avec le champ de date et les flèches. Le panneau Inscriptions s’ouvre pour saisir le nombre d’enfants. Une journée existante n’est jamais remplacée automatiquement.', ('accueil', 'inscriptions')),
     ('Commencer','Comment modifier le nom ou retrouver une journée ?',
-     'Cliquez sur le nom de la journée dans la planification. Entrée ou un clic ailleurs enregistre ; Échap annule. Ce nom apparaît à l’accueil et dans le PDF. Pour retrouver une journée, utilisez Journées récentes ou Dossier → Ouvrir une journée.'),
+     'Cliquez sur le nom de la journée dans la planification. Entrée ou un clic ailleurs enregistre ; Échap annule. Ce nom apparaît à l’accueil et dans le PDF. Pour retrouver une journée, utilisez Journées récentes ou Dossier → Ouvrir une journée.', ('accueil', 'grille')),
     ('Navigation','Comment accéder à l’équipe, aux inscriptions et aux vérifications ?',
-     'Les icônes à gauche restent accessibles depuis l’accueil, la planification et la FAQ. Équipe, Inscriptions et Vérifier ouvrent leur panneau dans la planification. Ratio affiche la couverture. Sur un petit écran, la barre latérale peut défiler ; Tab permet aussi de parcourir ses boutons. Accueil ramène à la liste des journées.'),
+     'Les icônes à gauche restent accessibles depuis l’accueil, la planification et la FAQ. Équipe, Inscriptions et Vérifier ouvrent leur panneau dans la planification. Ratio affiche la couverture. Sur un petit écran, la barre latérale peut défiler ; Tab permet aussi de parcourir ses boutons. Accueil ramène à la liste des journées.', ('accueil',)),
     ('Inscriptions et couverture','Combien d’éducatrices faut-il prévoir ?',
-     'Saisissez le nombre d’enfants dans Inscriptions. Le ratio de départ est de 1 éducatrice pour 20 enfants et reste configurable : il ne constitue pas une affirmation réglementaire. De 7 h à 17 h, chaque groupe ouvert nécessite au moins deux éducatrices. Un effectif plus important peut en exiger davantage. Les besoins affichés sont calculés avec les règles de la journée.'),
+     'Saisissez le nombre d’enfants dans Inscriptions. Le ratio de départ est de 1 éducatrice pour 20 enfants et reste configurable : il ne constitue pas une affirmation réglementaire. De 7 h à 17 h, chaque groupe ouvert nécessite au moins deux éducatrices. Un effectif plus important peut en exiger davantage. Les besoins affichés sont calculés avec les règles de la journée.', ('inscriptions',)),
     ('Inscriptions et couverture','Quelles sont les règles d’ouverture, de fermeture et de relève ?',
-     'Par défaut, le personnel est présent de 6 h 50 à 17 h 35. De 6 h 50 à 7 h et de 17 h à 17 h 35, il faut au moins deux personnes au total, tous groupes confondus ; le ratio peut en demander davantage. De 7 h à 17 h, il faut au moins deux personnes par groupe ouvert. La relève prévoit 15 minutes communes. Les anciennes journées publiées ou archivées conservent leurs propres règles.'),
+     'Par défaut, le personnel est présent de 6 h 50 à 17 h 35. De 6 h 50 à 7 h et de 17 h à 17 h 35, il faut au moins deux personnes au total, tous groupes confondus ; le ratio peut en demander davantage. De 7 h à 17 h, il faut au moins deux personnes par groupe ouvert. La relève prévoit 15 minutes communes. Les anciennes journées publiées ou archivées conservent leurs propres règles.', ('grille',)),
     ('Planification','Comment ajouter, déplacer ou redimensionner un quart ?',
-     'Glissez une éducatrice depuis L’équipe dans la grille, ou double-cliquez sur une plage vide. Glissez un quart pour le déplacer. Tirez la poignée du haut ou du bas pour ajuster son début ou sa fin. Un double-clic sur le quart permet de saisir les heures exactes. Le magnétisme se règle à 1, 5 ou 15 minutes, ou sans magnétisme. Les informations restent précises à la minute.'),
+     'Glissez une éducatrice depuis L’équipe dans la grille, ou double-cliquez sur une plage vide. Glissez un quart pour le déplacer. Tirez la poignée du haut ou du bas pour ajuster son début ou sa fin. Un double-clic sur le quart permet de saisir les heures exactes. Le magnétisme se règle à 1, 5 ou 15 minutes, ou sans magnétisme. Les informations restent précises à la minute.', ('grille', 'quart')),
     ('Planification','Comment compter les pauses, les dîners et les heures payées ?',
-     'Ouvrez le quart pour régler les pauses, leur heure, leur durée et leur rémunération. Une pause retire l’éducatrice de la couverture, même si elle est payée. Une pause non payée est aussi déduite du total rémunéré. Les buffers payés comptent dans les heures sans couvrir automatiquement les enfants. Les dîners ne sont pas affichés dans les blocs. Dans le PDF, les pauses et interruptions restent vides.'),
+     'Ouvrez le quart pour régler les pauses, leur heure, leur durée et leur rémunération. Une pause retire l’éducatrice de la couverture, même si elle est payée. Une pause non payée est aussi déduite du total rémunéré. Les buffers payés comptent dans les heures sans couvrir automatiquement les enfants. Les dîners ne sont pas affichés dans les blocs. Dans le PDF, les pauses et interruptions restent vides.', ('pauses',)),
     ('Planification','Quel est le maximum d’heures par personne ?',
-     'Le plafond quotidien est de 8 h rémunérées par personne, tous quarts cumulés. Les buffers payés sont inclus et les pauses non payées sont déduites. Un maximum individuel plus bas reste prioritaire. Une cible dépassée apparaît en orange ; un maximum obligatoire dépassé apparaît en rouge et bloque la publication.'),
+     'Le plafond quotidien est de 8 h rémunérées par personne, tous quarts cumulés. Les buffers payés sont inclus et les pauses non payées sont déduites. Un maximum individuel plus bas reste prioritaire. Une cible dépassée apparaît en orange ; un maximum obligatoire dépassé apparaît en rouge et bloque la publication.', ('quart',)),
     ('Planification','À quoi sert le rang d’ancienneté ?',
-     'Le rang 1 est prioritaire, puis 2, 3 et ainsi de suite, jusqu’à 11. Les rangs intermédiaires peuvent rester libres ; deux profils ne peuvent pas utiliser le même rang. La génération tient compte des rangs pour les quarts continus, les heures et les préférences, après les contraintes obligatoires et les objectifs communs de participation et de continuité.'),
+     'Le rang 1 est prioritaire, puis 2, 3 et ainsi de suite, jusqu’à 11. Les rangs intermédiaires peuvent rester libres ; deux profils ne peuvent pas utiliser le même rang. La génération tient compte des rangs pour les quarts continus, les heures et les préférences, après les contraintes obligatoires et les objectifs communs de participation et de continuité.', ('profil',)),
     ('Génération','Comment générer et examiner une proposition ?',
-     'Cliquez sur Générer l’horaire. La recherche porte sur tous les groupes et respecte les disponibilités, les absences, les pauses, les relèves, les maximums et les quarts verrouillés. La grille Proposition s’affiche avant toute application. L’onglet Bilan compare la couverture, les heures, les interruptions et les préférences. Cliquez sur Appliquer pour retenir la proposition, ou conservez l’horaire actuel.'),
+     'Cliquez sur Générer l’horaire. La recherche porte sur tous les groupes et respecte les disponibilités, les absences, les pauses, les relèves, les maximums et les quarts verrouillés. La grille Proposition s’affiche avant toute application. L’onglet Bilan compare la couverture, les heures, les interruptions et les préférences. Cliquez sur Appliquer pour retenir la proposition, ou conservez l’horaire actuel.', ('proposition', 'bilan')),
     ('Génération','Pourquoi reste-t-il parfois des trous ou des personnes sans heures ?',
-     'La recherche essaie de faire travailler le plus de personnes disponibles et d’éviter les horaires coupés inutiles. Les disponibilités, les quarts verrouillés, les besoins des groupes ou le maximum de 8 h peuvent imposer une interruption. Le temps de recherche peut aussi limiter l’optimisation ; le logiciel le précise. Le bilan identifie les personnes sans heures et les horaires coupés. La génération ne supprime pas une pause pour rendre un quart continu.'),
+     'La recherche essaie de faire travailler le plus de personnes disponibles et d’éviter les horaires coupés inutiles. Les disponibilités, les quarts verrouillés, les besoins des groupes ou le maximum de 8 h peuvent imposer une interruption. Le temps de recherche peut aussi limiter l’optimisation ; le logiciel le précise. Le bilan identifie les personnes sans heures et les horaires coupés. La génération ne supprime pas une pause pour rendre un quart continu.', ('bilan',)),
     ('Vérifications','Que faire lorsqu’une alerte apparaît ?',
-     'Cliquez sur Vérifier dans la barre latérale. Les alertes précisent la plage et le problème ; sélectionnez-en une pour surligner la zone dans la grille. Pour un manque de personnel, Proposer une correction peut ajouter ou prolonger un quart compatible. Une proposition peut conserver des erreurs déjà présentes : elle reste alors un brouillon. Les erreurs bloquantes empêchent la publication, mais pas la sauvegarde.'),
+     'Cliquez sur Vérifier dans la barre latérale. Les alertes précisent la plage et le problème ; sélectionnez-en une pour surligner la zone dans la grille. Pour un manque de personnel, Proposer une correction peut ajouter ou prolonger un quart compatible. Une proposition peut conserver des erreurs déjà présentes : elle reste alors un brouillon. Les erreurs bloquantes empêchent la publication, mais pas la sauvegarde.', ('alertes',)),
     ('Vérifications','Comment signaler une absence ou annuler une modification ?',
-     'Dans L’équipe, cliquez sur Signaler une absence. Cela concerne uniquement la journée ; le profil reste actif. Les quarts non verrouillés sont retirés et les quarts verrouillés restent à corriger. Annuler restaure l’action précédente ; Rétablir la réapplique. Les boutons sont près du nom de la journée. Sur Mac, utilisez Cmd+Z et Cmd+Maj+Z ; sur Windows, Ctrl+Z et Ctrl+Maj+Z. L’historique contient 50 actions.'),
+     'Dans L’équipe, cliquez sur Signaler une absence. Cela concerne uniquement la journée ; le profil reste actif. Les quarts non verrouillés sont retirés et les quarts verrouillés restent à corriger. Annuler restaure l’action précédente ; Rétablir la réapplique. Les boutons sont près du nom de la journée. Sur Mac, utilisez Cmd+Z et Cmd+Maj+Z ; sur Windows, Ctrl+Z et Ctrl+Maj+Z. L’historique contient 50 actions.', ('equipe',)),
     ('Fichiers et impression','Où sont les données et comment faire une sauvegarde ?',
-     'En mode portable, les journées, les profils et les versions restent dans le sous-dossier donnees, à côté du programme. Gardez le dossier complet et fermez le logiciel avant de le déplacer. Dossier regroupe Enregistrer, Ouvrir, Dupliquer, Historique et les exports ou imports de sauvegarde. Les sauvegardes automatiques restent locales ; conservez aussi une copie de sécurité séparée.'),
+     'En mode portable, les journées, les profils et les versions restent dans le sous-dossier donnees, à côté du programme. Gardez le dossier complet et fermez le logiciel avant de le déplacer. Dossier regroupe Enregistrer, Ouvrir, Dupliquer, Historique et les exports ou imports de sauvegarde. Les sauvegardes automatiques restent locales ; conservez aussi une copie de sécurité séparée.', ('dossier',)),
     ('Fichiers et impression','Comment exporter ou imprimer l’horaire ?',
-     'Cliquez sur Exporter PDF pour produire l’horaire général de la journée, au format lettre paysage. Chaque page contient au maximum huit éducatrices. Les couleurs identifient les groupes, les heures restent exactes et les interruptions restent vides. Le nom de la journée apparaît dans le document. Le PDF ne contient ni bande de ratio ni panneau d’alertes.'),
+     'Cliquez sur Exporter PDF pour produire l’horaire général de la journée, au format lettre paysage. Chaque page contient au maximum huit éducatrices. Les couleurs identifient les groupes, les heures restent exactes et les interruptions restent vides. Le nom de la journée apparaît dans le document. Le PDF ne contient ni bande de ratio ni panneau d’alertes.', ('pdf',)),
     ('Fichiers et impression','Comment mettre le logiciel à jour sans perdre les horaires ?',
-     'Depuis la version 0.5.0, ouvrez Dossier → Mettre à jour depuis un ZIP et choisissez un ZIP portable officiel plus récent, pour le même système et la même architecture. L’assistant prépare un dossier séparé avec une copie des données et conserve l’ancien. Fermez l’ancienne version avant le premier lancement de la nouvelle. Le retour reprend les données d’avant mise à jour et conserve le travail plus récent séparément. Depuis 0.4.0 ou avant, fermez, sauvegardez puis transférez donnees dans le nouveau dossier extrait.'),
+     'Depuis la version 0.5.0, ouvrez Dossier → Mettre à jour depuis un ZIP et choisissez un ZIP portable officiel plus récent, pour le même système et la même architecture. L’assistant prépare un dossier séparé avec une copie des données et conserve l’ancien. Fermez l’ancienne version avant le premier lancement de la nouvelle. Le retour reprend les données d’avant mise à jour et conserve le travail plus récent séparément. Depuis 0.4.0 ou avant, fermez, sauvegardez puis transférez donnees dans le nouveau dossier extrait.', ('mise-a-jour',)),
     ('Affichage','Puis-je changer les couleurs ou désactiver les animations ?',
-     'Ouvrez Réglages → Affichage pour choisir un thème prédéfini ou un accent personnalisé. Le contraste des boutons reste protégé. Vous pouvez désactiver les animations discrètes ; les retours statiques au survol et le focus clavier restent visibles. Les préférences sont locales. Elles ne changent pas les couleurs des éducatrices, les règles ou le PDF.'),
+     'Ouvrez Réglages → Affichage pour choisir un thème prédéfini ou un accent personnalisé. Le contraste des boutons reste protégé. Vous pouvez désactiver les animations discrètes ; les retours statiques au survol et le focus clavier restent visibles. Les préférences sont locales. Elles ne changent pas les couleurs des éducatrices, les règles ou le PDF.', ('affichage',)),
 )
 
 STYLE='''
@@ -87,18 +88,22 @@ class QuestionButton(QPushButton):
 
 
 class FaqEntry(QFrame):
-    def __init__(self,category,question,answer):
+    def __init__(self,category,question,answer,captures=()):
         super().__init__();self.setObjectName('faqCard');self.setMinimumWidth(0)
         self.category=category;self.searchable=normalized(' '.join((category,question,answer)))
         layout=QVBoxLayout(self);layout.setContentsMargins(0,0,0,0);layout.setSpacing(0)
         self.button=QuestionButton(question);layout.addWidget(self.button)
+        self.body=QWidget();body=QVBoxLayout(self.body);body.setContentsMargins(15,12,15,16);body.setSpacing(12)
         self.answer=QLabel(answer);self.answer.setWordWrap(True);self.answer.setMinimumWidth(0)
-        self.answer.setTextFormat(Qt.TextFormat.PlainText);self.answer.setContentsMargins(15,12,15,16)
+        self.answer.setTextFormat(Qt.TextFormat.PlainText)
         self.answer.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse|Qt.TextInteractionFlag.TextSelectableByKeyboard)
-        layout.addWidget(self.answer);self.button.toggled.connect(self.expand);self.expand(False)
+        body.addWidget(self.answer);self.figures=[]
+        for key in captures:
+            figure=FaqFigure(CAPTURES[key]);body.addWidget(figure);self.figures.append(figure)
+        layout.addWidget(self.body);self.button.toggled.connect(self.expand);self.expand(False)
 
     def expand(self,expanded):
-        self.answer.setVisible(expanded)
+        self.body.setVisible(expanded)
         self.button.symbol.setPixmap(icon('minus' if expanded else 'plus',color='#52655E').pixmap(20,20))
         self.button.setAccessibleDescription('Réponse affichée. Entrée ou Espace pour replier.' if expanded else 'Entrée ou Espace pour afficher la réponse.')
 
@@ -114,17 +119,19 @@ class FaqPage(QScrollArea):
         title=QLabel('FAQ — Questions fréquentes');title.setObjectName('faqTitle');title.setWordWrap(True);outer.addWidget(title)
         intro=QLabel('Des réponses pour préparer vos journées pédagogiques. Cette aide fonctionne entièrement hors ligne.')
         intro.setWordWrap(True);outer.addWidget(intro)
+        examples=QLabel('Les captures montrent des exemples avec des données fictives. Vous pouvez les agrandir pour lire les détails.')
+        examples.setWordWrap(True);outer.addWidget(examples)
         back=QPushButton('Retour à l’accueil');back.setMinimumHeight(44);back.clicked.connect(self.go_home.emit);outer.addWidget(back,0,Qt.AlignmentFlag.AlignLeft)
         self.search=QLineEdit();self.search.setPlaceholderText('Rechercher : inscriptions, pauses, PDF…')
         self.search.setAccessibleName('Rechercher dans la FAQ');self.search.setClearButtonEnabled(True)
         self.search.setMaxLength(200);self.search.setMinimumHeight(44);outer.addWidget(self.search)
         self.results=QLabel();outer.addWidget(self.results)
         self.entries=[];self.categories={}
-        for category,question,answer in FAQ_ENTRIES:
+        for category,question,answer,captures in FAQ_ENTRIES:
             if category not in self.categories:
                 heading=QLabel(category);heading.setObjectName('faqCategory');heading.setWordWrap(True)
                 self.categories[category]=heading;outer.addWidget(heading)
-            entry=FaqEntry(category,question,answer);self.entries.append(entry);outer.addWidget(entry)
+            entry=FaqEntry(category,question,answer,captures);self.entries.append(entry);outer.addWidget(entry)
         self.empty=QLabel('Aucune réponse trouvée. Essayez un autre mot ou effacez la recherche.')
         self.empty.setWordWrap(True);outer.addWidget(self.empty);outer.addStretch()
         self.search.textChanged.connect(self.filter);self.filter('')
